@@ -22,7 +22,6 @@ local function parser()
     self._text = text
     self._i = 1
     self._stack = {}
-
     if self:extended_reg_exp() and #self._stack == 1 then
       return self:pop()
     end
@@ -31,6 +30,7 @@ local function parser()
   end
 
   function self:raise(message)
+    print(json.encode(self._stack))
     if message then
       error(message .. " at position " .. self._i)
     else
@@ -164,18 +164,20 @@ local function parser()
 
   function self:single_expression()
     local i = self._i
-    if self:character_class() then
-      self:push { "single_expression", self:pop() }
-    elseif self:equivalence_class() then
-      self:push { "single_expression", self:pop() }
-    elseif self:end_range() then
+    if self:end_range() then
       local a = self:pop()
       if self:token "^%-" then
         self:pop()
         self._i = i
-        return false
+      else
+        self:push { "single_expression", a }
+        return true
       end
-      self:push { "single_expression", a }
+    end
+    if self:character_class() then
+      self:push { "single_expression", self:pop() }
+    elseif self:equivalence_class() then
+      self:push { "single_expression", self:pop() }
     else
       return false
     end
@@ -213,9 +215,20 @@ local function parser()
   end
 
   function self:end_range()
-    if self:collating_symbol() then
+    local i = self._i
+    if self:token "^%[" then
+      local a = self:pop()
+      if self:token "^[%.%=%:]" then
+        self:pop()
+        self._i = i
+      else
+        self:push { "end_range", self:pop() }
+        return true
+      end
+    end
+    if self:token "^[^%^%-%]%[]" then
       self:push { "end_range", self:pop() }
-    elseif self:token "^[^%^%-%]]" then
+    elseif self:collating_symbol() then
       self:push { "end_range", self:pop() }
     else
       return false
