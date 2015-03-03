@@ -41,6 +41,7 @@ local function parser()
   function self:push(v)
     local s = self._stack
     s[#s + 1] = v
+    return true
   end
 
   function self:pop()
@@ -56,9 +57,9 @@ local function parser()
     return s[#s]
   end
 
-  function self:token(pattern)
+  function self:match(pattern)
     local text = self._text
-    local a, b, c, d = text:find(pattern, self._i)
+    local a, b, c, d = text:find("^" .. pattern, self._i)
     if a and b then
       self._i = b + 1
       if c then
@@ -66,8 +67,6 @@ local function parser()
         if d then
           self:push(d)
         end
-      else
-        self:push(text:sub(a, b))
       end
       return true
     else
@@ -76,289 +75,227 @@ local function parser()
   end
 
   function self:bracket_expression()
-    if self:token "^%[" then
-      self:pop()
+    if self:match "%[" then
       if self:matching_list() then
-        local a = self:pop()
-        if not self:token "^%]" then
+        if not self:match "%]" then
           self:raise()
         end
-        self:pop()
-        self:push { "bracket_expression", a }
-      elseif self:nonmatching_list() then
-        local a = self:pop()
-        if not self:token "^%]" then
-          self:raise()
-        end
-        self:pop()
-        self:push { "bracket_expression", a }
-      else
-        self:raise()
+        return self:push { "bracket_expression", self:pop() }
       end
-      return true
-    else
-      return false
+      if self:nonmatching_list() then
+        if not self:match "%]" then
+          self:raise()
+        end
+        return self:push { "bracket_expression", self:pop() }
+      end
+      self:raise()
     end
   end
 
   function self:matching_list()
     if self:bracket_list() then
-      self:push { "matching_list", self:pop() }
-      return true
-    else
-      return false
+      return self:push { "matching_list", self:pop() }
     end
   end
 
   function self:nonmatching_list()
-    if self:token "^%^" then
-      self:pop()
+    if self:match "%^" then
       if not self:bracket_list() then
         self:raise()
       end
-      self:push { "nonmatching_list", self:pop() }
-      return true
-    else
-      return false
+      return self:push { "nonmatching_list", self:pop() }
     end
   end
 
   function self:bracket_list()
     if self:follow_list() then
-      self:push { "bracket_list", self:pop() }
-      if self:token "^%-" then
-        local b = self:pop()
-        local a = self:top()
-        a[#a + 1] = b
+      local a = { "bracket_list", self:pop() }
+      if self:match "%-" then
+        a[#a + 1] = "-"
       end
-      return true
-    else
-      return false
+      return self:push(a)
     end
   end
 
   function self:follow_list()
     if self:expression_term() then
-      self:push { "follow_list", self:pop() }
+      local a = { "follow_list", self:pop() }
       while self:expression_term() do
-        local b = self:pop()
-        local a = self:top()
-        a[#a + 1] = b
+        a[#a + 1] = self:pop()
       end
-      return true
-    else
-      return false
+      return self:push(a)
     end
   end
 
   function self:expression_term()
     if self:single_expression() then
-      self:push { "expression_term", self:pop() }
-    elseif self:range_expression() then
-      self:push { "expression_term", self:pop() }
-    else
-      return false
+      return self:push { "expression_term", self:pop() }
     end
-    return true
+    if self:range_expression() then
+      return self:push { "expression_term", self:pop() }
+    end
   end
 
   function self:single_expression()
     local i = self._i
     if self:end_range() then
       local a = self:pop()
-      if self:token "^%-" then
-        self:pop()
+      if self:match "%-" then
         self._i = i
       else
-        self:push { "single_expression", a }
-        return true
+        return self:push { "single_expression", a }
       end
     end
     if self:character_class() then
-      self:push { "single_expression", self:pop() }
-    elseif self:equivalence_class() then
-      self:push { "single_expression", self:pop() }
-    else
-      return false
+      return self:push { "single_expression", self:pop() }
     end
-    return true
+    if self:equivalence_class() then
+      return self:push { "single_expression", self:pop() }
+    end
   end
 
   function self:range_expression()
     if self:start_range() then
       local a = self:pop()
       if self:end_range() then
-        self:push { "range_expression", a, self:pop() }
-      elseif self:token "^%-" then
-        self:push { "range_expression", a, self:pop() }
-      else
-        self:raise()
+        return self:push { "range_expression", a, self:pop() }
       end
-      return true
-    else
-      return false
+      if self:match "%-" then
+        return self:push { "range_expression", a, "-" }
+      end
+      self:raise()
     end
   end
 
   function self:start_range()
     if self:end_range() then
-      local a = self:pop()
-      if not self:token "^%-" then
-        self:raise "parse error"
+      if not self:match "%-" then
+        self:raise()
       end
-      self:pop()
-      self:push { "start_range", a }
-      return true
-    else
-      return false
+      return self:push { "start_range", self:pop() }
     end
   end
 
   function self:end_range()
     local i = self._i
-    if self:token "^%[" then
+    if self:match "([^%^%-%]])" then
       local a = self:pop()
-      if self:token "^[%.%=%:]" then
-        self:pop()
+      if a == "[" and self:match "[%.%=%:]" then
         self._i = i
       else
-        self:push { "end_range", self:pop() }
-        return true
+        return self:push { "end_range", a }
       end
     end
-    if self:token "^[^%^%-%]%[]" then
-      self:push { "end_range", self:pop() }
-    elseif self:collating_symbol() then
-      self:push { "end_range", self:pop() }
-    else
-      return false
+    if self:collating_symbol() then
+      return self:push { "end_range", self:pop() }
     end
-    return true
   end
 
   function self:collating_symbol()
-    if self:token "^%[%.(.)%.%]" then
-      self:push { "collating_symbol", self:pop() }
-      return true
-    elseif self:token "^%[%..-%.%]" then
+    if self:match "%[%.(.)%.%]" then
+      return self:push { "collating_symbol", self:pop() }
+    end
+    if self:match "%[%..-%.%]" then
       self:raise "collating symbol is not supported in the current locale"
-    else
-      return false
     end
   end
 
   function self:equivalence_class()
-    if self:token "^%[%=.-%=%]" then
+    if self:match "%[%=.-%=%]" then
       self:raise "equivalence class expression is not supported in the current locale"
-    else
-      return false
     end
   end
 
   function self:character_class()
-    if self:token "^%[%:(.-)%:%]" then
+    if self:match "%[%:(.-)%:%]" then
       local a = self:pop()
       if not class[a] then
         self:raise "character class is not supported in the current locale"
       end
-      self:push { "character_class", a }
-      return true
-    else
-      return false
+      return self:push { "character_class", a }
     end
   end
 
   function self:extended_reg_exp()
     if self:ERE_branch() then
-      self:push { "extended_reg_exp", self:pop() }
-      while self:token "^%|" do
-        self:pop()
+      local a = { "extended_reg_exp", self:pop() }
+      while self:match "%|" do
         if not self:ERE_branch() then
           self:raise "parse error"
         end
-        local b = self:pop()
-        local a = self:top()
-        a[#a + 1] = b
+        a[#a + 1] = self:pop()
       end
-      return true
-    else
-      return false
+      return self:push(a)
     end
   end
 
   function self:ERE_branch()
     if self:ERE_expression() then
-      self:push { "ERE_branch", self:pop() }
+      local a = { "ERE_branch", self:pop() }
       while self:ERE_expression() do
-        local b = self:pop()
-        local a = self:top()
-        a[#a + 1] = b
+        a[#a + 1] = self:pop()
       end
-      return true
-    else
-      return false
+      return self:push(a)
     end
   end
 
   function self:ERE_expression()
+    local a
     if self:one_char_or_coll_elem_ERE() then
-      self:push { "ERE_expression", self:pop() }
-    elseif self:token "^[%^%$]" then
-      self:push { "ERE_expression", self:pop() }
-    elseif self:token "^%(" then
-      self:pop()
+      a = { "ERE_expression", self:pop() }
+    end
+    if self:match "([%^%$])" then
+      a = { "ERE_expression", self:pop() }
+    end
+    if self:match "%(" then
       if not self:extended_reg_exp() then
         self:raise "parse error"
       end
-      local a = self:pop()
-      if not self:token "^%)" then
+      if not self:match "%)" then
         self:raise "parse error"
       end
-      self:pop()
-      self:push { "ERE_expression", a }
-    else
-      return false
+      a = { "ERE_expression", self:pop() }
     end
-    if self:ERE_dupl_symbol() then
-      local b = self:pop()
-      local a = self:pop()
-      b[#b + 1] = a
-      self:push(b)
+    if a then
+      if self:ERE_dupl_symbol() then
+        local b = self:pop()
+        b[#b + 1] = a
+        return self:push(b)
+      end
+      return self:push(a)
     end
-    return true
   end
 
   function self:one_char_or_coll_elem_ERE()
-    if self:token "^[^%^%.%[%$%(%)%|%*%+%?%{%\\]" then
-      self:push { "one_char_or_coll_elem_ERE", self:pop() }
-    elseif self:token "^\\[%^%.%[%$%(%)%|%*%+%?%{%\\]" then
-      self:push { "one_char_or_coll_elem_ERE", self:pop() }
-    elseif self:token "^%." then
-      self:push { "one_char_or_coll_elem_ERE", self:pop() }
-    elseif self:bracket_expression() then
-      self:push { "one_char_or_coll_elem_ERE", self:pop() }
-    else
-      return false
+    if self:match "([^%^%.%[%$%(%)%|%*%+%?%{%\\])" then
+      return self:push { "one_char_or_coll_elem_ERE", self:pop() }
     end
-    return true
+    if self:match "(\\[%^%.%[%$%(%)%|%*%+%?%{%\\])" then
+      return self:push { "one_char_or_coll_elem_ERE", self:pop() }
+    end
+    if self:match "%." then
+      return self:push { "one_char_or_coll_elem_ERE", "." }
+    end
+    if self:bracket_expression() then
+      return self:push { "one_char_or_coll_elem_ERE", self:pop() }
+    end
   end
 
   function self:ERE_dupl_symbol()
-    if self:token "^[%*%+%?]" then
-      self:push { "ERE_dupl_symbol", self:pop() }
-    elseif self:token "^%{(%d+),?%}" then
-      self:push { "ERE_dupl_symbol", { m = tonumber(self:pop()) } }
-    elseif self:token "^%{(%d+),(%d+)%}" then
+    if self:match "([%*%+%?])" then
+      return self:push { "ERE_dupl_symbol", self:pop() }
+    end
+    if self:match "%{(%d+),?%}" then
+      return self:push { "ERE_dupl_symbol", { m = tonumber(self:pop()) } }
+    end
+    if self:match "%{(%d+),(%d+)%}" then
       local n = tonumber(self:pop())
       local m = tonumber(self:pop())
       if n < m then
         self:raise "invalid interval expression"
       end
-      self:push { "ERE_dupl_symbol", { m = m; n = n } }
-    else
-      return false
+      return self:push { "ERE_dupl_symbol", { m = m; n = n } }
     end
-    return true
   end
 
   return self
