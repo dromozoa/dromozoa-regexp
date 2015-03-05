@@ -103,7 +103,7 @@ ERE_expression
   | "$"
 
 one_char_or_coll_elem_ERE_or_grouping
-  = character
+  = CHAR
   | -1 # any
   | bracket_expression
   | extended_reg_exp
@@ -112,17 +112,17 @@ ERE_dupl_symbol
   = "*"
   | "+"
   | "?"
-  | number
-  | [ number ]
-  | [ number, number ]
+  | NUMBER
+  | [ NUMBER ]
+  | [ NUMBER, NUMBER ]
 
 bracket_expression
-  = [ boolean, expression_term+ ] # boolean = is matching_list
+  = [ BOOLEAN, expression_term+ ] # BOOLEAN = is matching_list
 
 expression_term
-  = [ string ] # string = class_name
-  | [ character, character ]
-  | character
+  = [ STRING ] # STRING = class_name
+  | [ CHAR, CHAR ]
+  | CHAR
 ```
 
 ## 参考文献
