@@ -11,12 +11,13 @@ bracket_expression
 expression_term
   = "[=" .+? "=]" # equivalence class
   | "[:" .+? ":]" # character class
-  | end_range "-" (end_range | "-")
+  | end_range "--"
+  | end_range "-" end_range
   | end_range
 
 end_range
   = "[." .+? ".]" # collating symbol
-  | not ("^" | "-" | "\\")
+  | not ("^" | "-" | "]")
 ```
 
 ## EREの文法
@@ -28,7 +29,10 @@ DUP_COUNT
   = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")+
 
 extended_reg_exp
-  = ERE_expression+ ("|" ERE_expression+)*
+  = ERE_branch ("|" ERE_branch)*
+
+ERE_branch
+  = ERE_expression+
 
 ERE_expression
   = one_char_or_coll_elem_ERE_or_grouping ERE_dupl_symbol?
@@ -86,22 +90,25 @@ class_name
 ## 抽象構文木
 
 ```
-pattern (extended_reg_exp)
-  = [ [ term+ ]+ ]
+extended_reg_exp
+  = [ ERE_branch+ ]
 
-term (ERE_expression)
-  = [ atom ]
-  | [ atom, quantifier ]
+ERE_branch
+  = [ ERE_expression+ ]
+
+ERE_expression
+  = [ one_char_or_coll_elem_ERE_or_grouping ]
+  | [ one_char_or_coll_elem_ERE_or_grouping, ERE_dupl_symbol ]
   | "^"
   | "$"
 
-atom (one_char_or_coll_elem_ERE_or_grouping)
-  = char
+one_char_or_coll_elem_ERE_or_grouping
+  = character
   | -1 # any
-  | class
-  | pattern
+  | bracket_expression
+  | extended_reg_exp
 
-quantifier (ERE_dupl_symbol)
+ERE_dupl_symbol
   = "*"
   | "+"
   | "?"
@@ -109,13 +116,13 @@ quantifier (ERE_dupl_symbol)
   | [ number ]
   | [ number, number ]
 
-class (bracket_expression)
-  = [ boolean, range+ ] # boolean = is matching_list
+bracket_expression
+  = [ boolean, expression_term+ ] # boolean = is matching_list
 
-range (expression_term)
+expression_term
   = [ string ] # string = class_name
-  | [ char, char ]
-  | char
+  | [ character, character ]
+  | character
 ```
 
 ## 参考文献
