@@ -2,7 +2,7 @@
 
 ## bracket expressionの文法
 
-collating symbol, equivalence class, character classは、一文字以上の貪欲でない一致で表現しているので厳密ではない。
+collating symbol, equivalence class, character classを一文字以上の貪欲でない一致で表現している。詳細な定義は「ロケール」節で行う。
 
 ```
 bracket_expression
@@ -11,8 +11,7 @@ bracket_expression
 expression_term
   = "[=" .+? "=]" # equivalence class
   | "[:" .+? ":]" # character class
-  | end_range "-" end_range
-  | end_range "--"
+  | end_range "-" (end_range | "-")
   | end_range
 
 end_range
@@ -22,9 +21,12 @@ end_range
 
 ## EREの文法
 
-SUSで定義されている文法はanchoringとduplicationがexpressionに含まれているため、判りづらい。ECMAScriptの文法を踏襲し、assertion, atom, quantifierに分解して整理した。
+expressionにanchoringとduplicationを含むため、SUSが定義する文法は判りづらく曖昧である。ECMAScriptの文法を踏襲し、assertion, atom, quantifierに分解して整理した。
 
 ```
+DUP_COUNT
+  = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")+
+
 extended_reg_exp
   = ERE_expression+ ("|" ERE_expression+)*
 
@@ -47,9 +49,6 @@ ERE_dupl_symbol
   | "{" DUP_COUNT "}"
   | "{" DUP_COUNT "," "}"
   | "{" DUP_COUNT "," DUP_COUNT"}"
-
-DUP_COUNT
-  = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")+
 ```
 
 ## ロケール
@@ -58,7 +57,7 @@ POSIXロケールだけを対象とすることで照合順序の問題を単純
 
 ### collating symbol
 
-US-ASCIIで有効な127文字について、その文字自体であるような照合要素が定義される。これらの照合要素だけが有効なcollating symbolである。
+US-ASCIIで有効な128文字について、その文字自体であるような照合要素が定義される。これらの照合要素だけが有効なcollating symbolである。
 
 ### equivalence class
 
@@ -69,7 +68,7 @@ US-ASCIIで有効な127文字について、その文字自体であるような
 12個のcharacter classが存在する。
 
 ```
-character_class
+class_name
   = "alnum"
   | "alpha"
   | "blank"
