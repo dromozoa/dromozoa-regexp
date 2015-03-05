@@ -37,11 +37,16 @@ return function ()
     self._text = text
     self._i = 1
     self._stack = {}
-    if self:extended_reg_exp() and #self._stack == 1 and self._i == #text + 1 then
-      return self:pop()
+    if self:extended_reg_exp() then
+      local a = self:pop()
+      if self._i == #text + 1 and #self._stack == 0 then
+        return a
+      else
+        self:raise()
+      end
+    else
+      self:raise()
     end
-    print(json.encode(self._stack))
-    return nil, "parse error at position " .. self._i
   end
 
   function self:push(v)
@@ -76,7 +81,6 @@ return function ()
   end
 
   function self:raise(message)
-    print(json.encode(self._stack))
     if message then
       error(message .. " at position " .. self._i)
     else
@@ -229,14 +233,14 @@ return function ()
       return true
     elseif self:match "%{" then
       if self:match "(%d+)}" then
-        local a = tonumber(self:pop())
+        local a = tonumber(self:pop(), 10)
         return self:push(a)
       elseif self:match "(%d+),}" then
         local a = tonumber(self:pop())
         return self:push { a }
       elseif self:match "(%d+),(%d+)}" then
-        local b = tonumber(self:pop())
-        local a = tonumber(self:pop())
+        local b = tonumber(self:pop(), 10)
+        local a = tonumber(self:pop(), 10)
         if a <= b then
           return self:push { a, b }
         else

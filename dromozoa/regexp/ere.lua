@@ -15,12 +15,16 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local json = require "dromozoa.json"
-local ere = require "dromozoa.regexp.ere"
+local parser = require "dromozoa.regexp.ere.parser"
 
-local a, b = ere.parse(arg[1])
-if a then
-  print(json.encode(a))
-else
-  print(b)
-end
+return {
+  parse = function (text)
+    local this = parser()
+    local a, b = pcall(this.parse, this, text)
+    if a then
+      return b
+    else
+      return nil, b
+    end
+  end;
+}
