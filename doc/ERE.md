@@ -16,7 +16,7 @@ expression_term
 
 end_range
   = "[." .+? ".]" # collating symbol
-  | not ("^" | "-" | "\\")
+  | not ("^" | "-" | "]")
 ```
 
 ## EREの文法
@@ -28,7 +28,10 @@ DUP_COUNT
   = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")+
 
 extended_reg_exp
-  = ERE_expression+ ("|" ERE_expression+)*
+  = ERE_branch ("|" ERE_branch)*
+
+ERE_branch
+  = ERE_expression+
 
 ERE_expression
   = one_char_or_coll_elem_ERE_or_grouping ERE_dupl_symbol?
