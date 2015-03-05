@@ -18,15 +18,14 @@
 return function ()
   local self = {}
 
-  function self:unparse(node)
-    self._buffer = {}
+  function self:unparse(node, out)
+    self._out = out
     self:extended_reg_exp(node)
-    return table.concat(self._buffer)
+    return out
   end
 
-  function self:write(v)
-    local b = self._buffer
-    b[#b + 1] = v
+  function self:write(...)
+    self._out:write(...)
   end
 
   function self:extended_reg_exp(node)
@@ -82,14 +81,10 @@ return function ()
     if t == "string" then
       self:write(node)
     elseif t == "number" then
-      self:write "{"
-      self:write(node)
-      self:write "}"
+      self:write("{", node, "}")
     elseif t == "table" then
       local a, b = node[1], node[2]
-      self:write "{"
-      self:write(a)
-      self:write ","
+      self:write("{", a, ",")
       if b then
         self:write(b)
       end
@@ -117,9 +112,7 @@ return function ()
         self:write "-"
         self:end_range(b)
       else
-        self:write "[:"
-        self:write(a)
-        self:write ":]"
+        self:write("[:", a, ":]")
       end
     elseif t == "string" then
       self:end_range(node)
@@ -128,9 +121,7 @@ return function ()
 
   function self:end_range(node)
     if node:match "^[%^%-%]]$" then
-      self:write "[."
-      self:write(node)
-      self:write ".]"
+      self:write("[.", node, ".]")
     else
       self:write(node)
     end

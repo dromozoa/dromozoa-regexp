@@ -16,12 +16,12 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local json = require "dromozoa.json"
-local ere = require "dromozoa.regexp.ere"
+local regexp = require "dromozoa.regexp"
 
-local a, b = ere.parse(arg[1])
+local a, b = regexp.ere_to_ast(arg[1])
 if a then
   print(json.encode(a))
-  print(ere.unparse(a))
+  print(regexp.ast_to_ere(a))
 else
   print(b)
 end

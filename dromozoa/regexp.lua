@@ -15,12 +15,29 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local parser = require "dromozoa.regexp.ere.parser"
-local unparser = require "dromozoa.regexp.ere.unparser"
+local ere_parser = require "dromozoa.regexp.ere_parser"
+local ere_unparser = require "dromozoa.regexp.ere_unparser"
+
+local function buffer()
+  local self = { _buffer = {} }
+
+  function self:write(...)
+    local b = self._buffer
+    for i = 1, select("#", ...) do
+      b[#b + 1] = select(i, ...)
+    end
+  end
+
+  function self:concat()
+    return table.concat(self._buffer)
+  end
+
+  return self
+end
 
 return {
-  parse = function (text)
-    local this = parser()
+  ere_to_ast = function (text)
+    local this = ere_parser()
     local a, b = pcall(this.parse, this, text)
     if a then
       return b
@@ -29,8 +46,13 @@ return {
     end
   end;
 
-  unparse = function (node)
-    local this = unparser()
-    return this:unparse(node)
+  ast_to_ere = function (node)
+    local this = ere_unparser()
+    local a, b = pcall(this.unparse, this, node, buffer())
+    if a then
+      return b:concat()
+    else
+      return nil, b
+    end
   end;
 }
