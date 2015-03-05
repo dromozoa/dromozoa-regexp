@@ -22,8 +22,7 @@ local function parser()
     self._text = text
     self._i = 1
     self._stack = {}
-
-    if self:extended_reg_exp() and #self._stack == 1 then
+    if self:extended_reg_exp() and #self._stack == 1 and self._i == #text + 1 then
       return self:pop()
     end
     print(json.encode(self._stack))
@@ -67,6 +66,87 @@ local function parser()
       error(message .. " at position " .. self._i)
     else
       error("parse error at position " .. self._i)
+    end
+  end
+
+  function self:bracket_expression()
+    if self:match "%[" then
+      local a = { true }
+      if self:match "%^" then
+        a[1] = false
+      end
+      if self:expression_term() then
+        a[2] = self:pop()
+      else
+        self:raise()
+      end
+      while self:expression_term() do
+        a[#a + 1] = self:pop()
+      end
+      if self:match "%-" then
+        a[#a + 1] = "-"
+      end
+      if self:match "%]" then
+        return self:push(a)
+      else
+        self:raise()
+      end
+    end
+  end
+
+  function self:expression_term()
+    if self:match "%[%=" then
+      if self:match "(..-)%=%]" then
+        local a = self:pop()
+        self:raise("equivalence class " .. a .. " is not supported in the current locale")
+      else
+        self:raise()
+      end
+    elseif self:match "%[%:" then
+      if self:match "(..-)%:%]" then
+        local a = self:pop()
+        local b = character_class[a]
+        if b then
+          return self:push { a }
+        else
+          self:raise("character class " .. a .. " is not supported in the current locale")
+        end
+      else
+        self:raise()
+      end
+    elseif self:end_range() then
+      local a = self:pop()
+      local i = self._i
+      if self:match "%-%]" then
+        self._i = i
+        return self:push(a)
+      elseif self:match "%-%-" then
+        return self:push { a, "-" }
+      elseif self:match "%-" then
+        if self:end_range() then
+          local b = self:pop()
+          return self:push { a, b }
+        else
+          self:raise()
+        end
+      else
+        return self:push(a)
+      end
+    end
+  end
+
+  function self:end_range()
+    if self:match "%[%." then
+      if self:match "(.)%.%]" then
+        return true
+      elseif self:match "(..-)%.%]" then
+        local a = self:pop()
+        self:raise("collating symbol " .. a .. " is not supported in the current locale")
+      else
+        self:raise()
+      end
+    elseif self:match "([^%^%-%]])" then
+      return true
     end
   end
 
@@ -116,8 +196,8 @@ local function parser()
     elseif self:bracket_expression() then
       return true
     elseif self:match "%(" then
+      local a = self:pop()
       if self:extended_reg_exp() then
-        local a = self:pop()
         if self:match "%)" then
           return self:push(a)
         else
@@ -150,86 +230,6 @@ local function parser()
       else
         self:raise()
       end
-    end
-  end
-
-  function self:bracket_expression()
-    if self:match "%[" then
-      local a = { true }
-      if self:match "%^" then
-        a[1] = false
-      end
-      if self:expression_term() then
-        a[2] = self:pop()
-      else
-        self:raise()
-      end
-      while self:expression_term() do
-        a[#a + 1] = self:pop()
-      end
-      if self:match "%-" then
-        a[#a + 1] = "-"
-      end
-      if self:match "%]" then
-        return self:push(a)
-      else
-        self:raise()
-      end
-    end
-  end
-
-  function self:expression_term()
-    if self:match "%[%=" then
-      if self:match "(.-)%=%]" then
-        local a = self:pop()
-        self:raise("equivalence class " .. a .. " is not supported in the current locale")
-      else
-        self:raise()
-      end
-    elseif self:match "%[%:" then
-      if self:match "(.-)%:%]" then
-        local a = self:pop()
-        local b = character_class[a]
-        if b then
-          return self:push { a }
-        else
-          self:raise("character class " .. a .. " is not supported in the current locale")
-        end
-      else
-        self:raise()
-      end
-    elseif self:end_range() then
-      local a = self:pop()
-      local i = self._i
-      if self:match "%-%]" then
-        self._i = i
-        return self:push(a)
-      elseif self:match "%-" then
-        if self:end_range() then
-          local b = self:pop()
-          return self:push { a, b }
-        elseif self:match "%-" then
-          return self:push { a, "-" }
-        else
-          self:raise()
-        end
-      end
-      return self:push(a)
-    end
-  end
-
-  function self:end_range()
-    if self:match "%[%." then
-      if self:match "(.)%.%]" then
-        return true
-      elseif self:match "(.-)%.%]" then
-        local a = self:pop()
-        self:raise("collating symbol " .. a .. " is not supported in the current locale")
-      else
-        self:raise()
-      end
-    elseif self:match "([^%^%-%]])" then
-      return true
     end
   end
 

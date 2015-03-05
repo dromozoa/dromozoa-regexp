@@ -11,7 +11,8 @@ bracket_expression
 expression_term
   = "[=" .+? "=]" # equivalence class
   | "[:" .+? ":]" # character class
-  | end_range "-" (end_range | "-")
+  | end_range "--"
+  | end_range "-" end_range
   | end_range
 
 end_range
