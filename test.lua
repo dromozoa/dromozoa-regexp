@@ -21,6 +21,7 @@ local ere = require "dromozoa.regexp.ere"
 local a, b = ere.parse(arg[1])
 if a then
   print(json.encode(a))
+  print(ere.unparse(a))
 else
   print(b)
 end

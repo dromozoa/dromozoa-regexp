@@ -1,25 +1,5 @@
 # ERE (Extended Regular Expression)
 
-## bracket expressionの文法
-
-collating symbol, equivalence class, character classを一文字以上の貪欲でない一致で表現している。詳細な定義は「ロケール」節で行う。
-
-```
-bracket_expression
-  = "[" "^"? expression_term+ "-"? "]"
-
-expression_term
-  = "[=" .+? "=]" # equivalence class
-  | "[:" .+? ":]" # character class
-  | end_range "--"
-  | end_range "-" end_range
-  | end_range
-
-end_range
-  = "[." .+? ".]" # collating symbol
-  | not ("^" | "-" | "]")
-```
-
 ## EREの文法
 
 expressionにanchoringとduplicationを含むため、SUSが定義する文法は判りづらく曖昧である。ECMAScriptの文法を踏襲し、assertion, atom, quantifierに分解して整理した。
@@ -53,6 +33,26 @@ ERE_dupl_symbol
   | "{" DUP_COUNT "}"
   | "{" DUP_COUNT "," "}"
   | "{" DUP_COUNT "," DUP_COUNT"}"
+```
+
+## bracket expressionの文法
+
+collating symbol, equivalence class, character classを一文字以上の貪欲でない一致で表現している。詳細な定義は「ロケール」節で行う。
+
+```
+bracket_expression
+  = "[" "^"? expression_term+ "-"? "]"
+
+expression_term
+  = "[=" .+? "=]" # equivalence class
+  | "[:" .+? ":]" # character class
+  | end_range "--"
+  | end_range "-" end_range
+  | end_range
+
+end_range
+  = "[." .+? ".]" # collating symbol
+  | not ("^" | "-" | "]")
 ```
 
 ## ロケール

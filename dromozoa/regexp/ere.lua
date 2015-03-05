@@ -16,6 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local parser = require "dromozoa.regexp.ere.parser"
+local unparser = require "dromozoa.regexp.ere.unparser"
 
 return {
   parse = function (text)
@@ -26,5 +27,10 @@ return {
     else
       return nil, b
     end
+  end;
+
+  unparse = function (node)
+    local this = unparser()
+    return this:unparse(node)
   end;
 }
