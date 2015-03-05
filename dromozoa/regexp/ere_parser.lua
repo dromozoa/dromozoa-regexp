@@ -15,20 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local character_class = {
-  alnum = true;
-  alpha = true;
-  blank = true;
-  cntrl = true;
-  digit = true;
-  graph = true;
-  lower = true;
-  print = true;
-  punct = true;
-  space = true;
-  upper = true;
-  xdigit = true;
-}
+local character_class = require "dromozoa.regexp.character_class"
 
 return function ()
   local self = {}
@@ -223,11 +210,19 @@ return function ()
         self._i = i
         return self:push(a)
       elseif self:match "%-%-" then
-        return self:push { a, "-" }
+        if string.byte(a) <= 45 then
+          return self:push { a, "-" }
+        else
+          self:raise("invalid range [" .. a .. "--]")
+        end
       elseif self:match "%-" then
         if self:end_range() then
           local b = self:pop()
-          return self:push { a, b }
+          if string.byte(a) <= string.byte(b) then
+            return self:push { a, b }
+          else
+            self:raise("invalid range [" .. a .. "-" .. b .. "]")
+          end
         else
           self:raise()
         end
