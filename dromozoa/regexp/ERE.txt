@@ -110,17 +110,143 @@ ERE_dupl_symbol    : '*'
                    | '{' DUP_COUNT ',' DUP_COUNT '}'
                    ;
 
-COLL_ELEM_SINGLE
-  "[^%^%-%]]"
+================================================================================
 
-COLL_ELEM_MULTI
+COLL_ELEM_SINGLE
+  = "[^%^%-%]]"
 
 META_CHAR
-  "[%^%-%]]"
+  = "[%^%-%]]"
 
+bracket_expression
+  = "%[" matching_list "%]
+  | "%[" nonmatching_list "%]"
 
+matching_list
+  = bracket_list
 
+nonmatching_list
+  = "%^" bracket_list
 
+bracket_list
+  = follow_list
+  | follow_list "%-"
+
+follow_list
+  = expression_term expression_term*
+
+expression_term
+  = single_expression
+  | range_expression
+
+single_expression
+  = end_range
+  | character_class
+  | equivalence_class
+
+range_expression
+  = start_range end_range
+  | start_range "%-"
+
+start_range
+  = end_range "%-"
+
+end_range
+  = COLL_ELEM_SINGLE
+  | collating_symbol
+
+collating_symbol
+  = Open_dot COLL_ELEM_SINGLE Dot_close
+  | Open_dot COLL_ELEM_MULTI  Dot_close
+  | Open_dot META_CHAR        Dot_close
+
+equivalence_class
+  = Open_equal COLL_ELEM_SINGLE Equal_close
+  | Open_equal COLL_ELEM_MULTI  Equal_close
+
+character_class
+  = Open_colon class_name Colon_close
+
+================================================================================
+
+extended_reg_exp
+  = ERE_branch ("%|" ERE_branch)*
+
+ERE_branch
+  = ERE_expression+
+
+ERE_expression
+  = ERE_expression_impl ERE_dupl_symbol?
+
+# without ) | * + ?
+ERE_expression_impl
+  = one_char_or_coll_elem_ERE
+  | "%^"
+  | "%$"
+  | "%(" extended_reg_exp "%)"
+  | ERE_dupl_symbol
+
+# without ^ $ ( ) | * + ? {
+one_char_or_coll_elem_ERE
+  = "[^%^%.%[%$%(%)|%*%+%?{\\]"
+  | "\\[%^%.%[%$%(%)|%*%+%?{\\]"
+  | "%."
+  | bracket_expression
+
+# with: * + ? {
+ERE_dupl_symbol
+  = "%*"
+  | "%+"
+  | "%?"
+  | "{" "%d+" "}"
+  | "{" "%d+" "," "}"
+  | "{" "%d+" "," "%d+" "}"
+
+================================================================================
+
+bracket_expression
+  = "%[" "^"? expression_term+ "%-"? "%]" # { boolean, expression_term+, "-"? }
+
+expression_term
+  = "%[%:" ".-" "%:%]"       # { s } : character_class
+  | "%[%=" ".-" "%=%]"       # { s } : equivalence_class (error)
+  | end_range "%-" end_range # { c, d }
+  | end_range "%-" "%-"      # { c, "-" }
+  | end_range                # c
+
+end_range
+  = "%[%." ".-" "%.%]" # c (collating_symbol)
+  | "[^%^%-%]]"        # c
+
+================================================================================
+
+extended_reg_exp                  # pattern
+  = ERE_branch ("%|" ERE_branch)* # { alternative, alternative* }
+
+ERE_branch                         # alternative
+  = ERE_expression ERE_expression* # { term, term* }
+
+ERE_expression                           # term
+  = ERE_expression_impl ERE_dupl_symbol? # { atom, quantifier? }
+  | "%^"                                 # "^"
+  | "%$"                                 # "$"
+
+ERE_expression_impl              # atom
+  = "[^%^%.%[%$%(%)|%*%+%?{\\]"  # c
+  | "\\[%^%.%[%$%(%)|%*%+%?{\\]" # c
+  | "%."                         # -1
+  | bracket_expression           # { ... } : bracket_expression (1st is boolean)
+  | "%(" extended_reg_exp "%)"   # { ... } : pattern (1st is table)
+
+ERE_dupl_symbol             # quantifier
+  = "%*"                    # "*" | { 0 }
+  | "%+"                    # "+" | { 1 }
+  | "%?"                    # "?" | { 0, 1 }
+  | "{" "%d+" "}" ;         # n   | { n, n }
+  | "{" "%d+" "," "}"       # { n }
+  | "{" "%d+" "," "%d+" "}" # { m, n }
+
+================================================================================
 
 extended_reg_exp {
   ERE_branch+
