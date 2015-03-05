@@ -83,7 +83,7 @@ class_name
   | "xdigit"
 ```
 
-# 参考文献
+## 参考文献
 
 * [Boost 1.57.0 | POSIX Extended Regular Expression Syntax](http://www.boost.org/doc/libs/1_57_0/libs/regex/doc/html/boost_regex/syntax/basic_extended.html)
 * [ECMAScript 5.1 | 15.10 RegExp (Regular Expression) Objects](http://www.ecma-international.org/ecma-262/5.1/#sec-15.10)
