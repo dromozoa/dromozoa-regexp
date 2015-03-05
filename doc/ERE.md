@@ -83,6 +83,41 @@ class_name
   | "xdigit"
 ```
 
+## 抽象構文木
+
+```
+pattern (extended_reg_exp)
+  = [ [ term+ ]+ ]
+
+term (ERE_expression)
+  = [ atom ]
+  | [ atom, quantifier ]
+  | "^"
+  | "$"
+
+atom (one_char_or_coll_elem_ERE_or_grouping)
+  = char
+  | -1 # any
+  | class
+  | pattern
+
+quantifier (ERE_dupl_symbol)
+  = "*"
+  | "+"
+  | "?"
+  | number
+  | [ number ]
+  | [ number, number ]
+
+class (bracket_expression)
+  = [ boolean, range+ ] # boolean = is matching_list
+
+range (expression_term)
+  = [ string ] # string = class_name
+  | [ char, char ]
+  | char
+```
+
 ## 参考文献
 
 * [Boost 1.57.0 | POSIX Extended Regular Expression Syntax](http://www.boost.org/doc/libs/1_57_0/libs/regex/doc/html/boost_regex/syntax/basic_extended.html)
