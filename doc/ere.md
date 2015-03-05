@@ -1,25 +1,5 @@
 # ERE (Extended Regular Expression)
 
-## bracket expressionの文法
-
-collating symbol, equivalence class, character classを一文字以上の貪欲でない一致で表現している。詳細な定義は「ロケール」節で行う。
-
-```
-bracket_expression
-  = "[" "^"? expression_term+ "-"? "]"
-
-expression_term
-  = "[=" .+? "=]" # equivalence class
-  | "[:" .+? ":]" # character class
-  | end_range "--"
-  | end_range "-" end_range
-  | end_range
-
-end_range
-  = "[." .+? ".]" # collating symbol
-  | not ("^" | "-" | "]")
-```
-
 ## EREの文法
 
 expressionにanchoringとduplicationを含むため、SUSが定義する文法は判りづらく曖昧である。ECMAScriptの文法を踏襲し、assertion, atom, quantifierに分解して整理した。
@@ -53,6 +33,26 @@ ERE_dupl_symbol
   | "{" DUP_COUNT "}"
   | "{" DUP_COUNT "," "}"
   | "{" DUP_COUNT "," DUP_COUNT"}"
+```
+
+## bracket expressionの文法
+
+collating symbol, equivalence class, character classを一文字以上の貪欲でない一致で表現している。詳細な定義は「ロケール」節で行う。
+
+```
+bracket_expression
+  = "[" "^"? expression_term+ "-"? "]"
+
+expression_term
+  = "[=" .+? "=]" # equivalence class
+  | "[:" .+? ":]" # character class
+  | end_range "--"
+  | end_range "-" end_range
+  | end_range
+
+end_range
+  = "[." .+? ".]" # collating symbol
+  | not ("^" | "-" | "]")
 ```
 
 ## ロケール
@@ -103,7 +103,7 @@ ERE_expression
   | "$"
 
 one_char_or_coll_elem_ERE_or_grouping
-  = character
+  = CHAR
   | -1 # any
   | bracket_expression
   | extended_reg_exp
@@ -112,17 +112,17 @@ ERE_dupl_symbol
   = "*"
   | "+"
   | "?"
-  | number
-  | [ number ]
-  | [ number, number ]
+  | NUMBER
+  | [ NUMBER ]
+  | [ NUMBER, NUMBER ]
 
 bracket_expression
-  = [ boolean, expression_term+ ] # boolean = is matching_list
+  = [ BOOLEAN, expression_term+ ] # BOOLEAN = is matching_list
 
 expression_term
-  = [ string ] # string = class_name
-  | [ character, character ]
-  | character
+  = [ STRING ] # STRING = class_name
+  | [ CHAR, CHAR ]
+  | CHAR
 ```
 
 ## 参考文献
