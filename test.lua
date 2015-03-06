@@ -25,7 +25,7 @@ if a then
   -- print(regexp.ast_to_ere(a))
   local a = character_class(a[1][1][1])
   -- print(json.encode(a))
-  local b = a:to_ast()
+  local b = a:encode()
   -- print(json.encode(b))
   print(regexp.ast_to_ere({{{b}}}))
 else
