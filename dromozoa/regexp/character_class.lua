@@ -24,13 +24,15 @@ local MAX = 255
 local class = {}
 
 local function new(a)
-  local self = {}
+  local self = {
+    _type = "dromozoa.regexp.character_class";
+  }
 
   function self:decode(a)
     self._bitset = {}
     local t = type(a)
     if t == "table" then
-      if a._bitset then
+      if a._type == "dromozoa.regexp.character_class" then
         self:set_union(a)
       elseif type(a[1]) == "boolean" then
         self:bracket_expression(a)
@@ -47,12 +49,14 @@ local function new(a)
     return self._bitset[i]
   end
 
+  function self:empty()
+    return next(self._bitset) == nil
+  end
+
   function self:count()
     local count = 0
-    for i = MIN, MAX do
-      if self:test(i) then
-        count = count + 1
-      end
+    for k, v in pairs(self._bitset) do
+      count = count + 1
     end
     return count
   end
@@ -80,10 +84,8 @@ local function new(a)
   end
 
   function self:set_union(that)
-    for i = MIN, MAX do
-      if that:test(i) then
-        self:set(i)
-      end
+    for k, v in pairs(that._bitset) do
+      self:set(k)
     end
     return self
   end
@@ -118,17 +120,12 @@ local function new(a)
     local count = self:count()
     local n = MAX - MIN + 1
     if count == 0 then
-      error "empty character class"
+      error "character class is empty"
     elseif count == 1 then
-      for i = MIN, MAX do
-        if self:test(i) then
-          return string_char(i)
-        end
-      end
-    elseif count == n then
+      return string_char((next(self._bitset)))
+    elseif count >= n then
       return -1
     end
-
     local this
     local node
     if count < n / 2 then
