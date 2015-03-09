@@ -19,13 +19,14 @@ local buffer_writer = require "dromozoa.regexp.buffer_writer"
 local ere_unparser = require "dromozoa.regexp.ere_unparser"
 
 local quote_impl = {
+  ["&"] = "&amp;";
   ["\""] = "\\\"";
   ["\\"] = "\\\\";
   ["\n"] = "\\n";
 }
 
 local function quote(v)
-  return "\"" .. v:gsub("[\"\\\n]", quote_impl) .. "\""
+  return "\"" .. v:gsub("[&\"\\\n]", quote_impl) .. "\""
 end
 
 return function (out)
