@@ -15,34 +15,21 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local json = require "dromozoa.json"
-local regexp = require "dromozoa.regexp"
-local character_class = require "dromozoa.regexp.character_class"
-local nfa_builder = require "dromozoa.regexp.nfa_builder"
+return function ()
+  local self = {
+    _buffer = {};
+  }
 
-local a, b = regexp.ere_to_ast(arg[1])
-if a then
-  print(json.encode(a))
-  -- print(regexp.ast_to_ere(a))
-  -- local a = character_class(a[1][1][1])
-  -- print(json.encode(a))
-  -- local b = a:encode()
-  -- print(json.encode(b))
-  -- print(regexp.ast_to_ere({{{b}}}))
+  function self:write(...)
+    local buffer = self._buffer
+    for i = 1, select("#", ...) do
+      buffer[#buffer + 1] = select(i, ...)
+    end
+  end
 
-  local nfa = nfa_builder():build(a)
-  print(json.encode(nfa))
+  function self:close()
+    return table.concat(self._buffer)
+  end
 
---[[
-  local n = nfa()
-  n:decode(a)
-  print(json.encode(n))
-
-  local out = io.open("test.dot", "w")
-  n:encode_dot(out)
-  out:close()
-]]
-
-else
-  print(b)
+  return self
 end

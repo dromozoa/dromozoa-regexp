@@ -15,17 +15,17 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function ()
-  local self = {}
-
-  function self:unparse(node, out)
-    self._out = out
-    self:extended_reg_exp(node)
-    return out
-  end
+return function (out)
+  local self = {
+    _out = out;
+  }
 
   function self:write(...)
     self._out:write(...)
+  end
+
+  function self:unparse(node)
+    self:extended_reg_exp(node)
   end
 
   function self:extended_reg_exp(node)
