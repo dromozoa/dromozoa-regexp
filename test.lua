@@ -18,16 +18,21 @@
 local json = require "dromozoa.json"
 local regexp = require "dromozoa.regexp"
 local character_class = require "dromozoa.regexp.character_class"
+local nfa = require "dromozoa.regexp.nfa"
 
 local a, b = regexp.ere_to_ast(arg[1])
 if a then
   print(json.encode(a))
   -- print(regexp.ast_to_ere(a))
-  local a = character_class(a[1][1][1])
+  -- local a = character_class(a[1][1][1])
   -- print(json.encode(a))
-  local b = a:encode()
+  -- local b = a:encode()
   -- print(json.encode(b))
-  print(regexp.ast_to_ere({{{b}}}))
+  -- print(regexp.ast_to_ere({{{b}}}))
+  local n = nfa()
+  n:decode(a)
+  print(json.encode(n))
+
 else
   print(b)
 end

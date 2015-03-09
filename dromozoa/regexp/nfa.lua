@@ -25,65 +25,92 @@ return function (a)
     self._start = {}
     self._accept = {}
     self._state = 0
-    self._stack = {}
     if type(a) == "table" then
-      if a._type == "dromozoa.regexp.nfa" then
-        self:extended_reg_exp(node)
-      end
+      self:extended_reg_exp(a, self:new_state())
     end
   end
 
-  function new_state()
+  function self:new_state()
     local s = self._state
     self._state = s + 1
     return s
   end
 
-  function self:extended_reg_exp(node)
-    local a = { self:ERE_branch() }
-    for i = 2, #node do
-      a[#a + 1] = 
-      -- ???
-      self:ERE_branch(node[i])
+  function self:new_transition(c, u, v)
+    local a = self._transition
+    local b = a[u]
+    if b then
+      b[#b + 1] = { c, v }
+    else
+      a[u] = { { c, v } }
     end
+    return v
   end
 
-  function self:ERE_branch(node)
+  function self:extended_reg_exp(node, u)
+    local e = self:new_state()
     for i = 1, #node do
-      self:ERE_expression(node[i])
+      local v = self:new_state()
+      self:new_transition(nil, u, v)
+      local w = self:ERE_branch(node[i], v)
+      self:new_transition(nil, w, e)
     end
+    return e
   end
 
-  function self:ERE_expression(node)
+  function self:ERE_branch(node, u)
+    for i = 1, #node do
+      local v = self:ERE_expression(node[i], u)
+      u = v
+    end
+    return u
+  end
+
+  function self:ERE_expression(node, u)
     local t = type(node)
     if t == "table" then
       local a, b = node[1], node[2]
-      self:one_char_or_coll_elem_ERE_or_grouping(a)
       local m, n = 1, 1
       if b then
         m, n = self:ERE_dupl_symbol(b)
       end
+      for i = 1, m do
+        local v = self:one_char_or_coll_elem_ERE_or_grouping(a, u)
+        u = v
+      end
+      if n then
+        for i = m + 1, n do
+          local v = self:one_char_or_coll_elem_ERE_or_grouping(a, u)
+          self:new_transition(nil, u, v)
+          u = v
+        end
+      else
+        local v = self:one_char_or_coll_elem_ERE_or_grouping(a, u)
+        local w = self:new_state()
+        self:new_transition(nil, v, u)
+        self:new_transition(nil, u, w)
+        u = w
+      end
     elseif t == "string" then
-      self:write(node)
+      -- [TODO] anchoring
     end
+    return u
   end
 
-  function self:one_char_or_coll_elem_ERE_or_grouping(node)
-    local transition
+  function self:one_char_or_coll_elem_ERE_or_grouping(node, u)
     local t = type(node)
     if t == "string" then
-      transition = character_class(node)
+      return self:new_transition(node, u, self:new_state())
     elseif t == "number" then
-      transition = character_class():set_negate()
+      return self:new_transition(node, u, self:new_state())
     elseif t == "table" then
       local u = type(node[1])
       if u == "boolean" then
-        transition = character_class(node)
+        return self:new_transition(node, u, self:new_state())
       elseif u == "table" then
-        return self:extended_reg_exp(node)
+        return self:extended_reg_exp(node, u)
       end
     end
-    return transition
   end
 
   function self:ERE_dupl_symbol(node)
@@ -103,5 +130,9 @@ return function (a)
     end
   end
 
-  return self:encode(a)
+  function self:encode_dot()
+
+  end
+
+  return self
 end
