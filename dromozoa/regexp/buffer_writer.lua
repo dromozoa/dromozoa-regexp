@@ -15,20 +15,27 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local select = select
+local table_concat = table.concat
+
+local function write(buffer, i, j, v, ...)
+  buffer[i] = v
+  if j > 1 then
+    return write(buffer, i + 1, j - 1, ...)
+  end
+end
+
 return function ()
-  local self = {
-    _buffer = {};
-  }
+  local self = { _buffer = {} }
 
   function self:write(...)
     local buffer = self._buffer
-    for i = 1, select("#", ...) do
-      buffer[#buffer + 1] = select(i, ...)
-    end
+    write(buffer, #buffer + 1, select("#", ...), ...)
+    return self
   end
 
-  function self:close()
-    return table.concat(self._buffer)
+  function self:concat(...)
+    return table_concat(self._buffer, ...)
   end
 
   return self
