@@ -45,11 +45,20 @@ return function ()
   end
 
   function self:extended_reg_exp(node, u)
-    local v = self:new_state()
-    for i = 1, #node do
-      self:new_transition(nil, self:ERE_branch(node[i], self:new_transition(nil, u)), v)
+    local n = #node
+    if n == 1 then
+      return self:ERE_branch(node[1], u)
+    else
+      local v = {}
+      for i = 1, n do
+        v[i] = self:ERE_branch(node[i], self:new_transition(nil, u))
+      end
+      local w = self:new_state()
+      for i = 1, n do
+        self:new_transition(nil, v[i], w)
+      end
+      return w
     end
-    return v
   end
 
   function self:ERE_branch(node, u)
