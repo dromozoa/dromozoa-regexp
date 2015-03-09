@@ -15,6 +15,36 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local format = string.format
+local ere_unparser = require "dromozoa.regexp.ere_unparser"
+
+local quote_impl = {
+  ["\""] = "\\\"";
+  ["\\"] = "\\\\";
+  ["\n"] = "\\n";
+}
+
+local function quote(v)
+  return "\"" .. v:gsub("[\"\\\n]", quote_impl) .. "\""
+end
+
+local function buffer()
+  local self = { _buffer = {} }
+
+  function self:write(...)
+    local b = self._buffer
+    for i = 1, select("#", ...) do
+      b[#b + 1] = select(i, ...)
+    end
+  end
+
+  function self:concat()
+    return table.concat(self._buffer)
+  end
+
+  return self
+end
+
 return function (a)
   local self = {
     _type = "dromozoa.regexp.nfa"
@@ -54,6 +84,7 @@ return function (a)
       self:new_transition(nil, u, v)
       local w = self:ERE_branch(node[i], v)
       self:new_transition(nil, w, e)
+      print(u, v, w, e)
     end
     return e
   end
@@ -97,18 +128,18 @@ return function (a)
     return u
   end
 
-  function self:one_char_or_coll_elem_ERE_or_grouping(node, u)
+  function self:one_char_or_coll_elem_ERE_or_grouping(node, U)
     local t = type(node)
     if t == "string" then
-      return self:new_transition(node, u, self:new_state())
+      return self:new_transition(node, U, self:new_state())
     elseif t == "number" then
-      return self:new_transition(node, u, self:new_state())
+      return self:new_transition(node, U, self:new_state())
     elseif t == "table" then
       local u = type(node[1])
       if u == "boolean" then
-        return self:new_transition(node, u, self:new_state())
+        return self:new_transition(node, U, self:new_state())
       elseif u == "table" then
-        return self:extended_reg_exp(node, u)
+        return self:extended_reg_exp(node, U)
       end
     end
   end
@@ -130,8 +161,23 @@ return function (a)
     end
   end
 
-  function self:encode_dot()
-
+  function self:encode_dot(out)
+    out:write("digraph \"nfa\" {\n")
+    for k, v in pairs(self._transition) do
+      for i = 1, #v do
+        local a = v[i]
+        if a[1] then
+          local b = buffer()
+          local u = ere_unparser()
+          u._out = b
+          u:one_char_or_coll_elem_ERE_or_grouping(a[1])
+          out:write(format("%s -> %s [label = %s];\n", k, a[2], quote(b:concat())))
+        else
+          out:write(format("%s -> %s [label = \"&epsilon;\"];\n", k, a[2]))
+        end
+      end
+    end
+    out:write("}\n")
   end
 
   return self

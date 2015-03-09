@@ -33,6 +33,10 @@ if a then
   n:decode(a)
   print(json.encode(n))
 
+  local out = io.open("test.dot", "w")
+  n:encode_dot(out)
+  out:close()
+
 else
   print(b)
 end
