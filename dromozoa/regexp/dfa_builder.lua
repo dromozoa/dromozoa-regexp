@@ -17,16 +17,18 @@
 
 local json = require "dromozoa.json"
 
-local function push(t, v)
-  t[#t + 1] = v
+local function push(table, value)
+  local n = #table + 1
+  table[n] = value
+  return n
 end
 
-local function push2(t, k, v)
-  local x = t[k]
+local function push2(table, key, value)
+  local x = table[key]
   if x then
-    x[#x + 1] = v
+    x[#x + 1] = value
   else
-    t[k] = { v }
+    table[key] = { value }
   end
 end
 
@@ -35,8 +37,16 @@ return function ()
 
   function self:build(fa)
     self:build_transition_and_epsilon(fa.transition)
+    self:build_accept(fa.accept)
+    self._merged_state = {}
+    self._merged_transition = {}
+    self._merged_accept = {}
     self:build_state({}, fa.start)
-    print(json.encode(self))
+    return {
+      transition = self._merged_transition;
+      start = 1;
+      accept = self._merged_accept;
+    }
   end
 
   function self:build_transition_and_epsilon(list)
@@ -55,6 +65,14 @@ return function ()
     self._epsilon = epsilon
   end
 
+  function self:build_accept(list)
+    local accept = {}
+    for i = 1, #list do
+      accept[list[i]] = true
+    end
+    self._accept = accept
+  end
+
   function self:merge_state(color, s)
     if not color[s] then
       color[s] = true
@@ -69,18 +87,35 @@ return function ()
 
   function self:build_state(color, s)
     if not color[s] then
-      color[s] = true
-      local state = {}
-      self:merge_state(state, s)
-      for k, v in pairs(state) do
-        local t = self._transition[k]
-        if t then
-          for i = 1, #t do
-            self:build_state(color, t[i][1])
+      local merged_state = self._merged_state
+      local merged_transition = self._merged_transition
+      local merged_accept = self._merged_accept
+      local merged_color = {}
+      self:merge_state(merged_color, s)
+      local u = push(merged_state, merged_color)
+      color[s] = u
+
+      for k, v in pairs(merged_color) do
+        if self._accept[k] then
+          push(merged_accept, u)
+          break
+        end
+      end
+
+      local transition = self._transition
+      for k, v in pairs(merged_color) do
+        local x = self._transition[k]
+        if x then
+          for i = 1, #x do
+            local y = x[i]
+            local v = self:build_state(color, y[1])
+            push(merged_transition, { u, v, y[2] })
           end
         end
       end
+      return u
     end
+    return color[s]
   end
 
   return self
