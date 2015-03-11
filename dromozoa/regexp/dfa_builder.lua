@@ -17,28 +17,16 @@
 
 local json = require "dromozoa.json"
 
-local function push1(t, v)
+local function push(t, v)
   t[#t + 1] = v
 end
 
-local function push(t, k, v)
-  local a = t[k]
-  if a then
-    a[#a + 1] = v
+local function push2(t, k, v)
+  local x = t[k]
+  if x then
+    x[#x + 1] = v
   else
     t[k] = { v }
-  end
-end
-
-local function merge_transition(s, color, epsilon)
-  if not color[s] then
-    color[s] = true
-    local t = epsilon[s]
-    if t then
-      for i = 1, #t do
-        merge_transition(t[i], color, epsilon)
-      end
-    end
   end
 end
 
@@ -47,8 +35,7 @@ return function ()
 
   function self:build(fa)
     self:build_transition_and_epsilon(fa.transition)
-    self._state = {}
-    self:build_state(self._state, fa.start)
+    self:build_state({}, fa.start)
     print(json.encode(self))
   end
 
@@ -56,12 +43,12 @@ return function ()
     local transition = {}
     local epsilon = {}
     for i = 1, #list do
-      local v = list[i]
-      local a, b, c = v[1], v[2], v[3]
+      local x = list[i]
+      local a, b, c = x[1], x[2], x[3]
       if c then
-        push(transition, a, { b, c })
+        push2(transition, a, { b, c })
       else
-        push(epsilon, a, b)
+        push2(epsilon, a, b)
       end
     end
     self._transition = transition
@@ -82,9 +69,9 @@ return function ()
 
   function self:build_state(color, s)
     if not color[s] then
+      color[s] = true
       local state = {}
       self:merge_state(state, s)
-      color[s] = state
       for k, v in pairs(state) do
         local t = self._transition[k]
         if t then
