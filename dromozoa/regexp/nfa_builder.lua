@@ -19,8 +19,8 @@ return function ()
   local self = {}
 
   function self:new_state()
-    local state = self._state
-    self._state = state + 1
+    local state = self._state + 1
+    self._state = state
     return state
   end
 
@@ -39,17 +39,26 @@ return function ()
     local accept = self:extended_reg_exp(node, self:new_state())
     return {
       transition = self._transition;
-      start = { 0 };
+      start = 1;
       accept = { accept };
     }
   end
 
   function self:extended_reg_exp(node, u)
-    local v = self:new_state()
-    for i = 1, #node do
-      self:new_transition(nil, self:ERE_branch(node[i], self:new_transition(nil, u)), v)
+    local n = #node
+    if n == 1 then
+      return self:ERE_branch(node[1], u)
+    else
+      local v = {}
+      for i = 1, n do
+        v[i] = self:ERE_branch(node[i], self:new_transition(nil, u))
+      end
+      local w = self:new_state()
+      for i = 1, n do
+        self:new_transition(nil, v[i], w)
+      end
+      return w
     end
-    return v
   end
 
   function self:ERE_branch(node, u)

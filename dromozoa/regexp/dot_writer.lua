@@ -39,7 +39,7 @@ return function (out)
 
   function self:nfa(nfa)
     self:write("digraph \"nfa\" {\n")
-    self:write("graph [rankdir = LR]\n")
+    self:write("  graph [rankdir = LR]\n")
     self:accept(nfa.accept)
     self:transition(nfa.transition)
     self:write("}\n")
@@ -47,7 +47,7 @@ return function (out)
 
   function self:accept(accept)
     for i = 1, #accept do
-      self:write(accept[i], " [peripheries = 2];\n")
+      self:write("  ", accept[i], " [peripheries = 2];\n")
     end
   end
 
@@ -55,7 +55,7 @@ return function (out)
     for i = 1, #list do
       local v = list[i]
       local a, b, c = v[1], v[2], v[3]
-      self:write(a, " -> ", b, "[label = ")
+      self:write("  ", a, " -> ", b, " [label = ")
       if c then
         local out = buffer_writer()
         ere_unparser(out):one_char_or_coll_elem_ERE_or_grouping(c)
