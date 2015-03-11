@@ -15,8 +15,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local json = require "dromozoa.json"
-
 local function push(table, value)
   local n = #table + 1
   table[n] = value
