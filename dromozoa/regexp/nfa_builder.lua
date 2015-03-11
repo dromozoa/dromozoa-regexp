@@ -19,8 +19,8 @@ return function ()
   local self = {}
 
   function self:new_state()
-    local state = self._state
-    self._state = state + 1
+    local state = self._state + 1
+    self._state = state
     return state
   end
 
@@ -39,8 +39,8 @@ return function ()
     local accept = self:extended_reg_exp(node, self:new_state())
     return {
       transition = self._transition;
-      start = 0;
-      accept = accept;
+      start = 1;
+      accept = { accept };
     }
   end
 

@@ -46,7 +46,9 @@ return function (out)
   end
 
   function self:accept(accept)
-    self:write(accept, " [peripheries = 2];\n")
+    for i = 1, #accept do
+      self:write(accept[i], " [peripheries = 2];\n")
+    end
   end
 
   function self:transition(list)
