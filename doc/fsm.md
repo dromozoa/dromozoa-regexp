@@ -11,7 +11,7 @@ transiton
   = [ state, state, condition ]
 
 state
-  = NUMBER
+  = NUMBER # positive integer
 
 condition
   = character_class
