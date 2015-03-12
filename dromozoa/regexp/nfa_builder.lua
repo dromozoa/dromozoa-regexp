@@ -15,36 +15,38 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function ()
-  local self = {}
+local fsm = require "dromozoa.regexp.fsm"
 
-  function self:new_state()
-    local state = self._state + 1
-    self._state = state
-    return state
+return function ()
+  local self = {
+    _fsm = fsm();
+    _id = 0;
+  }
+
+  function self:new_vertex()
+    local id = self._id + 1
+    self._id = id
+    return id
   end
 
-  function self:new_transition(u, v, condition)
+  function self:new_edge(u, v, c)
     if not v then
-      v = self:new_state()
+      v = self:new_vertex()
     end
-    if not condition then
-      condition = 0
+    if not c then
+      c = 0
     end
-    local t = self._transition
-    t[#t + 1] = { u, v, condition }
+    self._fsm:add_edge(u, v, c)
     return v
   end
 
   function self:build(node)
-    self._transition = {}
-    self._state = 0
-    local accept = self:extended_reg_exp(node, self:new_state())
-    return {
-      transition = self._transition;
-      start = { 1 };
-      accept = { accept };
-    }
+    local fsm = self._fsm
+    local start = self:new_vertex()
+    local accept = self:extended_reg_exp(node, start)
+    fsm:add_start(start)
+    fsm:add_accept(accept)
+    return fsm
   end
 
   function self:extended_reg_exp(node, u)
@@ -54,11 +56,11 @@ return function ()
     else
       local v = {}
       for i = 1, n do
-        v[i] = self:ERE_branch(node[i], self:new_transition(u))
+        v[i] = self:ERE_branch(node[i], self:new_edge(u))
       end
-      local w = self:new_state()
+      local w = self:new_vertex()
       for i = 1, n do
-        self:new_transition(v[i], w)
+        self:new_edge(v[i], w)
       end
       return w
     end
@@ -84,16 +86,16 @@ return function ()
       end
       if n then
         for i = m + 1, n do
-          u = self:new_transition(u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
+          u = self:new_edge(u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
         end
       else
-        u = self:new_transition(self:new_transition(self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
+        u = self:new_edge(self:new_edge(self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
       end
     elseif t == "string" then
       if node == "^" then
-        u = self:new_transition(u, nil, 1)
+        u = self:new_edge(u, nil, 1)
       elseif node == "$" then
-        u = self:new_transition(u, nil, 2)
+        u = self:new_edge(u, nil, 2)
       end
     end
     return u
@@ -104,7 +106,7 @@ return function ()
     if type(node) == "table" and type(node[1]) == "table" then
       return self:extended_reg_exp(node, u)
     else
-      return self:new_transition(u, nil, node)
+      return self:new_edge(u, nil, node)
     end
   end
 

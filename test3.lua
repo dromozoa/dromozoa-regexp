@@ -1,11 +1,6 @@
-local json = require "dromozoa.json"
-local fsm = require "dromozoa.regexp.fsm"
+local ere_parser = require "dromozoa.regexp.ere_parser"
+local nfa_builder = require "dromozoa.regexp.nfa_builder"
 
-local nfa = fsm()
-nfa:add_edge(1, 2, 1)
-nfa:add_edge(2, 3, -1)
-nfa:add_edge(3, 3, 0)
-nfa:add_edge(3, 4, 2)
-nfa:add_start(1)
-nfa:add_accept(4)
+local ast = ere_parser():parse(arg[1])
+local nfa = nfa_builder():build(ast)
 nfa:write_graphviz(io.stdout)
