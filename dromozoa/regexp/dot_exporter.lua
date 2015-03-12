@@ -36,7 +36,7 @@ return function (out)
     self._out:write(...)
   end
 
-  function self:fsm(fsm)
+  function self:export(fsm)
     self:write("digraph \"fsm\" {\n")
     self:write("  graph [rankdir = LR]\n")
     self:accept(fsm.accept)
