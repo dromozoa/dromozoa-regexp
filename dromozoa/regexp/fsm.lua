@@ -17,7 +17,7 @@
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 local ere_unparser = require "dromozoa.regexp.ere_unparser"
-local graph = require "dromozoa.regexp.graph"
+local graph = require "dromozoa.regexp.fsm.graph"
 
 local graphviz_quote = {
   ["\""] = "&quot;";
