@@ -37,11 +37,11 @@ return function (out)
     return self
   end
 
-  function self:nfa(nfa)
-    self:write("digraph \"nfa\" {\n")
+  function self:fsm(fsm)
+    self:write("digraph \"fsm\" {\n")
     self:write("  graph [rankdir = LR]\n")
-    self:accept(nfa.accept)
-    self:transition(nfa.transition)
+    self:accept(fsm.accept)
+    self:transition(fsm.transition)
     self:write("}\n")
   end
 
@@ -56,12 +56,20 @@ return function (out)
       local v = list[i]
       local a, b, c = v[1], v[2], v[3]
       self:write("  ", a, " -> ", b, " [label = ")
-      if c then
+      if type(c) == "number" and c >= 0 then
+        self:write("<<font color=\"#CC0000\">")
+        if c == 0 then
+          self:write("&epsilon;")
+        elseif c == 1 then
+          self:write("^")
+        elseif c == 2 then
+          self:write("$")
+        end
+        self:write("</font>>")
+      else
         local out = buffer_writer()
         ere_unparser(out):one_char_or_coll_elem_ERE_or_grouping(c)
         self:write(quote(out:concat()))
-      else
-        self:write("\"&epsilon;\"")
       end
       self:write("];\n")
     end

@@ -24,12 +24,15 @@ return function ()
     return state
   end
 
-  function self:new_transition(node, u, v)
+  function self:new_transition(u, v, condition)
     if not v then
       v = self:new_state()
     end
+    if not condition then
+      condition = 0
+    end
     local t = self._transition
-    t[#t + 1] = { u, v, node }
+    t[#t + 1] = { u, v, condition }
     return v
   end
 
@@ -39,7 +42,7 @@ return function ()
     local accept = self:extended_reg_exp(node, self:new_state())
     return {
       transition = self._transition;
-      start = 1;
+      start = { 1 };
       accept = { accept };
     }
   end
@@ -51,11 +54,11 @@ return function ()
     else
       local v = {}
       for i = 1, n do
-        v[i] = self:ERE_branch(node[i], self:new_transition(nil, u))
+        v[i] = self:ERE_branch(node[i], self:new_transition(u))
       end
       local w = self:new_state()
       for i = 1, n do
-        self:new_transition(nil, v[i], w)
+        self:new_transition(v[i], w)
       end
       return w
     end
@@ -81,13 +84,17 @@ return function ()
       end
       if n then
         for i = m + 1, n do
-          u = self:new_transition(nil, u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
+          u = self:new_transition(u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
         end
       else
-        u = self:new_transition(nil, self:new_transition(nil, self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
+        u = self:new_transition(self:new_transition(self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
       end
     elseif t == "string" then
-      -- [TODO] anchoring
+      if node == "^" then
+        u = self:new_transition(u, nil, 1)
+      elseif node == "$" then
+        u = self:new_transition(u, nil, 2)
+      end
     end
     return u
   end
@@ -97,7 +104,7 @@ return function ()
     if type(node) == "table" and type(node[1]) == "table" then
       return self:extended_reg_exp(node, u)
     else
-      return self:new_transition(node, u)
+      return self:new_transition(u, nil, node)
     end
   end
 
