@@ -34,7 +34,6 @@ return function (out)
 
   function self:write(...)
     self._out:write(...)
-    return self
   end
 
   function self:fsm(fsm)
@@ -45,9 +44,9 @@ return function (out)
     self:write("}\n")
   end
 
-  function self:accept(accept)
-    for i = 1, #accept do
-      self:write("  ", accept[i], " [peripheries = 2];\n")
+  function self:accept(list)
+    for i = 1, #list do
+      self:write("  ", list[i], " [peripheries = 2];\n")
     end
   end
 
