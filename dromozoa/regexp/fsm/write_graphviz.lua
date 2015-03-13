@@ -42,7 +42,10 @@ local function label(c)
 end
 
 return function (fsm, out)
-  out:write("digraph \"fsm\" {\n  graph [rankdir = LR]\n")
+  out:write("digraph \"fsm\" {\n  graph [rankdir = LR];\n")
+  for u in fsm:each_start() do
+    out:write("  ", u, " [style = filled, fillcolor = \"#CCCCCC\"];\n")
+  end
   for v in fsm:each_accept() do
     out:write("  ", v, " [peripheries = 2];\n")
   end

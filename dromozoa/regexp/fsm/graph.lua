@@ -19,7 +19,7 @@ local function add_edge(mat, vid, eid)
   local row = mat[vid]
   if row then
     if type(row) == "table" then
-      row[#row + 1] = vid
+      row[#row + 1] = eid
     else
       mat[vid] = { row, eid }
     end

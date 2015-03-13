@@ -15,10 +15,11 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local build_powerset = require "dromozoa.regexp.fsm.build_powerset"
 local graph = require "dromozoa.regexp.fsm.graph"
 local write_graphviz = require "dromozoa.regexp.fsm.write_graphviz"
 
-return function ()
+local function new()
   local self = {
     _graph = graph();
     _start = {};
@@ -45,6 +46,10 @@ return function ()
     self._start[u] = true
   end
 
+  function self:is_start(u)
+    return self._start[u]
+  end
+
   function self:each_start()
     return pairs(self._start)
   end
@@ -53,8 +58,16 @@ return function ()
     self._accept[v] = true
   end
 
+  function self:is_accept(v)
+    return self._accept[v]
+  end
+
   function self:each_accept()
     return pairs(self._accept)
+  end
+
+  function self:build_powerset()
+    return build_powerset(self, new())
   end
 
   function self:write_graphviz(out)
@@ -63,3 +76,5 @@ return function ()
 
   return self
 end
+
+return new
