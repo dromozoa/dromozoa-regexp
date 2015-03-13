@@ -17,6 +17,7 @@
 
 local build_powerset = require "dromozoa.regexp.fsm.build_powerset"
 local graph = require "dromozoa.regexp.fsm.graph"
+local remove_assertion = require "dromozoa.regexp.fsm.remove_assertion"
 local write_graphviz = require "dromozoa.regexp.fsm.write_graphviz"
 
 local function new()
@@ -27,7 +28,11 @@ local function new()
   }
 
   function self:add_edge(u, v, c)
-    self._graph:add_edge(u, v, c)
+    return self._graph:add_edge(u, v, c)
+  end
+
+  function self:remove_edge(e)
+    self._graph:remove_edge(e)
   end
 
   function self:each_edge()
@@ -68,6 +73,10 @@ local function new()
 
   function self:build_powerset()
     return build_powerset(self, new())
+  end
+
+  function self:remove_assertion()
+    remove_assertion(self)
   end
 
   function self:write_graphviz(out)

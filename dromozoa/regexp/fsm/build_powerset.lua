@@ -19,8 +19,8 @@ local function build_epsilon_reachable(fsm, u, color)
   if not color[u] then
     color[u] = true
     for i, e in fsm:each_u_neighbor(u) do
-      if e[3] == 0 then
-        build_epsilon_reachable(fsm, e[2], color)
+      if e[4] == 0 then
+        build_epsilon_reachable(fsm, e[3], color)
       end
     end
   end
@@ -35,7 +35,7 @@ local function build_powerset(source, u, target, color)
 
     for v in pairs(epsilon_reachable) do
       for i, e in source:each_u_neighbor(v) do
-        local w, c = e[2], e[3]
+        local w, c = e[3], e[4]
         if c ~= 0 then
           target:add_edge(u, w, c)
           build_powerset(source, w, target, color)

@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local table_remove = table.remove
+
 local function add_edge(mat, vid, eid)
   local row = mat[vid]
   if row then
@@ -26,6 +28,37 @@ local function add_edge(mat, vid, eid)
   else
     mat[vid] = eid
   end
+end
+
+local function remove_edge(mat, vid, eid)
+  local row = mat[vid]
+  if row then
+    if type(row) == "table" then
+      local n = #row
+      if n == 2 then
+        if row[1] == eid then
+          mat[vid] = row[2]
+          return
+        elseif row[2] == eid then
+          mat[vid] = row[1]
+          return
+        end
+      else
+        for i = 1, n do
+          if row[i] == eid then
+            table.remove(row, i)
+            return
+          end
+        end
+      end
+    else
+      if row == eid then
+        mat[vid] = nil
+        return
+      end
+    end
+  end
+  error("could not remove_edge")
 end
 
 local function each_edge(ctx, eid)
@@ -69,11 +102,24 @@ return function ()
 
   function self:add_edge(u, v, c)
     local id = self._id + 1
-    local e = { u, v, c }
+    local e = { id, u, v, c }
     self._map[id] = e
     self._id = id
     add_edge(self._uv, u, id)
     add_edge(self._vu, v, id)
+    return e
+  end
+
+  function self:remove_edge(e)
+    local id = e[1]
+    self._map[id] = nil
+    remove_edge(self._uv, e[2], id)
+    remove_edge(self._vu, e[3], id)
+    if next(self._map) == nil then
+      self._id = 0
+    elseif self._id == id then
+      self._id = id - 1
+    end
   end
 
   function self:each_edge()

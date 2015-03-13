@@ -50,7 +50,7 @@ return function (fsm, out)
     out:write("  ", v, " [peripheries = 2];\n")
   end
   for i, e in fsm:each_edge() do
-    out:write("  ", e[1], " -> ", e[2], " [label = ", label(e[3]), "];\n")
+    out:write("  ", e[2], " -> ", e[3], " [label = ", label(e[4]), "];\n")
   end
   out:write("}\n")
 end
