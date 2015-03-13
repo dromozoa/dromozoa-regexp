@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local coroutine_yield = coroutine.yield
+local coroutine_wrap = coroutine.wrap
 local table_remove = table.remove
 
 local function add_edge(mat, vid, eid)
@@ -62,6 +64,7 @@ local function remove_edge(mat, vid, eid)
 end
 
 local function each_edge(ctx, eid)
+  -- should return valid eid as i
   for i = eid, ctx._id do
     local e = ctx._map[i]
     if e then
@@ -90,6 +93,31 @@ end
 
 local function each_neighbor_empty()
   return nil
+end
+
+local function each_neighbor(map, row)
+  if row then
+    if type(row) == "table" then
+      return each_neighbor_table, { row = row; map = map }, 1
+    else
+      return each_neighbor_value, map[row], 1
+    end
+  else
+    return each_neighbor_empty
+  end
+end
+
+local function each_u_reachable(ctx, u)
+  local color = ctx[3]
+  if not color[u] then
+    color[u] = true
+    coroutine_yield(u)
+    for i, e in ctx[1]:each_u_neighbor(u) do
+      if ctx[2](e[4]) then
+        each_u_reachable(ctx, e[3])
+      end
+    end
+  end
 end
 
 return function ()
@@ -127,23 +155,15 @@ return function ()
   end
 
   function self:each_u_neighbor(u)
-    return self:each_neighbor(self._uv[u])
+    return each_neighbor(self._map, self._uv[u])
   end
 
   function self:each_v_neighbor(v)
-    return self:each_neighbor(self._vu[v])
+    return each_neighbor(self._map, self._vu[v])
   end
 
-  function self:each_neighbor(row)
-    if row then
-      if type(row) == "table" then
-        return each_neighbor_table, { row = row; map = self._map }, 1
-      else
-        return each_neighbor_value, self._map[row], 1
-      end
-    else
-      return each_neighbor_empty
-    end
+  function self:each_u_reachable(u, predicate)
+    return coroutine_wrap(each_u_reachable), { self, predicate, {} }, u
   end
 
   return self
