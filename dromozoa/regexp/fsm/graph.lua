@@ -112,9 +112,24 @@ local function each_u_reachable(ctx, u)
   if not color[u] then
     color[u] = true
     coroutine_yield(u)
+    local predicate = ctx[2]
     for i, e in ctx[1]:each_u_neighbor(u) do
-      if ctx[2](e[4]) then
+      if predicate(e[4]) then
         each_u_reachable(ctx, e[3])
+      end
+    end
+  end
+end
+
+local function each_v_reachable(ctx, v)
+  local color = ctx[3]
+  if not color[v] then
+    color[v] = true
+    coroutine_yield(v)
+    local predicate = ctx[2]
+    for i, e in ctx[1]:each_v_neighbor(v) do
+      if predicate(e[4]) then
+        each_u_reachable(ctx, e[2])
       end
     end
   end
