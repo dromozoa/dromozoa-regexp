@@ -28,4 +28,27 @@ b:add("sep", function (ctx)
   end
   return ctx + #a + #b + #c + #d
 end, 0)
+b:add("mat4", function (ctx)
+  local data = {}
+  for i = 1, 1000 do
+    local j = i * 4
+    data[j] = i
+    data[j + 1] = i + 1
+    data[j + 2] = i + 2
+    data[j + 3] = i + 3
+  end
+  return ctx + #data
+end, 0)
+b:add("mat256", function (ctx)
+  local data = {}
+  for i = 1, 1000 do
+    local j = i * 256
+    data[j] = i
+    data[j + 1] = i + 1
+    data[j + 2] = i + 2
+    data[j + 3] = i + 3
+  end
+  return ctx + #data
+end, 0)
+
 b:run()

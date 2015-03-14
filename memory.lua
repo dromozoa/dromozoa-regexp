@@ -69,3 +69,25 @@ do
 
   print(collectgarbage("count"))
 end
+
+do
+  local data = {}
+  local N = 256
+
+  collectgarbage()
+  collectgarbage()
+
+  for i = 1, 1000000 do
+    j = N * i
+    data[j] = i
+    data[j + 1] = i + 2
+    data[j + 2] = i + 3
+    data[j + 3] = i + 4
+  end
+
+  collectgarbage()
+  collectgarbage()
+
+  print(collectgarbage("count"))
+end
+
