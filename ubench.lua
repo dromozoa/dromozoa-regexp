@@ -72,10 +72,31 @@ b:add("mat257", function (ctx)
   end
   return ctx + #data
 end, 0)
-b:add("mat2_1", function (ctx)
+b:add("mat2_1_0", function (ctx)
+  local data = {}
+  for i = 0, 1023 do
+    data[i * 1 + 0] = 17
+  end
+  return ctx
+end, 0)
+b:add("mat2_1_1", function (ctx)
   local data = {}
   for i = 0, 1023 do
     data[i * 1 + 1] = 17
+  end
+  return ctx
+end, 0)
+b:add("mat2_1_2", function (ctx)
+  local data = {}
+  for i = 0, 1023 do
+    data[i * 1 + 2] = 17
+  end
+  return ctx
+end, 0)
+b:add("mat2_1_255", function (ctx)
+  local data = {}
+  for i = 0, 1023 do
+    data[i * 1 + 255] = 17
   end
   return ctx
 end, 0)

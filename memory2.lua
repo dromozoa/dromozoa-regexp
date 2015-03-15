@@ -1,6 +1,6 @@
-local M = 1024
+local M = 1024 * 1024
 
-local function run(fn)
+local function run()
   local matrix = {}
   local result = {}
 
@@ -10,13 +10,8 @@ local function run(fn)
 
   local a = collectgarbage("count")
   for i = 1, M do
-    local j = fn(i)
-    matrix[j + 1] = math.random()
-    matrix[j + 2] = math.random()
-    matrix[j + 3] = math.random()
-    matrix[j + 4] = math.random()
-    local b = collectgarbage("count")
-    result[i] = b - a
+    matrix[i] = 17
+    result[i] = collectgarbage("count")
   end
 
   collectgarbage()
@@ -26,18 +21,11 @@ local function run(fn)
   return result
 end
 
-local data = {
-  run(function (i) return i * 4 end);
-  run(function (i) return i * 1023 end);
-  run(function (i) return i * 1024 end);
-  run(function (i) return i * 1025 end);
-}
-local n = #data
+local result = run()
 
-for i = 1, M do
-  io.write(i)
-  for j = 1, n do
-    io.write("\t", data[j][i])
+for i = 1, #result - 1 do
+  local d = result[i + 1] - result[i]
+  if d > 0 then
+    print(i, d)
   end
-  io.write("\n")
 end
