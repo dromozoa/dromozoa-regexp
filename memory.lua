@@ -72,7 +72,7 @@ end
 
 do
   local data = {}
-  local N = 256
+  local N = 2047
 
   collectgarbage()
   collectgarbage()
@@ -90,4 +90,13 @@ do
 
   print(collectgarbage("count"))
 end
+
+for i = 0, N - 1 do
+  local j = i * M
+  matrix[j + 1] = 17
+  matrix[j + 2] = 23
+  matrix[j + 3] = 37
+  matrix[j + 4] = 42
+end
+
 
