@@ -17,11 +17,7 @@
 
 local graph = require "dromozoa.graph"
 
-local function build_condition(self, u, node)
-  return self:create_edge(u, nil, node)
-end
-
-local function builder(g)
+local function creator(g)
   local self = {
     _g = g;
 
@@ -29,58 +25,44 @@ local function builder(g)
       if b then
         local v = self:create_vertex()
         for i = 2, #node do
-          self:create_edge(self:build(self:create_edge(u), node[i]), v)
+          self:create_edge(self:visit(self:create_edge(u), node[i]), v)
         end
         return v
       else
-        return self:build(u, a)
+        return self:visit(u, a)
       end
     end;
 
     ["concat"] = function (self, u, node)
       for i = 2, #node do
-        u = self:build(u, node[i])
+        u = self:visit(u, node[i])
       end
       return u
     end;
 
-    ["^"] = build_condition;
-
-    ["$"] = build_condition;
-
-    ["char"] = build_condition;
-
-    ["\\"] = build_condition;
-
-    ["."] = build_condition;
-
     ["+"] = function (self, u, node, a)
-      return self:build_duplication(u, a, 1)
+      return self:create_duplication(u, a, 1)
     end;
 
     ["*"] = function (self, u, node, a)
-      return self:build_duplication(u, a, 0)
+      return self:create_duplication(u, a, 0)
     end;
 
     ["?"] = function (self, u, node, a)
-      return self:build_duplication(u, a, 0, 1)
+      return self:create_duplication(u, a, 0, 1)
     end;
 
     ["{m"] = function (self, u, node, a, b)
-      return self:build_duplication(u, a, b, b)
+      return self:create_duplication(u, a, b, b)
     end;
 
     ["{m,"] = function (self, u, node, a, b)
-      return self:build_duplication(u, a, b)
+      return self:create_duplication(u, a, b)
     end;
 
     ["{m,n"] = function (self, u, node, a, b, c)
-      return self:build_duplication(u, a, b, c)
+      return self:create_duplication(u, a, b, c)
     end;
-
-    ["["] = build_condition;
-
-    ["[^"] = build_condition;
   }
 
   function self:create_vertex()
@@ -100,22 +82,33 @@ local function builder(g)
     return v
   end
 
-  function self:build(u, node)
-    return self[node[1]](self, u, node, node[2], node[3], node[4])
-  end
-
-  function self:build_duplication(u, node, m, n)
+  function self:create_duplication(u, node, m, n)
     for i = 1, m do
-      u = self:build(u, node)
+      u = self:visit(u, node)
     end
     if n then
       for i = m + 1, n do
-        u = self:create_edge(u, self:build(u, node))
+        u = self:create_edge(u, self:visit(u, node))
       end
     else
-      u = self:create_edge(self:create_edge(self:build(u, node), u))
+      u = self:create_edge(self:create_edge(self:visit(u, node), u))
     end
     return u
+  end
+
+  function self:fallback(u, node)
+    return self:create_edge(u, nil, node)
+  end
+
+  function self:visit(u, node)
+    return (self[node[1]] or self.fallback)(self, u, node, node[2], node[3], node[4])
+  end
+
+  function self:create(node)
+    local s = self:create_vertex()
+    s.start = true
+    local a = self:visit(s, node)
+    a.accept = true
   end
 
   return self
@@ -124,10 +117,6 @@ end
 
 return function (node)
   local g = graph()
-  local b = builder(g)
-  local s = b:create_vertex()
-  s.start = true
-  local a = b:build(s, node)
-  a.accept = true
+  creator(g):create(node)
   return g
 end
