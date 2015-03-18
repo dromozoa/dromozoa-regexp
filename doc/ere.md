@@ -125,6 +125,50 @@ expression_term
   | CHAR
 ```
 
+## 中小構文木 (v2)
+
+```
+extended_reg_exp
+  = [ "|", ERE_branch+ ] # alternation
+
+ERE_branch
+  = [ "concat", ERE_expression+ ] # concatnation
+
+ERE_expression
+  = one_char_or_coll_elem_ERE_or_grouping
+  | ERE_dupl_symbol
+  | [ "^" ] # anchoring
+  | [ "$" ] # anchoring
+
+one_char_or_coll_elem_ERE_or_grouping
+  = [ "char", string ] # character
+  | [ "." ] # any
+  | bracket_expression
+  | extended_reg_exp
+
+ERE_dupl_symbol
+  = [ "+", one_char_or_coll_elem_ERE_or_grouping ] # one or more
+  | [ "*", one_char_or_coll_elem_ERE_or_grouping ] # zero or more
+  | [ "?", one_char_or_coll_elem_ERE_or_grouping ] # zero or one
+  | [ "{m", one_char_or_coll_elem_ERE_or_grouping, m ] # exactly m
+  | [ "{m,", one_char_or_coll_elem_ERE_or_grouping, m ] # at least m
+  | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ] # between m and n, inclusive
+
+bracket_expression
+  = [ "[", expression_term+ ] # matching list
+  | [ "[^", expression_term+ ] # nonmatching list
+
+expression_term
+  = BRACKET_CHAR
+  | [ "[.", string ] # collating symbol
+  | [ "[=", string ] # equivalence class
+  | [ "[:", string ] # character class
+  | [ "[-", BRACKET_CHAR, BRACKET_CHAR ]
+
+BRACKET_CHAR
+  = [ "[char", string ]
+```
+
 ## 参考文献
 
 * [Boost 1.57.0 | POSIX Extended Regular Expression Syntax](http://www.boost.org/doc/libs/1_57_0/libs/regex/doc/html/boost_regex/syntax/basic_extended.html)
