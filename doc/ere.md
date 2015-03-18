@@ -91,44 +91,6 @@ class_name
 
 ```
 extended_reg_exp
-  = [ ERE_branch+ ]
-
-ERE_branch
-  = [ ERE_expression+ ]
-
-ERE_expression
-  = [ one_char_or_coll_elem_ERE_or_grouping ]
-  | [ one_char_or_coll_elem_ERE_or_grouping, ERE_dupl_symbol ]
-  | "^"
-  | "$"
-
-one_char_or_coll_elem_ERE_or_grouping
-  = CHAR
-  | -1 # any
-  | bracket_expression
-  | extended_reg_exp
-
-ERE_dupl_symbol
-  = "*"
-  | "+"
-  | "?"
-  | NUMBER
-  | [ NUMBER ]
-  | [ NUMBER, NUMBER ]
-
-bracket_expression
-  = [ BOOLEAN, expression_term+ ] # BOOLEAN = is matching_list
-
-expression_term
-  = [ STRING ] # STRING = class_name
-  | [ CHAR, CHAR ]
-  | CHAR
-```
-
-## 中小構文木 (v2)
-
-```
-extended_reg_exp
   = [ "|", ERE_branch+ ]
 
 ERE_branch
