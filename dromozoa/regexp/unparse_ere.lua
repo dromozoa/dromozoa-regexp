@@ -24,20 +24,20 @@ local function unparser(out)
     ["|"] = function (self, node, a, b)
       if b then
         self:write "("
-        self:unparse(node[2])
+        self:visit(node[2])
         for i = 3, #node do
           self:write "|"
-          self:unparse(node[i])
+          self:visit(node[i])
         end
         self:write ")"
       else
-        self:unparse(a)
+        self:visit(a)
       end
     end;
 
     ["concat"] = function (self, node)
       for i = 2, #node do
-        self:unparse(node[i])
+        self:visit(node[i])
       end
     end;
 
@@ -65,39 +65,39 @@ local function unparser(out)
     end;
 
     ["+"] = function (self, node, a)
-      self:unparse(a)
+      self:visit(a)
       self:write "+"
     end;
 
     ["*"] = function (self, node, a)
-      self:unparse(a)
+      self:visit(a)
       self:write "*"
     end;
 
     ["?"] = function (self, node, a)
-      self:unparse(a)
+      self:visit(a)
       self:write "?"
     end;
 
     ["{m"] = function (self, node, a, b)
-      self:unparse(a)
+      self:visit(a)
       self:write("{", b, "}")
     end;
 
     ["{m,"] = function (self, node, a, b)
-      self:unparse(a)
+      self:visit(a)
       self:write("{", b, ",}")
     end;
 
     ["{m,n"] = function (self, node, a, b, c)
-      self:unparse(a)
+      self:visit(a)
       self:write("{", b, ",", c, "}")
     end;
 
     ["["] = function (self, node)
       self:write "["
       for i = 2, #node do
-        self:unparse(node[i])
+        self:visit(node[i])
       end
       self:write "]"
     end;
@@ -105,7 +105,7 @@ local function unparser(out)
     ["[^"] = function (self, node)
       self:write "[^"
       for i = 2, #node do
-        self:unparse(node[i])
+        self:visit(node[i])
       end
       self:write "]"
     end;
@@ -119,9 +119,9 @@ local function unparser(out)
     end;
 
     ["[-"] = function (self, node, a, b)
-      self:unparse(a)
+      self:visit(a)
       self:write "-"
-      self:unparse(b)
+      self:visit(b)
     end;
 
     ["[."] = function (self, node, a)
@@ -141,7 +141,7 @@ local function unparser(out)
     self._out:write(...)
   end
 
-  function self:unparse(node)
+  function self:visit(node)
     self[node[1]](self, node, node[2], node[3], node[4]);
   end
 
@@ -150,6 +150,6 @@ end
 
 return function (node)
   local out = buffer_writer()
-  unparser(out):unparse(node)
+  unparser(out):visit(node)
   return out:concat()
 end
