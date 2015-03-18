@@ -30,6 +30,17 @@ local character_class = {
   xdigit = true;
 }
 
+local function unparse(node)
+  local a = node[1]
+  if a == "[char" then
+    return node[2]
+  elseif a == "[." then
+    return "[." .. node[2] .. ".]"
+  else
+    error "unparse error"
+  end
+end
+
 local function parser(text)
   local self = {
     _t = text;
@@ -115,27 +126,25 @@ local function parser(text)
       self:ERE_dupl_symbol()
       return true
     elseif self:match "([%^%$])" then
-      local a = { self:pop() }
-      return self:push(a)
+      return self:push { self:pop() }
     end
   end
 
   function self:one_char_or_coll_elem_ERE_or_grouping()
     if self:match "([^%^%.%[%$%(%)%|%*%+%?%{%\\])" then
-      return self:push({ "char", self:pop() })
+      return self:push { "char", self:pop() }
     elseif self:match "\\([%^%.%[%$%(%)%|%*%+%?%{%\\])" then
-      return self:push({ "char", self:pop() })
+      return self:push { "\\", self:pop() }
     elseif self:match "%." then
-      return self:push({ "." })
+      return self:push { "." }
     elseif self:bracket_expression() then
       return true
     elseif self:match "%(" then
-      local a = self:pop()
       if self:extended_reg_exp() then
         if self:match "%)" then
-          return self:push(a)
+          return true
         else
-          self:raise()
+          self:raise "unmatched parentheses"
         end
       else
         self:raise()
@@ -160,7 +169,7 @@ local function parser(text)
         if m <= n then
           return self:push { "{m,n", self:pop(), m, n }
         else
-          self:raise("invalid interval {" .. a .. "," .. b .. "}")
+          self:raise("invalid interval expression {" .. m .. "," .. n .. "}")
         end
       else
         self:raise()
@@ -185,12 +194,12 @@ local function parser(text)
         a[#a + 1] = self:pop()
       end
       if self:match "%-" then
-        a[#a + 1] = { "[char", "-" }
+        a[#a + 1] = { "[.", "-" }
       end
       if self:match "%]" then
         return self:push(a)
       else
-        self:raise()
+        self:raise "unmatched brackets"
       end
     end
   end
@@ -198,16 +207,14 @@ local function parser(text)
   function self:expression_term()
     if self:match "%[%=" then
       if self:match "(..-)%=%]" then
-        local a = self:pop()
-        self:raise("equivalence class " .. a .. " is not supported in the current locale")
+        self:raise("equivalence class " .. self:pop() .. " is not supported in the current locale")
       else
         self:raise()
       end
     elseif self:match "%[%:" then
       if self:match "(..-)%:%]" then
         local a = self:pop()
-        local b = character_class[a]
-        if b then
+        if character_class[a] then
           return self:push { "[:", a }
         else
           self:raise("character class " .. a .. " is not supported in the current locale")
@@ -223,9 +230,9 @@ local function parser(text)
         return self:push(a)
       elseif self:match "%-%-" then
         if string.byte(a[2]) <= 45 then
-          return self:push { "[-", a, "-" }
+          return self:push { "[-", a, { "[.", "-" } }
         else
-          self:raise("invalid range [" .. a[2] .. "--]")
+          self:raise("invalid range expression [" .. unparse(a) .. "--]")
         end
       elseif self:match "%-" then
         if self:end_range() then
@@ -233,7 +240,7 @@ local function parser(text)
           if string.byte(a[2]) <= string.byte(b[2]) then
             return self:push { "[-", a, b }
           else
-            self:raise("invalid range [" .. a[2] .. "-" .. b[2] .. "]")
+            self:raise("invalid range expression [" .. unparse(a) .. "-" .. unparse(b) .. "]")
           end
         else
           self:raise()
@@ -249,13 +256,12 @@ local function parser(text)
       if self:match "(.)%.%]" then
         return self:push { "[.", self:pop() }
       elseif self:match "(..-)%.%]" then
-        local a = self:pop()
-        self:raise("collating symbol " .. a .. " is not supported in the current locale")
+        self:raise("collating symbol " .. self:pop() .. " is not supported in the current locale")
       else
         self:raise()
       end
     elseif self:match "([^%^%-%]])" then
-      return self:push { "[c", self:pop() }
+      return self:push { "[char", self:pop() }
     end
   end
 

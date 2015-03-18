@@ -129,44 +129,45 @@ expression_term
 
 ```
 extended_reg_exp
-  = [ "|", ERE_branch+ ] # alternation
+  = [ "|", ERE_branch+ ]
 
 ERE_branch
-  = [ "concat", ERE_expression+ ] # concatnation
+  = [ "concat", ERE_expression+ ]
 
 ERE_expression
   = one_char_or_coll_elem_ERE_or_grouping
   | ERE_dupl_symbol
-  | [ "^" ] # anchoring
-  | [ "$" ] # anchoring
+  | [ "^" ]
+  | [ "$" ]
 
 one_char_or_coll_elem_ERE_or_grouping
-  = [ "char", string ] # character
-  | [ "." ] # any
+  = [ "char", string ]
+  | [ "\\", string ]
+  | [ "." ]
   | bracket_expression
   | extended_reg_exp
 
 ERE_dupl_symbol
-  = [ "+", one_char_or_coll_elem_ERE_or_grouping ] # one or more
-  | [ "*", one_char_or_coll_elem_ERE_or_grouping ] # zero or more
-  | [ "?", one_char_or_coll_elem_ERE_or_grouping ] # zero or one
-  | [ "{m", one_char_or_coll_elem_ERE_or_grouping, m ] # exactly m
-  | [ "{m,", one_char_or_coll_elem_ERE_or_grouping, m ] # at least m
-  | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ] # between m and n, inclusive
+  = [ "+", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "*", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "?", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "{m", one_char_or_coll_elem_ERE_or_grouping, m ]
+  | [ "{m,", one_char_or_coll_elem_ERE_or_grouping, m ]
+  | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ]
 
 bracket_expression
-  = [ "[", expression_term+ ] # matching list
-  | [ "[^", expression_term+ ] # nonmatching list
+  = [ "[", expression_term+ ]
+  | [ "[^", expression_term+ ]
 
 expression_term
-  = BRACKET_CHAR
-  | [ "[.", string ] # collating symbol
-  | [ "[=", string ] # equivalence class
+  = [ "[=", string ] # equivalence class
   | [ "[:", string ] # character class
-  | [ "[-", BRACKET_CHAR, BRACKET_CHAR ]
+  | [ "[-", end_range, end_range ]
+  | end_range
 
-BRACKET_CHAR
-  = [ "[char", string ]
+end_range
+  = [ "[.", string ] # collating symbol
+  | [ "[char", string ]
 ```
 
 ## 参考文献
