@@ -269,6 +269,5 @@ local function parser(text)
 end
 
 return function (text)
-  local p = parser(text)
-  return p:parse()
+  return parser(text):parse()
 end
