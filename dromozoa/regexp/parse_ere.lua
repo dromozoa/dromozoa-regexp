@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local unparse_ere = require "dromozoa.regexp.unparse_ere"
+
 local character_class = {
   alnum = true;
   alpha = true;
@@ -29,17 +31,6 @@ local character_class = {
   upper = true;
   xdigit = true;
 }
-
-local function unparse(node)
-  local a = node[1]
-  if a == "[char" then
-    return node[2]
-  elseif a == "[." then
-    return "[." .. node[2] .. ".]"
-  else
-    error "unparse error"
-  end
-end
 
 local function parser(text)
   local self = {
@@ -232,7 +223,7 @@ local function parser(text)
         if string.byte(a[2]) <= 45 then
           return self:push { "[-", a, { "[.", "-" } }
         else
-          self:raise("invalid range expression [" .. unparse(a) .. "--]")
+          self:raise("invalid range expression [" .. unparse_ere(a) .. "--]")
         end
       elseif self:match "%-" then
         if self:end_range() then
@@ -240,7 +231,7 @@ local function parser(text)
           if string.byte(a[2]) <= string.byte(b[2]) then
             return self:push { "[-", a, b }
           else
-            self:raise("invalid range expression [" .. unparse(a) .. "-" .. unparse(b) .. "]")
+            self:raise("invalid range expression [" .. unparse_ere(a) .. "-" .. unparse_ere(b) .. "]")
           end
         else
           self:raise()
