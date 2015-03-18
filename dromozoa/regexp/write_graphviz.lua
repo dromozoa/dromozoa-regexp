@@ -15,13 +15,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local ere_unparser = require "dromozoa.regexp.ere_unparser"
-local buffer_writer = require "dromozoa.regexp.buffer_writer"
+local unparse_ere = require "dromozoa.regexp.unparse_ere"
 
 local zero_length = {
-  [0] = "<<font color=\"#CC0000\">&epsilon;</font>>";
-  [1] = "<<font color=\"#CC0000\">^</font>>";
-  [2] = "<<font color=\"#CC0000\">$</font>>";
+  ["epsilon"] = "<<font color=\"#CC0000\">&epsilon;</font>>";
+  ["^"] = "<<font color=\"#CC0000\">^</font>>";
+  ["$"] = "<<font color=\"#CC0000\">$</font>>";
 }
 
 local quote = {
@@ -31,13 +30,12 @@ local quote = {
   [">"] = "&gt;";
 }
 
-local function label(c)
-  if type(c) == "number" and c >= 0 then
-    return zero_length[c]
+local function label(node)
+  local a = zero_length[node[1]]
+  if a then
+    return a
   else
-    local out = buffer_writer()
-    ere_unparser(out):one_char_or_coll_elem_ERE_or_grouping(c)
-    return "<" .. out:concat():gsub("[\"&<>]", quote) .. ">"
+    return "<" .. unparse_ere(node):gsub("[\"&<>]", quote) .. ">"
   end
 end
 
@@ -50,7 +48,7 @@ return function (g, out)
     out:write("  ", v.id, " [peripheries = 2];\n")
   end
   for e in g:each_edge() do
-    out:write("  ", e.uid, " -> ", e.vid, " [label = ", label(e.c), "];\n")
+    out:write("  ", e.uid, " -> ", e.vid, " [label = ", label(e.condition), "];\n")
   end
   out:write("}\n")
 end
