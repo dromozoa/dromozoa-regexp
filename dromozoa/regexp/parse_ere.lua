@@ -15,22 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local character_class = require "dromozoa.regexp.character_class"
 local unparse_ere = require "dromozoa.regexp.unparse_ere"
-
-local character_class = {
-  alnum = true;
-  alpha = true;
-  blank = true;
-  cntrl = true;
-  digit = true;
-  graph = true;
-  lower = true;
-  print = true;
-  punct = true;
-  space = true;
-  upper = true;
-  xdigit = true;
-}
 
 local function parser(text)
   local self = {
