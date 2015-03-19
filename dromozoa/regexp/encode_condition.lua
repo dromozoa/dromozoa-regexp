@@ -15,26 +15,19 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function create_node(a, b)
-  if a == b then
-    return { "[char", string.char(a) }
-  else
-    return { "[-", { "[char", string.char(a) }, { "[char", string.char(b) } }
-  end
-end
-
 return function (set)
-  local count = set:count()
-  if count == 0 then
+  local n = set:count()
+  if n == 0 then
     return { "epsilon" }
   elseif set:test(256) then
     return { "^" }
   elseif set:test(257) then
     return { "$" }
-  elseif count < 128 then
+  else
+    local is_matching_list = n < 128
     local t = {}
     for i = 0, 255 do
-      if set:test(i) then
+      if set:test(i) == is_matching_list then
         local v = t[#t]
         if v and v[2] == i - 1 then
           v[2] = i
@@ -43,31 +36,18 @@ return function (set)
         end
       end
     end
-    if count == 1 then
+    if n == 1 then
       return { "char", string.char(t[1][1]) }
     end
-    local node = { "[" }
+    local node = { is_matching_list and "[" or "[^" }
     for i = 1, #t do
       local v = t[i]
-      node[#node + 1] = create_node(v[1], v[2])
-    end
-    return node
-  else
-    local t = {}
-    for i = 0, 255 do
-      if not set:test(i) then
-        local v = t[#t]
-        if v and v[2] == i - 1 then
-          v[2] = i
-        else
-          t[#t + 1] = { i, i }
-        end
+      local a, b = v[1], v[2]
+      if a == b then
+        node[#node + 1] = { "[char", string.char(a) }
+      else
+        node[#node + 1] = { "[-", { "[char", string.char(a) }, { "[char", string.char(b) } }
       end
-    end
-    local node = { "[^" }
-    for i = 1, #t do
-      local v = t[i]
-      node[#node + 1] = create_node(v[1], v[2])
     end
     return node
   end
