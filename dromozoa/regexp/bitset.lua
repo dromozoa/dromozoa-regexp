@@ -52,6 +52,14 @@ return function()
     return self._t[i]
   end
 
+  function self:count()
+    local n = 0
+    for k in pairs(self._t) do
+      n = n + 1
+    end
+    return n
+  end
+
   function self:set_union(that)
     for k in pairs(that._t) do
       self:set(k)

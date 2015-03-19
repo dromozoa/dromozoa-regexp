@@ -3,10 +3,10 @@
 ```
 condition
   = [ "epsilon" ]
+  | [ "^" ]
+  | [ "$" ]
   | [ "char", string ]
   | [ "\\", string ]
   | [ "." ]
   | bracket_expression
-  | [ "^" ]
-  | [ "$" ]
 ```

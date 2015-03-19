@@ -18,6 +18,7 @@
 local bitset = require "dromozoa.regexp.bitset"
 
 local character_class = {}
+
 character_class.upper = bitset()
   :set(string.byte("AZ", 1, -1))
 character_class.lower = bitset()
@@ -58,4 +59,5 @@ character_class.graph = bitset()
 character_class.print = bitset()
   :set_union(character_class.graph)
   :set(string.byte " ")
+
 return character_class

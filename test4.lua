@@ -1,15 +1,9 @@
-local fsm = require "dromozoa.regexp.fsm"
+local json = require "dromozoa.json"
+local decode_condition = require "dromozoa.regexp.decode_condition"
+local encode_condition = require "dromozoa.regexp.encode_condition"
+local unparse_ere = require "dromozoa.regexp.unparse_ere"
 
-local dfa = fsm()
-dfa:add_edge(1, 2, 1)
-dfa:add_edge(1, 3, 2)
-dfa:add_edge(3, 4, 1)
-dfa:add_edge(4, 5, -1)
-dfa:add_start(1)
-dfa:add_accept(2)
-dfa:add_accept(5)
-dfa:write_graphviz(io.stdout)
+local c = decode_condition { "[^", { "[-", "a", "z" } }
+print(json.encode(encode_condition(c)))
+print(unparse_ere(encode_condition(c)))
 
-for v in dfa._graph:each_u_reachable(1, function (v) return v == 1 end) do
-  print(v)
-end

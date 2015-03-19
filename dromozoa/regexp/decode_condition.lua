@@ -18,9 +18,9 @@
 local bitset = require "dromozoa.regexp.bitset"
 local character_class = require "dromozoa.regexp.character_class"
 
-local function decoder(b)
+local function decoder(set)
   local self = {
-    _b = b;
+    _set = set;
 
     ["epsilon"] = function (self)
     end;
@@ -76,15 +76,15 @@ local function decoder(b)
   }
 
   function self:set(m, n)
-    self._b:set(m, n)
+    self._set:set(m, n)
   end
 
   function self:flip(m, n)
-    self._b:flip(m, n)
+    self._set:flip(m, n)
   end
 
   function self:set_union(that)
-    self._b:set_union(that)
+    self._set:set_union(that)
   end
 
   function self:visit(node)
@@ -99,7 +99,7 @@ local function decoder(b)
 end
 
 return function (node)
-  local b = bitset()
-  decoder(b):decode(node)
-  return b
+  local set = bitset()
+  decoder(set):decode(node)
+  return set
 end
