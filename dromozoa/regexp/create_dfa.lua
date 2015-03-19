@@ -22,26 +22,6 @@ local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local bitset = require "dromozoa.regexp.bitset"
 
-local function epsilon_closure(g, uset)
-  local visitor = dfs_visitor {
-    vset = {};
-
-    discover_vertex = function (self, g, u)
-      self.vset[u.id] = true
-    end;
-
-    examine_edge = function (self, g, e, u, v)
-      return e.condition[1] == "epsilon"
-    end;
-  }
-
-  for k in pairs(uset) do
-    g:get_vertex(k):dfs(visitor)
-  end
-
-  return visitor.vset
-end
-
 local function set_to_seq(set)
   local seq = {}
   for k in pairs(set) do
@@ -81,12 +61,32 @@ local function seq_lt(a, b)
   end
 end
 
-local function move1(g, uset)
+local function epsilon_closure(g, uset)
+  local visitor = dfs_visitor {
+    vset = {};
+
+    discover_vertex = function (self, g, u)
+      self.vset[u.id] = true
+    end;
+
+    examine_edge = function (self, g, e, u, v)
+      return e.condition[1] == "epsilon"
+    end;
+  }
+
+  for k in pairs(uset) do
+    g:get_vertex(k):dfs(visitor)
+  end
+
+  return visitor.vset
+end
+
+local function move1(g, set)
   local vmat = {}
   for i = 0, 257 do
     vmat[i] = {}
   end
-  for k in pairs(uset) do
+  for k in pairs(set) do
     for v, e in g:get_vertex(k):each_adjacent_vertex() do
       local condition = decode_condition(e.condition)
       for i = 0, 257 do
@@ -137,7 +137,9 @@ end
 
 local function main(nfa, dfa, uset)
   local vset = epsilon_closure(nfa, uset)
+  print(json.encode(vset))
   local wmat = move(nfa, vset)
+  print(json.encode(wmat))
 end
 
 return main

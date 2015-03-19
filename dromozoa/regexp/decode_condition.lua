@@ -26,11 +26,11 @@ local function decoder(set)
     end;
 
     ["^"] = function (self)
-      self:set(256)
+      self:set(257)
     end;
 
     ["$"] = function (self)
-      self:set(257)
+      self:set(256)
     end;
 
     ["char"] = function (self, node, a)
@@ -63,19 +63,15 @@ local function decoder(set)
     end;
 
     ["[-"] = function (self, node, a, b)
-      self:set(self:visit(a) + 1, self:visit(b) - 1)
+      self:set(self:decode_char(a), self:decode_char(b))
     end;
 
-    ["[."] = function (self, node, a)
-      local i = string.byte(a)
-      self:set(i)
-      return i
+    ["[."] = function (self, node)
+      self:set(self:decode_char(node))
     end;
 
-    ["[char"] = function (self, node, a)
-      local i = string.byte(a)
-      self:set(i)
-      return i
+    ["[char"] = function (self, node)
+      self:set(self:decode_char(node))
     end;
   }
 
@@ -91,12 +87,12 @@ local function decoder(set)
     self._set:set_union(that)
   end
 
-  function self:visit(node)
-    return self[node[1]](self, node, node[2], node[3], node[4])
+  function self:decode_char(node)
+    return string.byte(node[2])
   end
 
-  function self:decode(node)
-    self:visit(node)
+  function self:visit(node)
+    return self[node[1]](self, node, node[2], node[3], node[4])
   end
 
   return self
@@ -104,6 +100,6 @@ end
 
 return function (node)
   local set = bitset()
-  decoder(set):decode(node)
+  decoder(set):visit(node)
   return set
 end
