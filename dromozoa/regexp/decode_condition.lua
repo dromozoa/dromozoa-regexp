@@ -63,15 +63,19 @@ local function decoder(set)
     end;
 
     ["[-"] = function (self, node, a, b)
-      self:set(string.byte(a), string.byte(b))
+      self:set(self:visit(a) + 1, self:visit(b) - 1)
     end;
 
     ["[."] = function (self, node, a)
-      self:set(string.byte(a))
+      local i = string.byte(a)
+      self:set(i)
+      return i
     end;
 
     ["[char"] = function (self, node, a)
-      self:set(string.byte(a))
+      local i = string.byte(a)
+      self:set(i)
+      return i
     end;
   }
 
@@ -88,7 +92,7 @@ local function decoder(set)
   end
 
   function self:visit(node)
-    self[node[1]](self, node, node[2], node[3], node[4])
+    return self[node[1]](self, node, node[2], node[3], node[4])
   end
 
   function self:decode(node)

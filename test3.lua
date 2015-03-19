@@ -5,12 +5,14 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 local parse_ere = require "dromozoa.regexp.parse_ere"
 local unparse_ere = require "dromozoa.regexp.unparse_ere"
 local create_nfa = require "dromozoa.regexp.create_nfa"
+local create_dfa = require "dromozoa.regexp.create_dfa"
 
 local ast = parse_ere(arg[1])
 -- print(json.encode(ast))
 -- print(unparse_ere(ast))
 local nfa = create_nfa(ast)
-write_graphviz(nfa, io.stdout)
+-- write_graphviz(nfa, io.stdout)
+create_dfa(nfa, {[1]=true})
 
 -- local ast = ere_parser():parse(arg[1])
 -- local nfa = nfa_builder():build(ast)
