@@ -27,13 +27,13 @@ return function ()
     if not u then
       return nil
     end
-    for i = 1, n - 1 do
+    for i = 1, n do
       u = u[key[i]]
-      if not u then
+      if u == nil then
         return nil
       end
     end
-    return u[key[n]]
+    return u
   end
 
   function self:insert(key, value)
@@ -78,18 +78,20 @@ return function ()
       end
       s[#s + 1] = u
     end
-    local k = key[n]
-    local v = u[k]
+    local v = u[key[n]]
     if v == nil then
       return nil
     else
+      -- {1,2,3}
+      -- {{},{},{}}
       for i = #s, 1, -1 do
         local w = s[i]
-        w[k] = nil
+        w[key[i]] = nil
         if next(w) ~= nil then
-          break
+          return v
         end
       end
+
       return v
     end
   end

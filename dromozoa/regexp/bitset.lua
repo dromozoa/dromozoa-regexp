@@ -17,7 +17,7 @@
 
 return function()
   local self = {
-    _t = {}
+    _t = {};
   }
 
   function self:set(m, n)
