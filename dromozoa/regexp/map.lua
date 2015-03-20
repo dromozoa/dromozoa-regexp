@@ -37,6 +37,9 @@ return function ()
   end
 
   function self:insert(key, value)
+    if value == nil then
+      error "bad argument #2"
+    end
     local n = #key
     local t = self._t
     local u = t[n]
@@ -82,8 +85,6 @@ return function ()
     if v == nil then
       return nil
     else
-      -- {1,2,3}
-      -- {{},{},{}}
       for i = #s, 1, -1 do
         local w = s[i]
         w[key[i]] = nil
@@ -91,7 +92,7 @@ return function ()
           return v
         end
       end
-
+      t[n] = nil
       return v
     end
   end
