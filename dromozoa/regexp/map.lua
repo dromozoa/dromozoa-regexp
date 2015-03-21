@@ -15,6 +15,40 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local function each_n(ctx, n)
+  local t = ctx.t
+  n = next(t, n)
+  if n then
+    local key = {}
+    local s = { t[n] }
+    ctx.s = s
+    for i = 1, n do
+      key[i], s[i + 1] = next(s[i])
+    end
+    return key, s[n + 1]
+  end
+end
+
+local function each(ctx, key)
+  if key then
+    local n = #key
+    local s = ctx.s
+    for i = n, 1, -1 do
+      local k, v = next(s[i], key[i])
+      key[i], s[i + 1] = k, v
+      if k then
+        for j = i + 1, n do
+          key[j], s[j + 1] = next(s[j])
+        end
+        return key, s[n + 1]
+      end
+    end
+    return each_n(ctx, n)
+  else
+    return each_n(ctx)
+  end
+end
+
 return function ()
   local self = {
     _t = {};
@@ -95,6 +129,10 @@ return function ()
       t[n] = nil
       return v
     end
+  end
+
+  function self:each()
+    return each, { t = self._t }
   end
 
   return self
