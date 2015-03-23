@@ -91,38 +91,45 @@ class_name
 
 ```
 extended_reg_exp
-  = [ ERE_branch+ ]
+  = [ "|", ERE_branch+ ]
 
 ERE_branch
-  = [ ERE_expression+ ]
+  = [ "concat", ERE_expression+ ]
 
 ERE_expression
-  = [ one_char_or_coll_elem_ERE_or_grouping ]
-  | [ one_char_or_coll_elem_ERE_or_grouping, ERE_dupl_symbol ]
-  | "^"
-  | "$"
+  = one_char_or_coll_elem_ERE_or_grouping
+  | ERE_dupl_symbol
+  | [ "^" ]
+  | [ "$" ]
 
 one_char_or_coll_elem_ERE_or_grouping
-  = CHAR
-  | -1 # any
+  = [ "char", string ]
+  | [ "\\", string ]
+  | [ "." ]
   | bracket_expression
   | extended_reg_exp
 
 ERE_dupl_symbol
-  = "*"
-  | "+"
-  | "?"
-  | NUMBER
-  | [ NUMBER ]
-  | [ NUMBER, NUMBER ]
+  = [ "+", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "*", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "?", one_char_or_coll_elem_ERE_or_grouping ]
+  | [ "{m", one_char_or_coll_elem_ERE_or_grouping, m ]
+  | [ "{m,", one_char_or_coll_elem_ERE_or_grouping, m ]
+  | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ]
 
 bracket_expression
-  = [ BOOLEAN, expression_term+ ] # BOOLEAN = is matching_list
+  = [ "[", expression_term+ ]
+  | [ "[^", expression_term+ ]
 
 expression_term
-  = [ STRING ] # STRING = class_name
-  | [ CHAR, CHAR ]
-  | CHAR
+  = [ "[=", string ] # equivalence class
+  | [ "[:", string ] # character class
+  | [ "[-", end_range, end_range ]
+  | end_range
+
+end_range
+  = [ "[.", string ] # collating symbol
+  | [ "[char", string ]
 ```
 
 ## 参考文献

@@ -15,38 +15,32 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local fsm = require "dromozoa.regexp.fsm"
+local graph = require "dromozoa.graph"
 
 return function ()
   local self = {
-    _fsm = fsm();
-    _id = 0;
+    _g = graph();
   }
 
-  function self:new_vertex()
-    local id = self._id + 1
-    self._id = id
-    return id
+  function self:create_vertex()
+    return self._g:create_vertex()
   end
 
-  function self:new_edge(u, v, c)
+  function self:create_edge(u, v, c)
     if not v then
-      v = self:new_vertex()
+      v = self:create_vertex()
     end
-    if not c then
-      c = 0
-    end
-    self._fsm:add_edge(u, v, c)
+    local e = self._g:create_edge(u, v)
+    e.c = c or 0
     return v
   end
 
   function self:build(node)
-    local fsm = self._fsm
-    local start = self:new_vertex()
-    local accept = self:extended_reg_exp(node, start)
-    fsm:add_start(start)
-    fsm:add_accept(accept)
-    return fsm
+    local s = self:create_vertex()
+    s.start = true
+    local a = self:extended_reg_exp(node, s)
+    a.accept = true
+    return self._g
   end
 
   function self:extended_reg_exp(node, u)
@@ -54,15 +48,11 @@ return function ()
     if n == 1 then
       return self:ERE_branch(node[1], u)
     else
-      local v = {}
+      local v = self:create_vertex()
       for i = 1, n do
-        v[i] = self:ERE_branch(node[i], self:new_edge(u))
+        self:create_edge(self:ERE_branch(node[i], self:create_edge(u)), v)
       end
-      local w = self:new_vertex()
-      for i = 1, n do
-        self:new_edge(v[i], w)
-      end
-      return w
+      return v
     end
   end
 
@@ -86,16 +76,16 @@ return function ()
       end
       if n then
         for i = m + 1, n do
-          u = self:new_edge(u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
+          u = self:create_edge(u, self:one_char_or_coll_elem_ERE_or_grouping(a, u))
         end
       else
-        u = self:new_edge(self:new_edge(self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
+        u = self:create_edge(self:create_edge(self:one_char_or_coll_elem_ERE_or_grouping(a, u), u))
       end
     elseif t == "string" then
       if node == "^" then
-        u = self:new_edge(u, nil, 1)
+        u = self:create_edge(u, nil, 1)
       elseif node == "$" then
-        u = self:new_edge(u, nil, 2)
+        u = self:create_edge(u, nil, 2)
       end
     end
     return u
@@ -106,7 +96,7 @@ return function ()
     if type(node) == "table" and type(node[1]) == "table" then
       return self:extended_reg_exp(node, u)
     else
-      return self:new_edge(u, nil, node)
+      return self:create_edge(u, nil, node)
     end
   end
 
