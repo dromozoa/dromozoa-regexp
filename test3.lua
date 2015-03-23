@@ -1,6 +1,4 @@
 local json = require "dromozoa.json"
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local nfa_builder = require "dromozoa.regexp.nfa_builder"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 local parse_ere = require "dromozoa.regexp.parse_ere"
 local unparse_ere = require "dromozoa.regexp.unparse_ere"
