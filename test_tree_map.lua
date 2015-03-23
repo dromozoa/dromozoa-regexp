@@ -1,6 +1,6 @@
-local map = require "dromozoa.regexp.map"
+local tree_map = require "dromozoa.regexp.tree_map"
 
-local m = map()
+local m = tree_map()
 local a, b = m:insert({1,2,3}, false)
 assert(a == false)
 assert(b == true)
@@ -12,7 +12,7 @@ assert(m:erase {1,2,3} == false)
 assert(m:find {1,2,3} == nil)
 assert(m:erase {1,2,3} == nil)
 
-local m = map()
+local m = tree_map()
 m:insert({1,1,1}, 111)
 m:insert({1,1,2}, 112)
 m:insert({1,2,3}, 123)
