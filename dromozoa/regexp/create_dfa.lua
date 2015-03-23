@@ -15,12 +15,20 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local graph = require "dromozoa.graph"
-local json = require "dromozoa.json"
+local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local bitset = require "dromozoa.regexp.bitset"
+local tree_map = require "dromozoa.regexp.tree_map"
+
+local function seq_to_set(seq)
+  local set = {}
+  for i = 1, #seq do
+    set[seq[i]] = true
+  end
+  return set
+end
 
 local function set_to_seq(set)
   local seq = {}
@@ -31,37 +39,15 @@ local function set_to_seq(set)
   return seq
 end
 
-local function seq_eq(a, b)
-  local m = #a
-  local n = #b
-  if m ~= n then
-    return false
+local function copy_seq(this)
+  local that = {}
+  for i = 1, #this do
+    that[i] = this[i]
   end
-  for i = 1, m do
-    if a[i] ~= b[i] then
-      return false
-    end
-  end
-  return true
+  return that
 end
 
-local function seq_lt(a, b)
-  local m = #a
-  local n = #b
-  if m ~= n then
-    return m < n
-  else
-    for i = 1, m do
-      local u = a[i]
-      local v = b[i]
-      if u ~= v then
-        return u < v
-      end
-    end
-  end
-end
-
-local function epsilon_closure(g, uset)
+local function make_epsilon_closure(g, useq)
   local visitor = dfs_visitor {
     vset = {};
 
@@ -74,72 +60,94 @@ local function epsilon_closure(g, uset)
     end;
   }
 
-  for k in pairs(uset) do
-    g:get_vertex(k):dfs(visitor)
+  for i = 1, #useq do
+    g:get_vertex(useq[i]):dfs(visitor)
   end
-
-  return visitor.vset
+  return set_to_seq(visitor.vset)
 end
 
-local function move1(g, set)
-  local vmat = {}
+local function make_transition(g, useq)
+  local mat = {}
   for i = 0, 257 do
-    vmat[i] = {}
+    mat[i] = {}
   end
-  for k in pairs(set) do
-    for v, e in g:get_vertex(k):each_adjacent_vertex() do
+  for i = 1, #useq do
+    for v, e in g:get_vertex(useq[i]):each_adjacent_vertex() do
+      local vid = v.id
       local condition = decode_condition(e.condition)
       for i = 0, 257 do
         if condition:test(i) then
-          vmat[i][v.id] = true
+          mat[i][vid] = true
         end
       end
     end
   end
-  return vmat
-end
-
-local function move2(umat)
-  local vmat = {}
+  local map = tree_map()
   for i = 0, 257 do
-    local row = umat[i]
+    local row = mat[i]
     if next(row) ~= nil then
-      vmat[#vmat + 1] = { i, set_to_seq(row) }
+      map:insert(set_to_seq(row), bitset()):set(i)
     end
   end
-  table.sort(vmat, function (a, b)
-    return seq_lt(a[2], b[2])
-  end)
-  return vmat
+  local transition = {}
+  for k, v in map:each() do
+    transition[#transition + 1] = { encode_condition(v), copy_seq(k) }
+  end
+  return transition
 end
 
-local function move3(umat)
-  local vmat = {}
-  for i = 1, #umat do
-    local u = umat[i]
-    local v = vmat[#vmat]
-    if v and seq_eq(u[2], v[2]) then
-      v[1]:set(u[1])
-    else
-      vmat[#vmat + 1] = { bitset():set(u[1]), u[2] }
+local function creator(nfa, dfa)
+  local self = {
+    _nfa = nfa;
+    _dfa = dfa;
+    _state = tree_map();
+    _color = {};
+  }
+
+  function self:state(useq)
+    local state = self._state:find(useq)
+    if not state then
+      local v = self._dfa:create_vertex()
+      for i = 1, #useq do
+        if self._nfa:get_vertex(useq[i]).accept then
+          v.accept = true
+          break
+        end
+      end
+      state = v.id
+      self._state:insert(useq, state)
     end
+    return state
   end
-  for i = 1, #vmat do
-    local v = vmat[i]
-    v[1] = encode_condition(v[1])
+
+  function self:visit(useq)
+    local epsilon_closure = make_epsilon_closure(self._nfa, useq)
+    local ustate = self:state(epsilon_closure)
+    local color = self._color
+    if not color[ustate] then
+      color[ustate] = true
+      local transition = make_transition(self._nfa, epsilon_closure)
+      for i = 1, #transition do
+        local t = transition[i]
+        local vstate = self:visit(t[2])
+        local e = self._dfa:create_edge(ustate, vstate)
+        e.condition = t[1]
+      end
+    end
+    return ustate
   end
-  return vmat
+
+  return self
 end
 
-local function move(g, uset)
-  return move3(move2(move1(g, uset)))
+return function (nfa)
+  local dfa = graph()
+  local c = creator(nfa, dfa)
+  local uset = {}
+  for v in nfa:each_vertex("start") do
+    uset[v.id] = true
+  end
+  local s = c:visit(set_to_seq(uset))
+  dfa:get_vertex(s).start = true
+  return dfa
 end
-
-local function main(nfa, dfa, uset)
-  local vset = epsilon_closure(nfa, uset)
-  print(json.encode(vset))
-  local wmat = move(nfa, vset)
-  print(json.encode(wmat))
-end
-
-return main

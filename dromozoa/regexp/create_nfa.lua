@@ -114,7 +114,6 @@ local function creator(g)
   return self
 end
 
-
 return function (node)
   local g = graph()
   creator(g):create(node)
