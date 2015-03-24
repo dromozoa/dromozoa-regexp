@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local unparse_ere = require "dromozoa.regexp.unparse_ere"
+local unparse = require "dromozoa.regexp.unparse"
 
 local zero_length = {
   ["epsilon"] = "<<font color=\"#CC0000\">&epsilon;</font>>";
@@ -35,7 +35,7 @@ local function label(node)
   if a then
     return a
   else
-    return "<" .. unparse_ere(node):gsub("[\"&<>]", quote) .. ">"
+    return "<" .. unparse(node):gsub("[\"&<>]", quote) .. ">"
   end
 end
 

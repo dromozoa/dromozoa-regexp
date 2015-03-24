@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local character_class = require "dromozoa.regexp.character_class"
-local unparse_ere = require "dromozoa.regexp.unparse_ere"
+local unparse = require "dromozoa.regexp.unparse"
 
 local function parser(text)
   local self = {
@@ -209,7 +209,7 @@ local function parser(text)
         if string.byte(a[2]) <= 45 then
           return self:push { "[-", a, { "[.", "-" } }
         else
-          self:raise("invalid range expression [" .. unparse_ere(a) .. "--]")
+          self:raise("invalid range expression [" .. unparse(a) .. "--]")
         end
       elseif self:match "%-" then
         if self:end_range() then
@@ -217,7 +217,7 @@ local function parser(text)
           if string.byte(a[2]) <= string.byte(b[2]) then
             return self:push { "[-", a, b }
           else
-            self:raise("invalid range expression [" .. unparse_ere(a) .. "-" .. unparse_ere(b) .. "]")
+            self:raise("invalid range expression [" .. unparse(a) .. "-" .. unparse(b) .. "]")
           end
         else
           self:raise()
