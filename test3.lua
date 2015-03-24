@@ -10,9 +10,36 @@ local ast = parse_ere(arg[1])
 -- print(json.encode(ast))
 -- print(unparse_ere(ast))
 local nfa = create_nfa(ast)
--- write_graphviz(nfa, io.stdout)
+write_graphviz(nfa, io.open("test-nfa.dot", "w")):close()
 local dfa = create_dfa(nfa)
-write_graphviz(dfa, io.stdout)
+write_graphviz(dfa, io.open("test-dfa1.dot", "w")):close()
+
+local function reverse_dfa(dfa)
+  local reverse_nfa = graph()
+  local map = {}
+  for u in dfa:each_vertex() do
+    local v = reverse_nfa:create_vertex()
+    map[u.id] = v.id
+    if u.start then
+      v.accept = true
+    end
+    if u.accept then
+      v.start = true
+    end
+  end
+  for e in dfa:each_edge() do
+    local e2 = reverse_nfa:create_edge(map[e.vid], map[e.uid])
+    e2.condition = e.condition
+  end
+  local reverse_dfa = create_dfa(reverse_nfa)
+  return reverse_dfa
+end
+
+local rdfa = reverse_dfa(dfa)
+write_graphviz(rdfa, io.open("test-dfa2.dot", "w")):close()
+local fdfa = reverse_dfa(rdfa)
+write_graphviz(fdfa, io.open("test-dfa3.dot", "w")):close()
+
 
 -- local ast = ere_parser():parse(arg[1])
 -- local nfa = nfa_builder():build(ast)

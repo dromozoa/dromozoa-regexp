@@ -51,4 +51,5 @@ return function (g, out)
     out:write("  ", e.uid, " -> ", e.vid, " [label = ", label(e.condition), "];\n")
   end
   out:write("}\n")
+  return out
 end
