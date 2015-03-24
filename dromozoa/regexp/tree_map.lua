@@ -71,9 +71,6 @@ return function ()
   end
 
   function self:insert(key, value)
-    if value == nil then
-      error "bad argument #2"
-    end
     local n = #key
     local t = self._t
     local u = t[n]
