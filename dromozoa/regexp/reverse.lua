@@ -15,9 +15,24 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local construct_subset = require "dromozoa.regexp.construct_subset"
-local reverse = require "dromozoa.regexp.reverse"
+local graph = require "dromozoa.graph"
 
 return function (A)
-  return construct_subset(reverse(construct_subset(reverse(A))))
+  local B = graph()
+  local map = {}
+  for a in A:each_vertex() do
+    local b = B:create_vertex()
+    map[a.id] = b.id
+    if a.start then
+      b.accept = true
+    end
+    if a.accept then
+      b.start = true
+    end
+  end
+  for a in A:each_edge() do
+    local b = B:create_edge(map[a.vid], map[a.uid])
+    b.condition = a.condition
+  end
+  return B
 end
