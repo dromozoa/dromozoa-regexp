@@ -153,6 +153,6 @@ local function unparser(out)
   return self
 end
 
-return function (node)
-  return unparser(buffer_writer()):unparse(node):concat()
+return function (node, out)
+  return unparser(out or buffer_writer()):unparse(node):concat()
 end
