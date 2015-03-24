@@ -17,6 +17,7 @@
 
 local bitset = require "dromozoa.regexp.bitset"
 local character_class = require "dromozoa.regexp.character_class"
+local string_byte = string.byte
 
 local function decoder(set)
   local self = {
@@ -34,11 +35,11 @@ local function decoder(set)
     end;
 
     ["char"] = function (self, node, a)
-      self:set(string.byte(a))
+      self:set(string_byte(a))
     end;
 
     ["\\"] = function (self, node, a)
-      self:set(string.byte(a))
+      self:set(string_byte(a))
     end;
 
     ["."] = function (self)
@@ -88,18 +89,21 @@ local function decoder(set)
   end
 
   function self:decode_char(node)
-    return string.byte(node[2])
+    return string_byte(node[2])
   end
 
   function self:visit(node)
     return self[node[1]](self, node, node[2], node[3], node[4])
   end
 
+  function self:decode(node)
+    self:visit(node)
+    return self._set
+  end
+
   return self
 end
 
-return function (node)
-  local set = bitset()
-  decoder(set):visit(node)
-  return set
+return function (node, set)
+  return decoder(set or bitset()):decode(node)
 end

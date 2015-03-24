@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local string_char = string.char
+
 return function (set)
   local n = set:count()
   if n == 0 then
@@ -37,19 +39,19 @@ return function (set)
       end
     end
     if n == 1 then
-      return { "char", string.char(t[1][1]) }
+      return { "char", string_char(t[1][1]) }
     end
     local node = { is_matching_list and "[" or "[^" }
     for i = 1, #t do
       local v = t[i]
       local a, b = v[1], v[2]
       if a == b then
-        node[#node + 1] = { "[char", string.char(a) }
+        node[#node + 1] = { "[char", string_char(a) }
       elseif a == b - 1 then
-        node[#node + 1] = { "[char", string.char(a) }
-        node[#node + 1] = { "[char", string.char(b) }
+        node[#node + 1] = { "[char", string_char(a) }
+        node[#node + 1] = { "[char", string_char(b) }
       else
-        node[#node + 1] = { "[-", { "[char", string.char(a) }, { "[char", string.char(b) } }
+        node[#node + 1] = { "[-", { "[char", string_char(a) }, { "[char", string_char(b) } }
       end
     end
     return node

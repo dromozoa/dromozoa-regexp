@@ -40,11 +40,11 @@ local function label(node)
 end
 
 return function (g, out)
-  out:write("digraph \"fsm\" {\n  graph [rankdir = LR];\n")
-  for u in g:each_vertex("start") do
+  out:write("digraph \"graph\" {\n  graph [rankdir = LR];\n")
+  for u in g:each_vertex "start" do
     out:write("  ", u.id, " [style = filled, fillcolor = \"#CCCCCC\"];\n")
   end
-  for v in g:each_vertex("accept") do
+  for v in g:each_vertex "accept" do
     out:write("  ", v.id, " [peripheries = 2];\n")
   end
   for e in g:each_edge() do
