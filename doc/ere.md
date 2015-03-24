@@ -6,7 +6,7 @@ expressionにanchoringとduplicationを含むため、SUSが定義する文法�
 
 ```
 DUP_COUNT
-  = ("0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9")+
+  = [0-9]+
 
 extended_reg_exp
   = ERE_branch ("|" ERE_branch)*
@@ -118,8 +118,8 @@ ERE_dupl_symbol
   | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ]
 
 bracket_expression
-  = [ "[", expression_term+ ]
-  | [ "[^", expression_term+ ]
+  = [ "[", expression_term+ ] # matching list
+  | [ "[^", expression_term+ ] # nonmatching list
 
 expression_term
   = [ "[=", string ] # equivalence class

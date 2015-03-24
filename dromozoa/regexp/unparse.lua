@@ -145,11 +145,14 @@ local function unparser(out)
     self[node[1]](self, node, node[2], node[3], node[4]);
   end
 
+  function self:unparse(node)
+    self:visit(node)
+    return self._out
+  end
+
   return self
 end
 
 return function (node)
-  local out = buffer_writer()
-  unparser(out):visit(node)
-  return out:concat()
+  return unparser(buffer_writer()):unparse(node):concat()
 end
