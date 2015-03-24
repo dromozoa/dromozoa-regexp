@@ -45,6 +45,9 @@ return function (set)
       local a, b = v[1], v[2]
       if a == b then
         node[#node + 1] = { "[char", string.char(a) }
+      elseif a == b - 1 then
+        node[#node + 1] = { "[char", string.char(a) }
+        node[#node + 1] = { "[char", string.char(b) }
       else
         node[#node + 1] = { "[-", { "[char", string.char(a) }, { "[char", string.char(b) } }
       end
