@@ -3,7 +3,7 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 local parse_ere = require "dromozoa.regexp.parse_ere"
 local unparse_ere = require "dromozoa.regexp.unparse_ere"
 local create_nfa = require "dromozoa.regexp.create_nfa"
-local create_dfa = require "dromozoa.regexp.create_dfa"
+local construct_subset = require "dromozoa.regexp.construct_subset"
 local graph = require "dromozoa.graph"
 local minimize_dfa = require "dromozoa.regexp.minimize_dfa"
 
@@ -12,7 +12,7 @@ local ast = parse_ere(arg[1])
 -- print(unparse_ere(ast))
 local nfa = create_nfa(ast)
 write_graphviz(nfa, io.open("test-nfa.dot", "w")):close()
-local dfa = create_dfa(nfa)
+local dfa = construct_subset(nfa)
 write_graphviz(dfa, io.open("test-dfa1.dot", "w")):close()
 
 local mdfa = minimize_dfa(dfa)

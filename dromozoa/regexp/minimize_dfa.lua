@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local graph = require "dromozoa.graph"
-local create_dfa = require "dromozoa.regexp.create_dfa"
+local construct_subset = require "dromozoa.regexp.construct_subset"
 
 local function reverse_dfa(dfa)
   local reverse_nfa = graph()
@@ -35,7 +35,7 @@ local function reverse_dfa(dfa)
     local e2 = reverse_nfa:create_edge(map[e.vid], map[e.uid])
     e2.condition = e.condition
   end
-  local reverse_dfa = create_dfa(reverse_nfa)
+  local reverse_dfa = construct_subset(reverse_nfa)
   return reverse_dfa
 end
 
