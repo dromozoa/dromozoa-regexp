@@ -15,35 +15,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function ()
-  local self = {}
+local character_class = require "dromozoa.regexp.character_class"
 
-  function self:initialize_vertex(g, v)
-  end
-
-  function self:start_vertex(g, v)
-  end
-
-  function self:discover_vertex(g, v)
-  end
-
-  function self:examine_edge(g, e, u, v)
-  end
-
-  function self:tree_edge(g, e, u, v)
-  end
-
-  function self:back_edge(g, e, u, v)
-  end
-
-  function self:forward_or_cross_edge(g, e, u, v)
-  end
-
-  function self:finish_edge(g, e, u, v)
-  end
-
-  function self:finish_vertex(g, v)
-  end
-
-  return self
-end
+assert(character_class.xdigit)
+assert(character_class.punct:test(string.byte "["))
+assert(character_class.punct:test(string.byte "|"))
+assert(character_class.punct:test(string.byte "]"))
+assert(character_class.punct:test(string.byte "~"))

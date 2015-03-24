@@ -17,42 +17,34 @@
 
 local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
+local bitset = require "dromozoa.regexp.bitset"
 local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
-local bitset = require "dromozoa.regexp.bitset"
 local tree_map = require "dromozoa.regexp.tree_map"
 
-local function seq_to_set(seq)
-  local set = {}
-  for i = 1, #seq do
-    set[seq[i]] = true
+local function set_to_seq(A)
+  local B = {}
+  for k in pairs(A) do
+    B[#B + 1] = k
   end
-  return set
+  table.sort(B)
+  return B
 end
 
-local function set_to_seq(set)
-  local seq = {}
-  for k in pairs(set) do
-    seq[#seq + 1] = k
+local function copy_seq(A)
+  local B = {}
+  for i = 1, #A do
+    B[i] = A[i]
   end
-  table.sort(seq)
-  return seq
+  return B
 end
 
-local function copy_seq(this)
-  local that = {}
-  for i = 1, #this do
-    that[i] = this[i]
-  end
-  return that
-end
-
-local function make_epsilon_closure(g, useq)
+local function create_epsilon_closure(A, U)
   local visitor = dfs_visitor {
-    vset = {};
+    set = {};
 
     discover_vertex = function (self, g, u)
-      self.vset[u.id] = true
+      self.set[u.id] = true
     end;
 
     examine_edge = function (self, g, e, u, v)
@@ -60,31 +52,31 @@ local function make_epsilon_closure(g, useq)
     end;
   }
 
-  for i = 1, #useq do
-    g:get_vertex(useq[i]):dfs(visitor)
+  for i = 1, #U do
+    A:get_vertex(U[i]):dfs(visitor)
   end
-  return set_to_seq(visitor.vset)
+  return set_to_seq(visitor.set)
 end
 
-local function make_transition(g, useq)
-  local mat = {}
+local function create_transition(A, U)
+  local matrix = {}
   for i = 0, 257 do
-    mat[i] = {}
+    matrix[i] = {}
   end
-  for i = 1, #useq do
-    for v, e in g:get_vertex(useq[i]):each_adjacent_vertex() do
+  for i = 1, #U do
+    for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
       local vid = v.id
       local condition = decode_condition(e.condition)
       for i = 0, 257 do
         if condition:test(i) then
-          mat[i][vid] = true
+          matrix[i][vid] = true
         end
       end
     end
   end
   local map = tree_map()
   for i = 0, 257 do
-    local row = mat[i]
+    local row = matrix[i]
     if next(row) ~= nil then
       map:insert(set_to_seq(row), bitset()):set(i)
     end
@@ -96,58 +88,57 @@ local function make_transition(g, useq)
   return transition
 end
 
-local function creator(nfa, dfa)
+local function creator()
   local self = {
-    _nfa = nfa;
-    _dfa = dfa;
-    _state = tree_map();
+    _map = tree_map();
     _color = {};
   }
 
-  function self:state(useq)
-    local state = self._state:find(useq)
-    if not state then
-      local v = self._dfa:create_vertex()
-      for i = 1, #useq do
-        if self._nfa:get_vertex(useq[i]).accept then
+  function self:vertex(A, B, U)
+    local map = self._map
+    local v = map:find(U)
+    if not v then
+      v = B:create_vertex()
+      for i = 1, #U do
+        if A:get_vertex(U[i]).accept then
           v.accept = true
           break
         end
       end
-      state = v.id
-      self._state:insert(useq, state)
+      map:insert(U, v)
     end
-    return state
+    return v
   end
 
-  function self:visit(useq)
-    local epsilon_closure = make_epsilon_closure(self._nfa, useq)
-    local ustate = self:state(epsilon_closure)
+  function self:visit(A, B, U)
+    local E = create_epsilon_closure(A, U)
+    local u = self:vertex(A, B, E)
     local color = self._color
-    if not color[ustate] then
-      color[ustate] = true
-      local transition = make_transition(self._nfa, epsilon_closure)
+    local uid = u.id
+    if not color[uid] then
+      color[uid] = true
+      local transition = create_transition(A, E)
       for i = 1, #transition do
         local t = transition[i]
-        local vstate = self:visit(t[2])
-        local e = self._dfa:create_edge(ustate, vstate)
-        e.condition = t[1]
+        B:create_edge(u, self:visit(A, B, t[2])).condition = t[1]
       end
     end
-    return ustate
+    return u
+  end
+
+  function self:create(A, B)
+    local S = {}
+    for u in A:each_vertex "start" do
+      S[#S + 1] = u.id
+    end
+    local s = self:visit(A, B, S)
+    s.start = true
+    return B
   end
 
   return self
 end
 
-return function (nfa)
-  local dfa = graph()
-  local c = creator(nfa, dfa)
-  local uset = {}
-  for v in nfa:each_vertex("start") do
-    uset[v.id] = true
-  end
-  local s = c:visit(set_to_seq(uset))
-  dfa:get_vertex(s).start = true
-  return dfa
+return function (A, B)
+  return creator():create(A, B or graph())
 end

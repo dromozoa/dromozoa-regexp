@@ -17,7 +17,7 @@
 
 local graph = require "dromozoa.graph"
 
-local function creator(g)
+local function decoder(g)
   local self = {
     _g = g;
 
@@ -104,18 +104,17 @@ local function creator(g)
     return (self[node[1]] or self.fallback)(self, u, node, node[2], node[3], node[4])
   end
 
-  function self:create(node)
+  function self:decode(node)
     local s = self:create_vertex()
     s.start = true
     local a = self:visit(s, node)
     a.accept = true
+    return self._g
   end
 
   return self
 end
 
-return function (node)
-  local g = graph()
-  creator(g):create(node)
-  return g
+return function (node, g)
+  return decoder(g or graph()):decode(node)
 end
