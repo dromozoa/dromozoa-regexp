@@ -5,7 +5,7 @@ local unparse_ere = require "dromozoa.regexp.unparse_ere"
 local create_nfa = require "dromozoa.regexp.create_nfa"
 local construct_subset = require "dromozoa.regexp.construct_subset"
 local graph = require "dromozoa.graph"
-local minimize_dfa = require "dromozoa.regexp.minimize_dfa"
+local minimize = require "dromozoa.regexp.minimize"
 
 local ast = parse_ere(arg[1])
 -- print(json.encode(ast))
@@ -15,7 +15,7 @@ write_graphviz(nfa, io.open("test-nfa.dot", "w")):close()
 local dfa = construct_subset(nfa)
 write_graphviz(dfa, io.open("test-dfa1.dot", "w")):close()
 
-local mdfa = minimize_dfa(dfa)
+local mdfa = minimize(dfa)
 write_graphviz(mdfa, io.open("test-dfa2.dot", "w")):close()
 
 
