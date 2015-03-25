@@ -21,85 +21,81 @@ local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local tree_map = require "dromozoa.regexp.tree_map"
 
+local zero_vertex = {
+  id = 0;
+}
+
+local function vertex(g, map, a, b)
+  local key = { a.id, b.id }
+  local v = map:find(key)
+  if not v then
+    v = g:create_vertex()
+    v.a = a
+    v.b = b
+    map:insert(key, v)
+  end
+  return v
+end
+
+local function create_transition(u)
+  local transition = {}
+  for i = 0, 255 do
+    transition[i] = zero_vertex
+  end
+  for v, e in u:each_adjacent_vertex() do
+    local condition = decode_condition(e.condition)
+    for i = 0, 255 do
+      if condition:test(i) then
+        transition[i] = v
+      end
+    end
+  end
+  return transition
+end
+
+local accept_rules = {
+  intersection = function (u)
+    return u.a.accept and u.b.accept
+  end;
+  union = function (u)
+    return u.a.accept or u.b.accept
+  end;
+  difference = function (u)
+    return u.a.accept or not u.b.accept
+  end;
+}
+
 return function (A, B, op)
   local C = graph()
   local map = tree_map()
-
-  local a_fail = A:create_vertex()
-  local b_fail = B:create_vertex()
-
   for a in A:each_vertex() do
     for b in B:each_vertex() do
-      local v = C:create_vertex()
-      v.a = a
-      v.b = b
-      map:insert({ a.id, b.id }, v)
+      local u = vertex(C, map, a, b)
+      local ta = create_transition(a)
+      local tb = create_transition(b)
+      local tc = {}
+      for i = 0, 255 do
+        local vid = vertex(C, map, ta[i], tb[i]).id
+        local set = tc[vid]
+        if not set then
+          set = bitset()
+          tc[vid] = set
+        end
+        set:set(i)
+      end
+      for k, v in pairs(tc) do
+        local e = C:create_edge(u, k)
+        e.condition = encode_condition(v)
+      end
     end
   end
-
-  for u in C:each_vertex() do
-    local A = {}
-    for v, e in u.a:each_adjacent_vertex() do
-      A[#A + 1] = { decode_condition(e.condition), v.id }
-    end
-    local B = {}
-    for v, e in u.b:each_adjacent_vertex() do
-      B[#B + 1] = { decode_condition(e.condition), v.id }
-    end
-    local transition = {}
-    for i = 0, 257 do
-      local av = a_fail.id
-      local bv = b_fail.id
-      for j = 1, #A do
-        local a = A[j]
-        if a[1]:test(i) then
-          av = a[2]
-          break
-        end
-      end
-      for j = 1, #B do
-        local b = B[j]
-        if b[1]:test(i) then
-          bv = b[2]
-          break
-        end
-      end
-      local v = map:find { av, bv }
-      print(v, av, bv)
-      local t = transition[v.id]
-      if not t then
-        t = bitset()
-        transition[v.id] = t
-      end
-      t:set(i)
-    end
-    for k, v in pairs(transition) do
-      local e = C:create_edge(u, C:get_vertex(k))
-      e.condition = encode_condition(v)
-    end
-  end
+  local accept_rule = accept_rules[op]
   for u in C:each_vertex() do
     if u.a.start and u.b.start then
       u.start = true
     end
-  end
-  if op == "intersection" then
-    for u in C:each_vertex() do
-      if u.a.accept and u.b.accept then
-        u.accept = true
-      end
-    end
-  elseif op == "union" then
-    for u in C:each_vertex() do
-      if u.a.accept or u.b.accept then
-        u.accept = true
-      end
-    end
-  elseif op == "difference" then
-    for u in C:each_vertex() do
-      if u.a.accept and not u.b.accept then
-        u.accept = true
-      end
+    if accept_rule(u) then
+      u.accept = true
     end
   end
   C:clear_vertex_properties "a"
