@@ -21,39 +21,49 @@ local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local tree_map = require "dromozoa.regexp.tree_map"
 
-local zero_vertex = {
+local dummy_vertex = {
   id = 0;
+  each_adjacent_vertex = function()
+    return function () end
+  end
 }
 
-local function vertex(g, map, a, b, accept)
-  return map:find { a.id, b.id }
+local function create_vertex(g, map, a, b, accept)
+  local v = g:create_vertex()
+  if a.start and b.start then
+    v.start = true
+  end
+  if accept(a.accept, b.accept) then
+    v.accept = true
+  end
+  v.a = a
+  v.b = b
+  map:insert({ a.id, b.id }, v)
 end
 
 local function create_transition(u)
   local transition = {}
   for i = 0, 255 do
-    transition[i] = zero_vertex
+    transition[i] = dummy_vertex
   end
-  if u.id ~= 0 then
-    for v, e in u:each_adjacent_vertex() do
-      local condition = decode_condition(e.condition)
-      for i = 0, 255 do
-        if condition:test(i) then
-          transition[i] = v
-        end
+  for v, e in u:each_adjacent_vertex() do
+    local condition = decode_condition(e.condition)
+    for i = 0, 255 do
+      if condition:test(i) then
+        transition[i] = v
       end
     end
   end
   return transition
 end
 
-local function visit(g, map, a, b, accept)
-  local u = vertex(g, map, a, b, accept)
+local function visit(g, map, a, b)
+  local u = map:find { a.id, b.id }
   local A = create_transition(a)
   local B = create_transition(b)
   local transition = {}
   for i = 0, 255 do
-    local v = vertex(g, map, A[i], B[i], accept)
+    local v = map:find { A[i].id, B[i].id }
     local vid = v.id
     local set = transition[vid]
     if not set then
@@ -70,48 +80,23 @@ end
 local function construct(A, B, accept)
   local C = graph()
   local map = tree_map()
+  create_vertex(C, map, dummy_vertex, dummy_vertex, accept)
+  for a in A:each_vertex() do
+    create_vertex(C, map, a, dummy_vertex, accept)
+  end
+  for b in B:each_vertex() do
+    create_vertex(C, map, dummy_vertex, b, accept)
+  end
   for a in A:each_vertex() do
     for b in B:each_vertex() do
-      local v = C:create_vertex()
-      if a.start and b.start then
-        v.start = true
-      end
-      if accept(a.accept, b.accept) then
-        v.accept = true
-      end
-      v.a = a
-      v.b = b
-      map:insert({ a.id, b.id }, v)
+      create_vertex(C, map, a, b, accept)
     end
   end
-  for a in A:each_vertex() do
-    local v = C:create_vertex()
-    if accept(a.accept, false) then
-      v.accept = true
-    end
-    v.a = a
-    v.b = zero_vertex
-    map:insert({ a.id, 0 }, v)
-  end
-  for b in A:each_vertex() do
-    local v = C:create_vertex()
-    if accept(false, b.accept) then
-      v.accept = true
-    end
-    v.a = zero_vertex
-    v.b = b
-    map:insert({ 0, b.id }, v)
-  end
-  local v = C:create_vertex()
-  if accept(false, false) then
-    v.accept = true
-  end
-  v.a = zero_vertex
-  v.b = zero_vertex
-  map:insert({ 0, 0 }, v)
   for v in C:each_vertex() do
-    visit(C, map, v.a, v.b, accept)
+    visit(C, map, v.a, v.b)
   end
+  C:clear_vertex_properties "a"
+  C:clear_vertex_properties "b"
   return C
 end
 
