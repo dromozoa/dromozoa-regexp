@@ -131,8 +131,10 @@ local function creator()
     for u in A:each_vertex "start" do
       S[#S + 1] = u.id
     end
-    local s = self:visit(A, B, S)
-    s.start = true
+    if #S > 0 then
+      local s = self:visit(A, B, S)
+      s.start = true
+    end
     return B
   end
 

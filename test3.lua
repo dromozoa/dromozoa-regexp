@@ -14,8 +14,8 @@ write_graphviz(nfa, io.open("test-nfa.dot", "w")):close()
 local dfa = construct_subset(nfa)
 write_graphviz(dfa, io.open("test-dfa1.dot", "w")):close()
 
-remove_assertion(dfa)
-write_graphviz(dfa, io.open("test-dfa2.dot", "w")):close()
+local dfa1, dfa2 = remove_assertion(dfa)
+write_graphviz(dfa1, io.open("test-dfa2.dot", "w")):close()
 
-local mdfa = minimize(dfa)
+local mdfa = minimize(dfa1)
 write_graphviz(mdfa, io.open("test-dfa3.dot", "w")):close()
