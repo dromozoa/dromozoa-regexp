@@ -31,6 +31,22 @@ local function examine_edge(self, g, e, u, v)
   end
 end
 
+local function remove_nonmatching_begin_assertion(g)
+  local visitor = dfs_visitor {
+    color = {};
+    examine_edge = examine_edge;
+  }
+  for v in g:each_vertex "start" do
+    v:dfs(visitor)
+  end
+  local color = visitor.color
+  for e in g:each_edge() do
+    if e.condition[1] == "^" and not color[e.id] then
+      e:remove()
+    end
+  end
+end
+
 local function remove_nonmatching_end_assertion(g)
   local visitor = dfs_visitor {
     color = {};
@@ -45,37 +61,52 @@ local function remove_nonmatching_end_assertion(g)
       e:remove()
     end
   end
-  return g
 end
 
-local function remove_nonmatching_assertion(A, key, mode, assertion)
-  local visitor = dfs_visitor {
-    color = {};
-
-    examine_edge = function (self, g, e, u, v)
-      if is_assertion[e.condition[1]] then
-        self.color[e.id] = true
-      else
-        return false
+local function collapse_begin_assertion(g)
+  for e in g:each_edge() do
+    if e.condition[1] == "^" then
+      if e.v.accept then
+        e.u.accept = true
       end
-    end;
-  }
-
-  for u in A:each_vertex(key) do
-    u:dfs(visitor, mode)
+      e:collapse()
+    end
   end
-  local color = visitor.color
-  for e in A:each_edge() do
-    if e.condition[1] == assertion and not color[e.id] then
+end
+
+local function remove_begin_assertion(g)
+  for e in g:each_edge() do
+    if e.condition[1] == "^" then
       e:remove()
+    end
+  end
+end
+
+local function collapse_end_assertion(g)
+  local color = {}
+  for v in g:each_vertex "accept" do
+    for u, e in v:each_adjacent_vertex "v" do
+      color[e.id] = true
+    end
+  end
+  for e in g:each_edge() do
+    if e.condition[1] == "$" and not color[e.id] then
+      if e.v.accept then
+        e.u.accept = true
+      end
+      e:collapse()
     end
   end
 end
 
 return function (A)
   local B = A:clone()
+  remove_nonmatching_begin_assertion(B)
   remove_nonmatching_end_assertion(B)
-  -- remove_nonmatching_assertion(A, "start", "u", "^")
-  -- remove_nonmatching_assertion(A, "accept", "v", "$")
-  return B
+  local C = B:clone()
+  collapse_begin_assertion(B)
+  collapse_end_assertion(B)
+  remove_begin_assertion(C)
+  collapse_end_assertion(C)
+  return B, C
 end
