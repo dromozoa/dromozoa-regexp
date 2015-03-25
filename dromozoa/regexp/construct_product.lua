@@ -25,13 +25,23 @@ local zero_vertex = {
   id = 0;
 }
 
-local function vertex(g, map, a, b)
+local function vertex(g, map, a, b, accept)
+  if not a then
+    a = zero_vertex
+  end
+  if not b then
+    b = zero_vertex
+  end
   local key = { a.id, b.id }
   local v = map:find(key)
   if not v then
     v = g:create_vertex()
-    v.a = a
-    v.b = b
+    if a.start and b.start then
+      v.start = true
+    end
+    if accept(a.accept, b.accept) then
+      v.accept = true
+    end
     map:insert(key, v)
   end
   return v
@@ -39,9 +49,6 @@ end
 
 local function create_transition(u)
   local transition = {}
-  for i = 0, 255 do
-    transition[i] = zero_vertex
-  end
   for v, e in u:each_adjacent_vertex() do
     local condition = decode_condition(e.condition)
     for i = 0, 255 do
@@ -53,52 +60,59 @@ local function create_transition(u)
   return transition
 end
 
-local accept_rules = {
-  intersection = function (u)
-    return u.a.accept and u.b.accept
-  end;
-  union = function (u)
-    return u.a.accept or u.b.accept
-  end;
-  difference = function (u)
-    return u.a.accept or not u.b.accept
-  end;
-}
+local function visit(g, map, a, b, accept)
+  local u = vertex(g, map, a, b, accept)
+  local A = create_transition(a)
+  local B = create_transition(b)
+  local transition = {}
+  for i = 0, 255 do
+    local v = vertex(g, map, A[i], B[i], accept)
+    local vid = v.id
+    local set = transition[vid]
+    if not set then
+      set = bitset()
+      transition[vid] = set
+    end
+    set:set(i)
+  end
+  for k, v in pairs(transition) do
+    g:create_edge(u, k).condition = encode_condition(v)
+  end
+end
 
-return function (A, B, op)
+local function construct(A, B, accept)
   local C = graph()
   local map = tree_map()
   for a in A:each_vertex() do
     for b in B:each_vertex() do
-      local u = vertex(C, map, a, b)
-      local ta = create_transition(a)
-      local tb = create_transition(b)
-      local tc = {}
-      for i = 0, 255 do
-        local vid = vertex(C, map, ta[i], tb[i]).id
-        local set = tc[vid]
-        if not set then
-          set = bitset()
-          tc[vid] = set
-        end
-        set:set(i)
-      end
-      for k, v in pairs(tc) do
-        local e = C:create_edge(u, k)
-        e.condition = encode_condition(v)
-      end
+      visit(C, map, a, b, accept)
     end
   end
-  local accept_rule = accept_rules[op]
-  for u in C:each_vertex() do
-    if u.a.start and u.b.start then
-      u.start = true
-    end
-    if accept_rule(u) then
-      u.accept = true
-    end
-  end
-  C:clear_vertex_properties "a"
-  C:clear_vertex_properties "b"
   return C
 end
+
+local function accept_intersection(a, b)
+  return a and b
+end
+
+local function accept_union(a, b)
+  return a or b
+end
+
+local function accept_difference(a, b)
+  return a and not b
+end
+
+return {
+  intersection = function (A, B)
+    return construct(A, B, accept_intersection)
+  end;
+
+  union = function (A, B)
+    return construct(A, B, accept_union)
+  end;
+
+  difference = function (A, B)
+    return construct(A, B, accept_difference)
+  end;
+}
