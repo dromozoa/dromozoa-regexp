@@ -42,16 +42,13 @@ end
 local function create_epsilon_closure(A, U)
   local visitor = dfs_visitor {
     set = {};
-
     discover_vertex = function (self, g, u)
       self.set[u.id] = true
     end;
-
     examine_edge = function (self, g, e, u, v)
       return e.condition[1] == "epsilon"
     end;
   }
-
   for i = 1, #U do
     A:get_vertex(U[i]):dfs(visitor)
   end
