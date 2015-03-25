@@ -26,34 +26,21 @@ local zero_vertex = {
 }
 
 local function vertex(g, map, a, b, accept)
-  if not a then
-    a = zero_vertex
-  end
-  if not b then
-    b = zero_vertex
-  end
-  local key = { a.id, b.id }
-  local v = map:find(key)
-  if not v then
-    v = g:create_vertex()
-    if a.start and b.start then
-      v.start = true
-    end
-    if accept(a.accept, b.accept) then
-      v.accept = true
-    end
-    map:insert(key, v)
-  end
-  return v
+  return map:find { a.id, b.id }
 end
 
 local function create_transition(u)
   local transition = {}
-  for v, e in u:each_adjacent_vertex() do
-    local condition = decode_condition(e.condition)
-    for i = 0, 255 do
-      if condition:test(i) then
-        transition[i] = v
+  for i = 0, 255 do
+    transition[i] = zero_vertex
+  end
+  if u.id ~= 0 then
+    for v, e in u:each_adjacent_vertex() do
+      local condition = decode_condition(e.condition)
+      for i = 0, 255 do
+        if condition:test(i) then
+          transition[i] = v
+        end
       end
     end
   end
@@ -85,8 +72,45 @@ local function construct(A, B, accept)
   local map = tree_map()
   for a in A:each_vertex() do
     for b in B:each_vertex() do
-      visit(C, map, a, b, accept)
+      local v = C:create_vertex()
+      if a.start and b.start then
+        v.start = true
+      end
+      if accept(a.accept, b.accept) then
+        v.accept = true
+      end
+      v.a = a
+      v.b = b
+      map:insert({ a.id, b.id }, v)
     end
+  end
+  for a in A:each_vertex() do
+    local v = C:create_vertex()
+    if accept(a.accept, false) then
+      v.accept = true
+    end
+    v.a = a
+    v.b = zero_vertex
+    map:insert({ a.id, 0 }, v)
+  end
+  for b in A:each_vertex() do
+    local v = C:create_vertex()
+    if accept(false, b.accept) then
+      v.accept = true
+    end
+    v.a = zero_vertex
+    v.b = b
+    map:insert({ 0, b.id }, v)
+  end
+  local v = C:create_vertex()
+  if accept(false, false) then
+    v.accept = true
+  end
+  v.a = zero_vertex
+  v.b = zero_vertex
+  map:insert({ 0, 0 }, v)
+  for v in C:each_vertex() do
+    visit(C, map, v.a, v.b, accept)
   end
   return C
 end
