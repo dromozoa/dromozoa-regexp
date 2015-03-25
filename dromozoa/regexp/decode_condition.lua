@@ -104,6 +104,6 @@ local function decoder(set)
   return self
 end
 
-return function (node, set)
-  return decoder(set or bitset()):decode(node)
+return function (node)
+  return decoder(bitset()):decode(node)
 end

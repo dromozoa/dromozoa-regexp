@@ -85,7 +85,7 @@ local function create_transition(A, U)
   return transition
 end
 
-local function creator()
+local function constructor()
   local self = {
     _map = tree_map();
     _color = {};
@@ -123,7 +123,7 @@ local function creator()
     return u
   end
 
-  function self:create(A, B)
+  function self:construct(A, B)
     local S = {}
     for u in A:each_vertex "start" do
       S[#S + 1] = u.id
@@ -138,6 +138,6 @@ local function creator()
   return self
 end
 
-return function (A, B)
-  return creator():create(A, B or graph())
+return function (A)
+  return constructor():construct(A, graph())
 end
