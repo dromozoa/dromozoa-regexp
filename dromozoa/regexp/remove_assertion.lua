@@ -18,66 +18,39 @@
 local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 
-local is_assertion = {
-  ["^"] = true;
-  ["$"] = true;
-}
-
-local function examine_edge(self, g, e, u, v)
-  if is_assertion[e.condition[1]] then
-    self.color[e.id] = true
-  else
-    return false
-  end
-end
-
-local function remove_nonmatching_begin_assertion(g)
-  local visitor = dfs_visitor {
-    color = {};
-    examine_edge = examine_edge;
-  }
-  for v in g:each_vertex "start" do
-    v:dfs(visitor)
-  end
-  local color = visitor.color
+local function remove_assertion(g, op, color)
   for e in g:each_edge() do
-    if e.condition[1] == "^" and not color[e.id] then
+    if e.condition[1] == op and not color[e.id] then
       e:remove()
     end
   end
 end
 
-local function remove_nonmatching_end_assertion(g)
+local function remove_nonmatching_assertion(g, key, mode, op)
   local visitor = dfs_visitor {
     color = {};
-    examine_edge = examine_edge;
+    examine_edge = function (self, g, e, u, v)
+      local op = e.condition[1]
+      if op == "^" or op == "$" then
+        self.color[e.id] = true
+      else
+        return false
+      end
+    end;
   }
-  for v in g:each_vertex "accept" do
-    v:dfs(visitor, "v")
+  for v in g:each_vertex(key) do
+    v:dfs(visitor, mode)
   end
-  local color = visitor.color
-  for e in g:each_edge() do
-    if e.condition[1] == "$" and not color[e.id] then
-      e:remove()
-    end
-  end
+  remove_assertion(g, op, visitor.color)
 end
 
-local function collapse_begin_assertion(g)
+local function collapse_assertion(g, op, color)
   for e in g:each_edge() do
-    if e.condition[1] == "^" then
+    if e.condition[1] == op and not color[e.id] then
       if e.v.accept then
         e.u.accept = true
       end
       e:collapse()
-    end
-  end
-end
-
-local function remove_begin_assertion(g)
-  for e in g:each_edge() do
-    if e.condition[1] == "^" then
-      e:remove()
     end
   end
 end
@@ -89,24 +62,17 @@ local function collapse_end_assertion(g)
       color[e.id] = true
     end
   end
-  for e in g:each_edge() do
-    if e.condition[1] == "$" and not color[e.id] then
-      if e.v.accept then
-        e.u.accept = true
-      end
-      e:collapse()
-    end
-  end
+  collapse_assertion(g, "$", color)
 end
 
 return function (A)
   local B = A:clone()
-  remove_nonmatching_begin_assertion(B)
-  remove_nonmatching_end_assertion(B)
+  remove_nonmatching_assertion(B, "start", "u", "^")
+  remove_nonmatching_assertion(B, "accept", "v", "$")
   local C = B:clone()
-  collapse_begin_assertion(B)
+  collapse_assertion(B, "^", {})
   collapse_end_assertion(B)
-  remove_begin_assertion(C)
+  remove_assertion(C, "^", {})
   collapse_end_assertion(C)
   return B, C
 end
