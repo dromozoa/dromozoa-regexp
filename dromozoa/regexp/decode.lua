@@ -115,6 +115,6 @@ local function decoder(g)
   return self
 end
 
-return function (node, g)
-  return decoder(g or graph()):decode(node)
+return function (node)
+  return decoder(graph()):decode(node)
 end

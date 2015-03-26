@@ -21,6 +21,8 @@ return function (set)
   local n = set:count()
   if n == 0 then
     return { "epsilon" }
+  elseif n == 256 then
+    return { "." }
   elseif set:test(257) then
     return { "^" }
   elseif set:test(256) then

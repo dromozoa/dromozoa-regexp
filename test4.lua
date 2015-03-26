@@ -2,14 +2,14 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 local parse = require "dromozoa.regexp.parse"
 local decode = require "dromozoa.regexp.decode"
 local construct_subset = require "dromozoa.regexp.construct_subset"
+local construct_product = require "dromozoa.regexp.construct_product"
 local minimize = require "dromozoa.regexp.minimize"
 
-local data = {}
-for line in io.lines() do
-  data[#data + 1] = line
-end
-local ere = "(" .. table.concat(data, "|") .. ")"
-local nfa = decode(parse(ere))
-write_graphviz(nfa, io.open("dict-nfa.dot", "w")):close()
-local dfa = minimize(construct_subset(nfa))
-write_graphviz(dfa, io.open("dict.dot", "w")):close()
+local m1 = construct_subset(decode(parse(arg[1])))
+local m2 = construct_subset(decode(parse(arg[2])))
+local p = construct_product[arg[3]](m1, m2)
+local pm = minimize(p)
+write_graphviz(m1, io.open("test-m1.dot", "w")):close()
+write_graphviz(m2, io.open("test-m2.dot", "w")):close()
+write_graphviz(p, io.open("test-product.dot", "w")):close()
+write_graphviz(pm, io.open("test-pm.dot", "w")):close()

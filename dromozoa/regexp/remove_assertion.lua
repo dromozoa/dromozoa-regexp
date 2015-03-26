@@ -15,40 +15,64 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 
-local is_assertion = {
-  ["^"] = true;
-  ["$"] = true;
-}
+local function remove_assertion(g, op, color)
+  for e in g:each_edge() do
+    if e.condition[1] == op and not color[e.id] then
+      e:remove()
+    end
+  end
+end
 
-local function remove_nonmatching_assertion(A, key, mode, assertion)
+local function remove_nonmatching_assertion(g, key, mode, op)
   local visitor = dfs_visitor {
     color = {};
-
     examine_edge = function (self, g, e, u, v)
-      if is_assertion[e.condition[1]] then
+      local op = e.condition[1]
+      if op == "^" or op == "$" then
         self.color[e.id] = true
       else
         return false
       end
     end;
   }
-
-  for u in A:each_vertex(key) do
-    u:dfs(visitor, mode)
+  for v in g:each_vertex(key) do
+    v:dfs(visitor, mode)
   end
-  local color = visitor.color
-  for e in A:each_edge() do
-    if e.condition[1] == assertion and not color[e.id] then
-      e:remove()
+  remove_assertion(g, op, visitor.color)
+end
+
+local function collapse_assertion(g, op, color)
+  for e in g:each_edge() do
+    if e.condition[1] == op and not color[e.id] then
+      if e.v.accept then
+        e.u.accept = true
+      end
+      e:collapse()
     end
   end
 end
 
-return function (A)
-  remove_nonmatching_assertion(A, "start", "u", "^")
-  remove_nonmatching_assertion(A, "accept", "v", "$")
+local function collapse_end_assertion(g)
+  local color = {}
+  for v in g:each_vertex "accept" do
+    for u, e in v:each_adjacent_vertex "v" do
+      color[e.id] = true
+    end
+  end
+  collapse_assertion(g, "$", color)
+end
 
-  return A
+return function (A)
+  local B = A:clone()
+  remove_nonmatching_assertion(B, "start", "u", "^")
+  remove_nonmatching_assertion(B, "accept", "v", "$")
+  local C = B:clone()
+  collapse_assertion(B, "^", {})
+  collapse_end_assertion(B)
+  remove_assertion(C, "^", {})
+  collapse_end_assertion(C)
+  return B, C
 end
