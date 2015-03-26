@@ -5,6 +5,8 @@ local construct_subset = require "dromozoa.regexp.construct_subset"
 local graph = require "dromozoa.graph"
 local remove_assertion = require "dromozoa.regexp.remove_assertion"
 local minimize = require "dromozoa.regexp.minimize"
+local compile = require "dromozoa.regexp.compile"
+local execute = require "dromozoa.regexp.execute"
 
 local json = require "dromozoa.json"
 
@@ -25,3 +27,8 @@ local mdfa1 = minimize(dfa1)
 write_graphviz(mdfa1, io.open("test-mdfa1.dot", "w")):close()
 local mdfa2 = minimize(dfa2)
 write_graphviz(mdfa2, io.open("test-mdfa2.dot", "w")):close()
+
+local P = compile(mdfa1)
+-- print(json.encode(P))
+
+print(execute(P, arg[2], 1))

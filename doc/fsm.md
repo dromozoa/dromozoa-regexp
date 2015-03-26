@@ -1,5 +1,7 @@
 # FSM (Finite State Machine)
 
+## 遷移条件
+
 遷移条件はゼロ幅遷移とEREの抽象構文木の文字で構成される。
 
 ```
