@@ -20,6 +20,7 @@ return function (P, text, i)
   local start = P.start
   local accept = P.accept
 
+  local b
   local u = P.start
   while true do
     local c = text:byte(i)
@@ -30,8 +31,14 @@ return function (P, text, i)
     end
     local v = transition[u][c]
     if v == 0 then
+      if accept[u] then
+        return u, string.char(b - 1)
+      else
+        return
+      end
       return accept[u]
     end
+    b = c
     u = v
     i = i + 1
   end
