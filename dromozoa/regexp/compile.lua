@@ -29,11 +29,8 @@ return function (G)
       transition[i + 1] = 0
     end
     for v, e in u:each_adjacent_vertex() do
-      local condition = decode_condition(e.condition)
-      for i = 0, 256 do
-        if condition:test(i) then
-          transition[i + 1] = v.id
-        end
+      for k in decode_condition(e.condition):each() do
+        transition[k + 1] = v.id
       end
     end
     program.transition[u.id] = transition
