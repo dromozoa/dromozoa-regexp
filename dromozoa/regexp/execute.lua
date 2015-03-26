@@ -15,35 +15,24 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local decode_condition = require "dromozoa.regexp.decode_condition"
+return function (P, text, i)
+  local transition = P.transition
+  local start = P.start
+  local accept = P.accept
 
-return function (G)
-  local program = {
-    transition = {};
-    accept = {};
-  }
-
-  for u in G:each_vertex() do
-    local transition = {}
-    for i = 0, 256 do
-      transition[i + 1] = 0
+  local u = P.start
+  while true do
+    local c = text:byte(i)
+    if c == nil then
+      c = 256
+    else
+      c = c + 1
     end
-    for v, e in u:each_adjacent_vertex() do
-      local condition = decode_condition(e.condition)
-      for i = 0, 256 do
-        if condition:test(i) then
-          transition[i + 1] = v.id
-        end
-      end
+    local v = transition[u][c]
+    if v == 0 then
+      return accept[u]
     end
-    program.transition[u.id] = transition
-    if u.start then
-      program.start = u.id
-    end
-    if u.accept then
-      program.accept[u.id] = true
-    end
+    u = v
+    i = i + 1
   end
-
-  return program
 end
