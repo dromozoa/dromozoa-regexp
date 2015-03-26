@@ -7,7 +7,7 @@ local minimize = require "dromozoa.regexp.minimize"
 
 local m1 = construct_subset(decode(parse(arg[1])))
 local m2 = construct_subset(decode(parse(arg[2])))
-local p = construct_product.difference(m1, m2)
+local p = construct_product[arg[3]](m1, m2)
 local pm = minimize(p)
 write_graphviz(m1, io.open("test-m1.dot", "w")):close()
 write_graphviz(m2, io.open("test-m2.dot", "w")):close()

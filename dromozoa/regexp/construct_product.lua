@@ -21,6 +21,9 @@ local decode_condition = require "dromozoa.regexp.decode_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local tree_map = require "dromozoa.regexp.tree_map"
 
+local coroutine_wrap = coroutine.wrap
+local coroutine_yield = coroutine.yield
+
 local dummy_vertex = {
   id = 0;
   each_adjacent_vertex = function()
@@ -36,8 +39,6 @@ local function create_vertex(g, map, a, b, accept)
   if accept(a.accept, b.accept) then
     v.accept = true
   end
-  v.a = a
-  v.b = b
   map:insert({ a.id, b.id }, v)
 end
 
@@ -57,7 +58,7 @@ local function create_transition(u)
   return transition
 end
 
-local function visit(g, map, a, b)
+local function create_edge(g, map, a, b)
   local u = map:find { a.id, b.id }
   local A = create_transition(a)
   local B = create_transition(b)
@@ -65,39 +66,43 @@ local function visit(g, map, a, b)
   for i = 0, 255 do
     local v = map:find { A[i].id, B[i].id }
     local vid = v.id
-    local set = transition[vid]
-    if not set then
-      set = bitset()
-      transition[vid] = set
+    local t = transition[vid]
+    if t then
+      t:set(i)
+    else
+      transition[vid] = bitset():set(i)
     end
-    set:set(i)
   end
   for k, v in pairs(transition) do
     g:create_edge(u, k).condition = encode_condition(v)
   end
 end
 
-local function construct(A, B, accept)
-  local C = graph()
-  local map = tree_map()
-  create_vertex(C, map, dummy_vertex, dummy_vertex, accept)
-  for a in A:each_vertex() do
-    create_vertex(C, map, a, dummy_vertex, accept)
-  end
-  for b in B:each_vertex() do
-    create_vertex(C, map, dummy_vertex, b, accept)
-  end
-  for a in A:each_vertex() do
+local function each_product(A, B)
+  return coroutine_wrap(function ()
+    coroutine_yield(dummy_vertex, dummy_vertex)
     for b in B:each_vertex() do
-      create_vertex(C, map, a, b, accept)
+      coroutine_yield(dummy_vertex, b)
     end
+    for a in A:each_vertex() do
+      coroutine_yield(a, dummy_vertex)
+      for b in B:each_vertex() do
+        coroutine_yield(a, b)
+      end
+    end
+  end)
+end
+
+local function construct(A, B, accept)
+  local g = graph()
+  local map = tree_map()
+  for a, b in each_product(A, B) do
+    create_vertex(g, map, a, b, accept)
   end
-  for v in C:each_vertex() do
-    visit(C, map, v.a, v.b)
+  for a, b in each_product(A, B) do
+    create_edge(g, map, a, b)
   end
-  C:clear_vertex_properties "a"
-  C:clear_vertex_properties "b"
-  return C
+  return g
 end
 
 local function accept_intersection(a, b)
