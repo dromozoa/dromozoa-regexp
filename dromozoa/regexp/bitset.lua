@@ -67,5 +67,9 @@ return function()
     return self
   end
 
+  function self:each()
+    return next, self._t
+  end
+
   return self
 end

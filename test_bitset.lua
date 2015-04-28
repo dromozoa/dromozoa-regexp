@@ -15,32 +15,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local decode_condition = require "dromozoa.regexp.decode_condition"
+local bitset = require "dromozoa.regexp.bitset"
 
-return function (G)
-  local program = {
-    transition = {};
-    accept = {};
-  }
-
-  for u in G:each_vertex() do
-    local transition = {}
-    for i = 0, 256 do
-      transition[i + 1] = 0
-    end
-    for v, e in u:each_adjacent_vertex() do
-      for k in decode_condition(e.condition):each() do
-        transition[k + 1] = v.id
-      end
-    end
-    program.transition[u.id] = transition
-    if u.start then
-      program.start = u.id
-    end
-    if u.accept then
-      program.accept[u.id] = true
-    end
-  end
-
-  return program
+local A = bitset()
+A:set(17, 37)
+A:flip(23, 42)
+for i in A:each() do
+  print(i)
 end
+assert(A:count() == 11)

@@ -48,11 +48,8 @@ local function create_transition(u)
     transition[i] = dummy_vertex
   end
   for v, e in u:each_adjacent_vertex() do
-    local condition = decode_condition(e.condition)
-    for i = 0, 255 do
-      if condition:test(i) then
-        transition[i] = v
-      end
+    for k in decode_condition(e.condition):each() do
+      transition[k] = v
     end
   end
   return transition

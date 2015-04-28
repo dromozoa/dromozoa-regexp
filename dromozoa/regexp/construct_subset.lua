@@ -63,11 +63,8 @@ local function create_transition(A, U)
   for i = 1, #U do
     for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
       local vid = v.id
-      local condition = decode_condition(e.condition)
-      for i = 0, 257 do
-        if condition:test(i) then
-          matrix[i][vid] = true
-        end
+      for k in decode_condition(e.condition):each() do
+        matrix[k][vid] = true
       end
     end
   end
