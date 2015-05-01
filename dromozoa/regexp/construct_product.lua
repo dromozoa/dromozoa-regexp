@@ -28,13 +28,6 @@ local dummy_vertex = {
   end
 }
 
-local function create_vertex(g, map, a, b, accept)
-  local v = g:create_vertex()
-  v.start = start(a.start, b.start)
-  v.accept = accept(a.accept, b.accept)
-  map:insert({ a.id, b.id }, v)
-end
-
 local function create_transition(u)
   local transition = {}
   for i = 0, 255 do
@@ -68,67 +61,31 @@ local function create_edge(g, map, a, b)
   end
 end
 
-local function each_product(A, B)
-  return coroutine.wrap(function ()
-    coroutine.yield(dummy_vertex, dummy_vertex)
-    for b in B:each_vertex() do
-      coroutine.yield(dummy_vertex, b)
-    end
-    for a in A:each_vertex() do
-      coroutine.yield(a, dummy_vertex)
-      for b in B:each_vertex() do
-        coroutine.yield(a, b)
-      end
-    end
-  end)
+local function start(a, b)
+  if a and b then
+    if a < b then return a else return b end
+  end
 end
 
-local function construct(A, B, accept)
-  local g = graph()
-  local map = tree_map()
-  for a, b in each_product(A, B) do
-    create_vertex(g, map, a, b, accept)
+local function accept_intersection(a, b)
+  if a and b then
+    if a < b then return a else return b end
   end
-  for a, b in each_product(A, B) do
-    create_edge(g, map, a, b)
-  end
-  return g
 end
 
-local function min(a, b)
+local function accept_union(a, b)
   if a then
     if b then
-      if a < b then
-        return a
-      end
-      return b
+      if a < b then return a else return b end
     end
     return a
   end
   return b
 end
 
-local function start(a, b)
-  if a and b then
-    return min(a, b)
-  end
-end
-
-local function accept_intersection(a, b)
-  if a and b then
-    return min(a, b)
-  end
-end
-
-local function accept_union(a, b)
-  if a or b then
-    return min(a, b)
-  end
-end
-
 local function accept_difference(a, b)
   if a and not b then
-    return min(a, b)
+    return a
   end
 end
 
