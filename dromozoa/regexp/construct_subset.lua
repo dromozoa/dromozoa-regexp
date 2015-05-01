@@ -86,23 +86,22 @@ local function constructor(_a, _b)
   end
 
   function self:create_transition(keys)
-    local matrix = {}
+    local dataset = {}
     for i = 0, 257 do
-      matrix[i] = {}
+      dataset[i] = {}
     end
     for i = 1, #keys do
       for v, e in _a:get_vertex(keys[i]):each_adjacent_vertex() do
-        local vid = v.id
         for k in node_to_bitset(e.condition):each() do
-          matrix[k][vid] = true
+          dataset[k][v.id] = true
         end
       end
     end
     local map = tree_map()
     for i = 0, 257 do
-      local row = matrix[i]
-      if next(row) ~= nil then
-        map:insert(data_to_keys(row), bitset()):set(i)
+      local data = dataset[i]
+      if next(data) then
+        map:insert(data_to_keys(data), bitset()):set(i)
       end
     end
     local transition = {}
