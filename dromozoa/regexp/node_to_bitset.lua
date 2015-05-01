@@ -18,31 +18,29 @@
 local bitset = require "dromozoa.regexp.bitset"
 local character_class = require "dromozoa.regexp.character_class"
 
-local function decoder(set)
+local function converter(_bitset)
   local self = {
-    _set = set;
-
     ["epsilon"] = function (self)
     end;
 
     ["^"] = function (self)
-      self:set(257)
+      _bitset:set(257)
     end;
 
     ["$"] = function (self)
-      self:set(256)
+      _bitset:set(256)
     end;
 
     ["char"] = function (self, node, a)
-      self:set(string.byte(a))
+      _bitset:set(string.byte(a))
     end;
 
     ["\\"] = function (self, node, a)
-      self:set(string.byte(a))
+      _bitset:set(string.byte(a))
     end;
 
     ["."] = function (self)
-      self:set(0, 255)
+      _bitset:set(0, 255)
     end;
 
     ["["] = function (self, node)
@@ -55,54 +53,38 @@ local function decoder(set)
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:flip(0, 255)
+      _bitset:flip(0, 255)
     end;
 
     ["[:"] = function (self, node, a)
-      self:set_union(character_class[a])
+      _bitset:set_union(character_class[a])
     end;
 
     ["[-"] = function (self, node, a, b)
-      self:set(self:decode_char(a), self:decode_char(b))
+      _bitset:set(string.byte(a[2]), string.byte(b[2]))
     end;
 
     ["[."] = function (self, node)
-      self:set(self:decode_char(node))
+      _bitset:set(string.byte(node[2]))
     end;
 
     ["[char"] = function (self, node)
-      self:set(self:decode_char(node))
+      _bitset:set(string.byte(node[2]))
     end;
   }
-
-  function self:set(m, n)
-    self._set:set(m, n)
-  end
-
-  function self:flip(m, n)
-    self._set:flip(m, n)
-  end
-
-  function self:set_union(that)
-    self._set:set_union(that)
-  end
-
-  function self:decode_char(node)
-    return string.byte(node[2])
-  end
 
   function self:visit(node)
     return self[node[1]](self, node, node[2], node[3], node[4])
   end
 
-  function self:decode(node)
+  function self:convert(node)
     self:visit(node)
-    return self._set
+    return _bitset
   end
 
   return self
 end
 
 return function (node)
-  return decoder(bitset()):decode(node)
+  return converter(bitset()):convert(node)
 end

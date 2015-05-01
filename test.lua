@@ -16,7 +16,10 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local construct_nfa = require "dromozoa.regexp.construct_nfa"
+local construct_subset = require "dromozoa.regexp.construct_subset"
 local parse = require "dromozoa.regexp.parse"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-write_graphviz(construct_nfa(parse(arg[1])), io.stdout)
+local nfa = construct_nfa(parse(arg[1]))
+local dfa = construct_subset(nfa)
+write_graphviz(dfa, io.stdout)
