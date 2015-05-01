@@ -23,12 +23,8 @@ return function (A)
   for a in A:each_vertex() do
     local b = B:create_vertex()
     map[a.id] = b.id
-    if a.start then
-      b.accept = true
-    end
-    if a.accept then
-      b.start = true
-    end
+    b.start = a.accept
+    b.accept = a.start
   end
   for a in A:each_edge() do
     local b = B:create_edge(map[a.vid], map[a.uid])

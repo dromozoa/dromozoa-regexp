@@ -41,7 +41,7 @@ local function range_builder()
     return function ()
       i = i + 1
       if i <= n then
-        return string.char(_a[i]), string.char(_b[i])
+        return _a[i], _b[i]
       end
     end
   end
@@ -78,7 +78,7 @@ return function (bitset)
     end
 
     if n == 1 then
-      return { "char", ((builder:each()())) }
+      return { "char", string.char((builder:each()())) }
     end
 
     local node
@@ -89,12 +89,12 @@ return function (bitset)
     end
     for a, b in builder:each() do
       if a == b then
-        node[#node + 1] = { "[char", a }
+        node[#node + 1] = { "[char", string.char(a) }
       elseif a == b - 1 then
-        node[#node + 1] = { "[char", a }
-        node[#node + 1] = { "[char", b }
+        node[#node + 1] = { "[char", string.char(a) }
+        node[#node + 1] = { "[char", string.char(b) }
       else
-        node[#node + 1] = { "[-", { "[char", a }, { "[char", b } }
+        node[#node + 1] = { "[-", { "[char", string.char(a) }, { "[char", string.char(b) } }
       end
     end
     return node

@@ -15,14 +15,14 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graph = require "dromozoa.graph"
-local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local bitset = require "dromozoa.regexp.bitset"
-local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
+local dfs_visitor = require "dromozoa.graph.dfs_visitor"
+local graph = require "dromozoa.graph"
+local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local tree_map = require "dromozoa.regexp.tree_map"
 
-local function set_to_seq(A)
+local function data_to_keys(A)
   local B = {}
   for k in pairs(A) do
     B[#B + 1] = k
@@ -31,7 +31,7 @@ local function set_to_seq(A)
   return B
 end
 
-local function copy_seq(A)
+local function copy_keys(A)
   local B = {}
   for i = 1, #A do
     B[i] = A[i]
@@ -59,39 +59,45 @@ local function constructor(_a, _b)
 
   local self = {}
 
-  function self:vertex(U)
-    local v = _map:find(U)
-    if not v then
-      v = _b:create_vertex()
-      for i = 1, #U do
-        -- minimize
-        local accept = _a:get_vertex(U[i]).accept
-        if accept then
-          v.accept = accept
-          break
+  function self:get_property(keys, key)
+    local value
+    for i = 1, #keys do
+      local v = _a:get_vertex(keys[i])[key]
+      if v ~= nil then
+        if value == nil or value > v then
+          value = v
         end
       end
-      _map:insert(U, v)
+    end
+    return value
+  end
+
+  function self:vertex(keys)
+    local v = _map:find(keys)
+    if not v then
+      v = _b:create_vertex()
+      v.accept = self:get_property(keys, "accept")
+      _map:insert(keys, v)
     end
     return v
   end
 
-  function self:create_epsilon_closure(U)
+  function self:create_epsilon_closure(keys)
     local result = {}
     local visitor = epsilon_closure_visitor(result)
-    for i = 1, #U do
-      _a:get_vertex(U[i]):dfs(visitor)
+    for i = 1, #keys do
+      _a:get_vertex(keys[i]):dfs(visitor)
     end
-    return set_to_seq(result)
+    return data_to_keys(result)
   end
 
-  function self:create_transition(U)
+  function self:create_transition(keys)
     local matrix = {}
     for i = 0, 257 do
       matrix[i] = {}
     end
-    for i = 1, #U do
-      for v, e in _a:get_vertex(U[i]):each_adjacent_vertex() do
+    for i = 1, #keys do
+      for v, e in _a:get_vertex(keys[i]):each_adjacent_vertex() do
         local vid = v.id
         for k in node_to_bitset(e.condition):each() do
           matrix[k][vid] = true
@@ -102,18 +108,18 @@ local function constructor(_a, _b)
     for i = 0, 257 do
       local row = matrix[i]
       if next(row) ~= nil then
-        map:insert(set_to_seq(row), bitset()):set(i)
+        map:insert(data_to_keys(row), bitset()):set(i)
       end
     end
     local transition = {}
     for k, v in map:each() do
-      transition[#transition + 1] = { bitset_to_node(v), copy_seq(k) }
+      transition[#transition + 1] = { bitset_to_node(v), copy_keys(k) }
     end
     return transition
   end
 
-  function self:visit(useq)
-    local epsilon_closure = self:create_epsilon_closure(useq)
+  function self:visit(keys)
+    local epsilon_closure = self:create_epsilon_closure(keys)
     local u = self:vertex(epsilon_closure)
     local uid = u.id
     if not _color[uid] then
@@ -128,13 +134,13 @@ local function constructor(_a, _b)
   end
 
   function self:construct()
-    local start = {}
+    local keys = {}
     for u in _a:each_vertex("start") do
-      start[#start + 1] = u.id
+      keys[#keys + 1] = u.id
     end
-    if #start > 0 then
-      local s = self:visit(start)
-      s.start = true
+    if #keys > 0 then
+      local s = self:visit(keys)
+      s.start = self:get_property(keys, "start")
     end
     return _b
   end

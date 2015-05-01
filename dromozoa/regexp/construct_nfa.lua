@@ -106,20 +106,20 @@ local function constructor(_g)
     return fn(self, u, node, node[2], node[3], node[4])
   end
 
-  function self:construct(node, code)
-    if not code then
-      code = true
+  function self:construct(node, token)
+    if not token then
+      token = 1
     end
     local s = self:create_vertex()
-    s.start = code
+    s.start = token
     local a = self:visit(s, node)
-    a.accept = code
+    a.accept = token
     return _g
   end
 
   return self
 end
 
-return function (node, code)
-  return constructor(graph()):construct(node, code)
+return function (node, token)
+  return constructor(graph()):construct(node, token)
 end
