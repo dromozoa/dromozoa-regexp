@@ -18,16 +18,12 @@
 local character_class = require "dromozoa.regexp.character_class"
 local unparse = require "dromozoa.regexp.unparse"
 
-local function parser(text)
-  local self = {
-    _t = text;
-    _i = 1;
-    _s = {};
-  }
+local function parser(_text, _i, _stack)
+  local self = {}
 
   function self:parse()
     if self:extended_reg_exp() then
-      if self._i == #self._t + 1 and #self._s == 1 then
+      if _i == #_text + 1 and #_stack == 1 then
         return self:pop()
       else
         self:raise()
@@ -38,24 +34,30 @@ local function parser(text)
   end
 
   function self:push(v)
-    local s = self._s
-    s[#s + 1] = v
+    local n = #_stack
+    _stack[n + 1] = v
     return true
   end
 
   function self:pop()
-    local s = self._s
-    local n = #s
-    local v = s[n]
-    s[n] = nil
+    local n = #_stack
+    local v = _stack[n]
+    _stack[n] = nil
     return v
   end
 
+  function self:raise(message)
+    if message then
+      error(message .. " at position " .. _i)
+    else
+      error("parse error at position " .. _i)
+    end
+  end
+
   function self:match(pattern)
-    local t = self._t
-    local a, b, c, d = text:find("^" .. pattern, self._i)
+    local a, b, c, d = _text:find("^" .. pattern, _i)
     if b then
-      self._i = b + 1
+      _i = b + 1
       if c then
         self:push(c)
         if d then
@@ -63,14 +65,6 @@ local function parser(text)
         end
       end
       return true
-    end
-  end
-
-  function self:raise(message)
-    if message then
-      error(message .. " at position " .. self._i)
-    else
-      error("parse error at position " .. self._i)
     end
   end
 
@@ -201,9 +195,9 @@ local function parser(text)
       end
     elseif self:end_range() then
       local a = self:pop()
-      local i = self._i
+      local i = _i
       if self:match "%-%]" then
-        self._i = i
+        _i = i
         return self:push(a)
       elseif self:match "%-%-" then
         if string.byte(a[2]) <= 45 then
@@ -246,5 +240,5 @@ local function parser(text)
 end
 
 return function (text)
-  return parser(text):parse()
+  return parser(text, 1, {}):parse()
 end

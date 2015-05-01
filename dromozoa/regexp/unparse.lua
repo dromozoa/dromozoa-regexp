@@ -17,19 +17,17 @@
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 
-local function unparser(out)
+local function unparser(_out)
   local self = {
-    _out = out;
-
     ["|"] = function (self, node, a, b)
       if b then
-        self:write "("
-        self:visit(node[2])
+        self:write("(")
+        self:visit(a)
         for i = 3, #node do
-          self:write "|"
+          self:write("|")
           self:visit(node[i])
         end
-        self:write ")"
+        self:write(")")
       else
         self:visit(a)
       end
@@ -42,16 +40,16 @@ local function unparser(out)
     end;
 
     ["^"] = function (self)
-      self:write "^"
+      self:write("^")
     end;
 
     ["$"] = function (self)
-      self:write "$"
+      self:write("$")
     end;
 
     ["char"] = function (self, node, a)
       if a:match "^[%^%.%[%$%(%)%|%*%+%?%{%\\]$" then
-        self:write "\\"
+        self:write("\\")
       end
       self:write(a)
     end;
@@ -61,22 +59,22 @@ local function unparser(out)
     end;
 
     ["."] = function (self)
-      self:write "."
+      self:write(".")
     end;
 
     ["+"] = function (self, node, a)
       self:visit(a)
-      self:write "+"
+      self:write("+")
     end;
 
     ["*"] = function (self, node, a)
       self:visit(a)
-      self:write "*"
+      self:write("*")
     end;
 
     ["?"] = function (self, node, a)
       self:visit(a)
-      self:write "?"
+      self:write("?")
     end;
 
     ["{m"] = function (self, node, a, b)
@@ -95,19 +93,19 @@ local function unparser(out)
     end;
 
     ["["] = function (self, node)
-      self:write "["
+      self:write("[")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write "]"
+      self:write("]")
     end;
 
     ["[^"] = function (self, node)
-      self:write "[^"
+      self:write("[^")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write "]"
+      self:write("]")
     end;
 
     ["[="] = function (self, node, a)
@@ -120,7 +118,7 @@ local function unparser(out)
 
     ["[-"] = function (self, node, a, b)
       self:visit(a)
-      self:write "-"
+      self:write("-")
       self:visit(b)
     end;
 
@@ -138,7 +136,7 @@ local function unparser(out)
   }
 
   function self:write(...)
-    self._out:write(...)
+    _out:write(...)
   end
 
   function self:visit(node)
@@ -147,12 +145,12 @@ local function unparser(out)
 
   function self:unparse(node)
     self:visit(node)
-    return self._out
+    return _out
   end
 
   return self
 end
 
-return function (node, out)
-  return unparser(out or buffer_writer()):unparse(node):concat()
+return function (node)
+  return unparser(buffer_writer()):unparse(node):concat()
 end
