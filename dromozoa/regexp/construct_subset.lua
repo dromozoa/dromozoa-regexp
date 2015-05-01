@@ -15,28 +15,22 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local bitset = require "dromozoa.regexp.bitset"
-local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
+local clone = require "dromozoa.graph.clone"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local graph = require "dromozoa.graph"
+
+local bitset = require "dromozoa.regexp.bitset"
+local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local tree_map = require "dromozoa.regexp.tree_map"
 
-local function data_to_keys(A)
-  local B = {}
-  for k in pairs(A) do
-    B[#B + 1] = k
+local function data_to_keys(data)
+  local keys = {}
+  for k in pairs(data) do
+    keys[#keys + 1] = k
   end
-  table.sort(B)
-  return B
-end
-
-local function copy_keys(A)
-  local B = {}
-  for i = 1, #A do
-    B[i] = A[i]
-  end
-  return B
+  table.sort(keys)
+  return keys
 end
 
 local function epsilon_closure_visitor(_result)
@@ -60,26 +54,26 @@ local function constructor(_a, _b)
   local self = {}
 
   function self:get_property(keys, key)
-    local value
+    local min
     for i = 1, #keys do
       local v = _a:get_vertex(keys[i])[key]
       if v ~= nil then
-        if value == nil or value > v then
-          value = v
+        if min == nil or min > v then
+          min = v
         end
       end
     end
-    return value
+    return min
   end
 
-  function self:vertex(keys)
-    local v = _map:find(keys)
-    if not v then
-      v = _b:create_vertex()
-      v.accept = self:get_property(keys, "accept")
-      _map:insert(keys, v)
+  function self:get_vertex(keys)
+    local b = _map:find(keys)
+    if not b then
+      b = _b:create_vertex()
+      b.accept = self:get_property(keys, "accept")
+      _map:insert(keys, b)
     end
-    return v
+    return b
   end
 
   function self:create_epsilon_closure(keys)
@@ -113,35 +107,33 @@ local function constructor(_a, _b)
     end
     local transition = {}
     for k, v in map:each() do
-      transition[#transition + 1] = { bitset_to_node(v), copy_keys(k) }
+      transition[#transition + 1] = { bitset_to_node(v), clone(k) }
     end
     return transition
   end
 
   function self:visit(keys)
     local epsilon_closure = self:create_epsilon_closure(keys)
-    local u = self:vertex(epsilon_closure)
-    local uid = u.id
-    if not _color[uid] then
-      _color[uid] = true
+    local b = self:get_vertex(epsilon_closure)
+    if not _color[b.id] then
+      _color[b.id] = true
       local transition = self:create_transition(epsilon_closure)
       for i = 1, #transition do
         local t = transition[i]
-        _b:create_edge(u, self:visit(t[2])).condition = t[1]
+        _b:create_edge(b, self:visit(t[2])).condition = t[1]
       end
     end
-    return u
+    return b
   end
 
   function self:construct()
     local keys = {}
-    for u in _a:each_vertex("start") do
-      keys[#keys + 1] = u.id
+    for a in _a:each_vertex("start") do
+      keys[#keys + 1] = a.id
     end
-    if #keys > 0 then
-      local s = self:visit(keys)
-      s.start = self:get_property(keys, "start")
-    end
+    table.sort(keys)
+    local b = self:visit(keys)
+    b.start = self:get_property(keys, "start")
     return _b
   end
 
