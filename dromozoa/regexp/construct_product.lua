@@ -17,7 +17,7 @@
 
 local graph = require "dromozoa.graph"
 local bitset = require "dromozoa.regexp.bitset"
-local decode_condition = require "dromozoa.regexp.decode_condition"
+local node_to_condition = require "dromozoa.regexp.node_to_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local tree_map = require "dromozoa.regexp.tree_map"
 
@@ -48,7 +48,7 @@ local function create_transition(u)
     transition[i] = dummy_vertex
   end
   for v, e in u:each_adjacent_vertex() do
-    for k in decode_condition(e.condition):each() do
+    for k in node_to_condition(e.condition):each() do
       transition[k] = v
     end
   end

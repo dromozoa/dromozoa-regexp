@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local decode_condition = require "dromozoa.regexp.decode_condition"
+local node_to_condition = require "dromozoa.regexp.node_to_condition"
 
 return function (G)
   local program = {
@@ -29,7 +29,7 @@ return function (G)
       transition[i + 1] = 0
     end
     for v, e in u:each_adjacent_vertex() do
-      for k in decode_condition(e.condition):each() do
+      for k in node_to_condition(e.condition):each() do
         transition[k + 1] = v.id
       end
     end

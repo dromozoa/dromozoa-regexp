@@ -18,7 +18,7 @@
 local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local bitset = require "dromozoa.regexp.bitset"
-local decode_condition = require "dromozoa.regexp.decode_condition"
+local node_to_condition = require "dromozoa.regexp.node_to_condition"
 local encode_condition = require "dromozoa.regexp.encode_condition"
 local tree_map = require "dromozoa.regexp.tree_map"
 
@@ -63,7 +63,7 @@ local function create_transition(A, U)
   for i = 1, #U do
     for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
       local vid = v.id
-      for k in decode_condition(e.condition):each() do
+      for k in node_to_condition(e.condition):each() do
         matrix[k][vid] = true
       end
     end
