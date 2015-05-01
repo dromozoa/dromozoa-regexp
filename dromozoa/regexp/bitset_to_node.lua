@@ -49,15 +49,15 @@ local function range_builder()
   return self
 end
 
-return function (set)
-  local n = set:count()
+return function (bitset)
+  local n = bitset:count()
   if n == 0 then
     return { "epsilon" }
   elseif n == 256 then
     return { "." }
-  elseif set:test(257) then
+  elseif bitset:test(257) then
     return { "^" }
-  elseif set:test(256) then
+  elseif bitset:test(256) then
     return { "$" }
   else
     local is_matching_list = n < 128
@@ -65,13 +65,13 @@ return function (set)
     local builder = range_builder()
     if is_matching_list then
       for i = 0, 255 do
-        if set:test(i) then
+        if bitset:test(i) then
           builder:push(i)
         end
       end
     else
       for i = 0, 255 do
-        if not set:test(i) then
+        if not bitset:test(i) then
           builder:push(i)
         end
       end
