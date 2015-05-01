@@ -21,13 +21,13 @@ local function unparser(_out)
   local self = {
     ["|"] = function (self, node, a, b)
       if b then
-        self:write("(")
+        _out:write("(")
         self:visit(a)
         for i = 3, #node do
-          self:write("|")
+          _out:write("|")
           self:visit(node[i])
         end
-        self:write(")")
+        _out:write(")")
       else
         self:visit(a)
       end
@@ -40,104 +40,100 @@ local function unparser(_out)
     end;
 
     ["^"] = function (self)
-      self:write("^")
+      _out:write("^")
     end;
 
     ["$"] = function (self)
-      self:write("$")
+      _out:write("$")
     end;
 
     ["char"] = function (self, node, a)
       if a:match "^[%^%.%[%$%(%)%|%*%+%?%{%\\]$" then
-        self:write("\\")
+        _out:write("\\")
       end
-      self:write(a)
+      _out:write(a)
     end;
 
     ["\\"] = function (self, node, a)
-      self:write("\\", a)
+      _out:write("\\", a)
     end;
 
     ["."] = function (self)
-      self:write(".")
+      _out:write(".")
     end;
 
     ["+"] = function (self, node, a)
       self:visit(a)
-      self:write("+")
+      _out:write("+")
     end;
 
     ["*"] = function (self, node, a)
       self:visit(a)
-      self:write("*")
+      _out:write("*")
     end;
 
     ["?"] = function (self, node, a)
       self:visit(a)
-      self:write("?")
+      _out:write("?")
     end;
 
     ["{m"] = function (self, node, a, b)
       self:visit(a)
-      self:write("{", b, "}")
+      _out:write("{", b, "}")
     end;
 
     ["{m,"] = function (self, node, a, b)
       self:visit(a)
-      self:write("{", b, ",}")
+      _out:write("{", b, ",}")
     end;
 
     ["{m,n"] = function (self, node, a, b, c)
       self:visit(a)
-      self:write("{", b, ",", c, "}")
+      _out:write("{", b, ",", c, "}")
     end;
 
     ["["] = function (self, node)
-      self:write("[")
+      _out:write("[")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write("]")
+      _out:write("]")
     end;
 
     ["[^"] = function (self, node)
-      self:write("[^")
+      _out:write("[^")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write("]")
+      _out:write("]")
     end;
 
     ["[="] = function (self, node, a)
-      self:write("[=", a, "=]")
+      _out:write("[=", a, "=]")
     end;
 
     ["[:"] = function (self, node, a)
-      self:write("[:", a, ":]")
+      _out:write("[:", a, ":]")
     end;
 
     ["[-"] = function (self, node, a, b)
       self:visit(a)
-      self:write("-")
+      _out:write("-")
       self:visit(b)
     end;
 
     ["[."] = function (self, node, a)
-      self:write("[.", a, ".]")
+      _out:write("[.", a, ".]")
     end;
 
     ["[char"] = function (self, node, a)
       if a:match "^[%^%-%]]$" then
-        self:write("[.", a, ".]")
+        _out:write("[.", a, ".]")
       else
-        self:write(a)
+        _out:write(a)
       end
     end;
   }
-
-  function self:write(...)
-    _out:write(...)
-  end
 
   function self:visit(node)
     self[node[1]](self, node, node[2], node[3], node[4]);
