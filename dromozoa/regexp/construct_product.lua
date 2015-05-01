@@ -18,7 +18,7 @@
 local graph = require "dromozoa.graph"
 local bitset = require "dromozoa.regexp.bitset"
 local node_to_condition = require "dromozoa.regexp.node_to_condition"
-local encode_condition = require "dromozoa.regexp.encode_condition"
+local condition_to_node = require "dromozoa.regexp.condition_to_node"
 local tree_map = require "dromozoa.regexp.tree_map"
 
 local coroutine_wrap = coroutine.wrap
@@ -71,7 +71,7 @@ local function create_edge(g, map, a, b)
     end
   end
   for k, v in pairs(transition) do
-    g:create_edge(u, k).condition = encode_condition(v)
+    g:create_edge(u, k).condition = condition_to_node(v)
   end
 end
 

@@ -19,7 +19,7 @@ local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local bitset = require "dromozoa.regexp.bitset"
 local node_to_condition = require "dromozoa.regexp.node_to_condition"
-local encode_condition = require "dromozoa.regexp.encode_condition"
+local condition_to_node = require "dromozoa.regexp.condition_to_node"
 local tree_map = require "dromozoa.regexp.tree_map"
 
 local function set_to_seq(A)
@@ -77,7 +77,7 @@ local function create_transition(A, U)
   end
   local transition = {}
   for k, v in map:each() do
-    transition[#transition + 1] = { encode_condition(v), copy_seq(k) }
+    transition[#transition + 1] = { condition_to_node(v), copy_seq(k) }
   end
   return transition
 end
