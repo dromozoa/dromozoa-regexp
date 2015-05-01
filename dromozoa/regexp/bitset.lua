@@ -49,7 +49,7 @@ return function()
   end
 
   function self:test(i)
-    return _data[i] ~= nil
+    return _data[i]
   end
 
   function self:count()
