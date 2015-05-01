@@ -41,26 +41,6 @@ local function create_transition(u)
   return transition
 end
 
-local function create_edge(g, map, a, b)
-  local u = map:find { a.id, b.id }
-  local A = create_transition(a)
-  local B = create_transition(b)
-  local transition = {}
-  for i = 0, 255 do
-    local v = map:find { A[i].id, B[i].id }
-    local vid = v.id
-    local t = transition[vid]
-    if t then
-      t:set(i)
-    else
-      transition[vid] = bitset():set(i)
-    end
-  end
-  for k, v in pairs(transition) do
-    g:create_edge(u, k).condition = bitset_to_node(v)
-  end
-end
-
 local function start(a, b)
   if a and b then
     if a < b then return a else return b end
@@ -116,12 +96,31 @@ local function constructor(_a, _b, _g)
     _map:insert({ a.id, b.id }, v)
   end
 
+  function self:create_edge(a, b)
+    local u = _map:find({ a.id, b.id })
+    local A = create_transition(a)
+    local B = create_transition(b)
+    local transition = {}
+    for i = 0, 255 do
+      local v = _map:find({ A[i].id, B[i].id })
+      local t = transition[v.id]
+      if t then
+        t:set(i)
+      else
+        transition[v.id] = bitset():set(i)
+      end
+    end
+    for k, v in pairs(transition) do
+      _g:create_edge(u, k).condition = bitset_to_node(v)
+    end
+  end
+
   function self:construct(accept)
     for a, b in self:each_product() do
       self:create_vertex(a, b, accept)
     end
     for a, b in self:each_product() do
-      create_edge(_g, _map, a, b)
+      self:create_edge(a, b)
     end
     return _g
   end
