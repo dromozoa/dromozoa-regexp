@@ -61,8 +61,8 @@ return function()
   end
 
   function self:set_union(that)
-    for k in pairs(that:impl_get_data()) do
-      self:set(k)
+    for i in pairs(that:impl_get_data()) do
+      self:set(i)
     end
     return self
   end
