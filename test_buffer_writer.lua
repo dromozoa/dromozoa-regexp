@@ -15,28 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function write(buffer, i, j, v, ...)
-  buffer[i] = v
-  if i < j then
-    return write(buffer, i + 1, j, ...)
-  end
-end
+local buffer_writer = require "dromozoa.regexp.buffer_writer"
 
-return function ()
-  local _buffer = {}
-
-  local self = {}
-
-  function self:write(...)
-    local i = #_buffer + 1
-    local j = i + select("#", ...)
-    write(_buffer, i, j, ...)
-    return self
-  end
-
-  function self:concat(...)
-    return table.concat(_buffer, ...)
-  end
-
-  return self
-end
+local writer = buffer_writer()
+writer:write("foo"):write(42)
+writer:write("bar", "baz")
+assert(writer:concat() == "foo42barbaz")
