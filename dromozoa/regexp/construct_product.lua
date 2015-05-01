@@ -21,9 +21,6 @@ local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local tree_map = require "dromozoa.regexp.tree_map"
 
-local coroutine_wrap = coroutine.wrap
-local coroutine_yield = coroutine.yield
-
 local dummy_vertex = {
   id = 0;
   each_adjacent_vertex = function()
@@ -33,12 +30,8 @@ local dummy_vertex = {
 
 local function create_vertex(g, map, a, b, accept)
   local v = g:create_vertex()
-  if a.start and b.start then
-    v.start = true
-  end
-  if accept(a.accept, b.accept) then
-    v.accept = true
-  end
+  v.start = start(a.start, b.start)
+  v.accept = accept(a.accept, b.accept)
   map:insert({ a.id, b.id }, v)
 end
 
@@ -76,15 +69,15 @@ local function create_edge(g, map, a, b)
 end
 
 local function each_product(A, B)
-  return coroutine_wrap(function ()
-    coroutine_yield(dummy_vertex, dummy_vertex)
+  return coroutine.wrap(function ()
+    coroutine.yield(dummy_vertex, dummy_vertex)
     for b in B:each_vertex() do
-      coroutine_yield(dummy_vertex, b)
+      coroutine.yield(dummy_vertex, b)
     end
     for a in A:each_vertex() do
-      coroutine_yield(a, dummy_vertex)
+      coroutine.yield(a, dummy_vertex)
       for b in B:each_vertex() do
-        coroutine_yield(a, b)
+        coroutine.yield(a, b)
       end
     end
   end)
@@ -102,28 +95,93 @@ local function construct(A, B, accept)
   return g
 end
 
+local function min(a, b)
+  if a then
+    if b then
+      if a < b then
+        return a
+      end
+      return b
+    end
+    return a
+  end
+  return b
+end
+
+local function start(a, b)
+  if a and b then
+    return min(a, b)
+  end
+end
+
 local function accept_intersection(a, b)
-  return a and b
+  if a and b then
+    return min(a, b)
+  end
 end
 
 local function accept_union(a, b)
-  return a or b
+  if a or b then
+    return min(a, b)
+  end
 end
 
 local function accept_difference(a, b)
-  return a and not b
+  if a and not b then
+    return min(a, b)
+  end
+end
+
+local function constructor(_a, _b, _g)
+  local _map = tree_map()
+
+  local self = {}
+
+  function self:each_product()
+    return coroutine.wrap(function ()
+      coroutine.yield(dummy_vertex, dummy_vertex)
+      for b in _b:each_vertex() do
+        coroutine.yield(dummy_vertex, b)
+      end
+      for a in _a:each_vertex() do
+        coroutine.yield(a, dummy_vertex)
+        for b in _b:each_vertex() do
+          coroutine.yield(a, b)
+        end
+      end
+    end)
+  end
+
+  function self:create_vertex(a, b, accept)
+    local v = _g:create_vertex()
+    v.start = start(a.start, b.start)
+    v.accept = accept(a.accept, b.accept)
+    _map:insert({ a.id, b.id }, v)
+  end
+
+  function self:construct(accept)
+    for a, b in self:each_product() do
+      self:create_vertex(a, b, accept)
+    end
+    for a, b in self:each_product() do
+      create_edge(_g, _map, a, b)
+    end
+    return _g
+  end
+
+  return self
 end
 
 return {
-  intersection = function (A, B)
-    return construct(A, B, accept_intersection)
+  intersection = function (a, b)
+    return constructor(a, b, graph()):construct(accept_intersection)
   end;
 
-  union = function (A, B)
-    return construct(A, B, accept_union)
+  union = function (a, b)
+    return constructor(a, b, graph()):construct(accept_union)
   end;
 
-  difference = function (A, B)
-    return construct(A, B, accept_difference)
+  difference = function (a, b)
+    return constructor(a, b, graph()):construct(accept_difference)
   end;
 }
