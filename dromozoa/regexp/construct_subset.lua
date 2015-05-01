@@ -39,42 +39,50 @@ local function copy_seq(A)
   return B
 end
 
+local function epsilon_closure_visitor(_result)
+  local self = {}
+
+  function self:discover_vertex(g, u)
+    _result[u.id] = true
+  end;
+
+  function self:examine_edge(g, e, u, v)
+    return e.condition[1] == "epsilon"
+  end;
+
+  return dfs_visitor(self)
+end
+
 local function constructor(_a, _b)
-  local self = {
-    _map = tree_map();
-    _color = {};
-  }
+  local _map = tree_map()
+  local _color = {}
+
+  local self = {}
 
   function self:vertex(U)
-    local map = self._map
-    local v = map:find(U)
+    local v = _map:find(U)
     if not v then
       v = _b:create_vertex()
       for i = 1, #U do
-        if _a:get_vertex(U[i]).accept then
-          v.accept = true
+        -- minimize
+        local accept = _a:get_vertex(U[i]).accept
+        if accept then
+          v.accept = accept
           break
         end
       end
-      map:insert(U, v)
+      _map:insert(U, v)
     end
     return v
   end
 
   function self:create_epsilon_closure(U)
-    local visitor = dfs_visitor {
-      set = {};
-      discover_vertex = function (self, g, u)
-        self.set[u.id] = true
-      end;
-      examine_edge = function (self, g, e, u, v)
-        return e.condition[1] == "epsilon"
-      end;
-    }
+    local result = {}
+    local visitor = epsilon_closure_visitor(result)
     for i = 1, #U do
       _a:get_vertex(U[i]):dfs(visitor)
     end
-    return set_to_seq(visitor.set)
+    return set_to_seq(result)
   end
 
   function self:create_transition(U)
@@ -105,13 +113,12 @@ local function constructor(_a, _b)
   end
 
   function self:visit(U)
-    local E = self:create_epsilon_closure(U)
-    local u = self:vertex(E)
-    local color = self._color
+    local epsilon_closure = self:create_epsilon_closure(U)
+    local u = self:vertex(epsilon_closure)
     local uid = u.id
-    if not color[uid] then
-      color[uid] = true
-      local transition = self:create_transition(E)
+    if not _color[uid] then
+      _color[uid] = true
+      local transition = self:create_transition(epsilon_closure)
       for i = 1, #transition do
         local t = transition[i]
         _b:create_edge(u, self:visit(t[2])).condition = t[1]
