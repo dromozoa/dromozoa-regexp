@@ -135,6 +135,6 @@ local function constructor()
   return self
 end
 
-return function (A)
-  return constructor():construct(A, graph())
+return function (a)
+  return constructor():construct(a, graph())
 end
