@@ -17,18 +17,27 @@
 
 local graph = require "dromozoa.graph"
 
-return function (A)
-  local B = graph()
-  local map = {}
-  for a in A:each_vertex() do
-    local b = B:create_vertex()
-    map[a.id] = b.id
-    b.start = a.accept
-    b.accept = a.start
+local function constructor(_a, _b)
+  local self = {}
+
+  function self:construct()
+    local map = {}
+    for a in _a:each_vertex() do
+      local b = _b:create_vertex()
+      map[a.id] = b.id
+      b.start = a.accept
+      b.accept = a.start
+    end
+    for a in _a:each_edge() do
+      local b = _b:create_edge(map[a.vid], map[a.uid])
+      b.condition = a.condition
+    end
+    return _b
   end
-  for a in A:each_edge() do
-    local b = B:create_edge(map[a.vid], map[a.uid])
-    b.condition = a.condition
-  end
-  return B
+
+  return self
+end
+
+return function (a)
+  return constructor(a, graph()):construct()
 end

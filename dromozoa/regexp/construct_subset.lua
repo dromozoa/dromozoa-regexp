@@ -18,7 +18,6 @@
 local clone = require "dromozoa.graph.clone"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local graph = require "dromozoa.graph"
-
 local bitset = require "dromozoa.regexp.bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
@@ -104,11 +103,13 @@ local function constructor(_a, _b)
         map:insert(data_to_keys(data), bitset()):set(i)
       end
     end
-    local transition = {}
+    local result_keys = {}
+    local result_cond = {}
     for k, v in map:each() do
-      transition[#transition + 1] = { bitset_to_node(v), clone(k) }
+      result_keys[#result_keys + 1] = clone(k)
+      result_cond[#result_cond + 1] = bitset_to_node(v)
     end
-    return transition
+    return result_keys, result_cond
   end
 
   function self:visit(keys)
@@ -116,10 +117,9 @@ local function constructor(_a, _b)
     local b = self:get_vertex(epsilon_closure)
     if not _color[b.id] then
       _color[b.id] = true
-      local transition = self:create_transition(epsilon_closure)
-      for i = 1, #transition do
-        local t = transition[i]
-        _b:create_edge(b, self:visit(t[2])).condition = t[1]
+      local transition_keys, transition_cond = self:create_transition(epsilon_closure)
+      for i = 1, #transition_keys do
+        _b:create_edge(b, self:visit(transition_keys[i])).condition = transition_cond[i]
       end
     end
     return b
