@@ -15,32 +15,32 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function find(i, n, data, key, path)
+local function find(i, n, data, keys, path)
   i = i + 1
-  local k = key[i]
+  local k = keys[i]
   local v = data[k]
   if path then
     path[i + 1] = v
   end
   if i < n then
     if v then
-      return find(i, n, v, key, path)
+      return find(i, n, v, keys, path)
     end
   else
     return v
   end
 end
 
-local function insert(i, n, data, key, value)
+local function insert(i, n, data, keys, value)
   i = i + 1
-  local k = key[i]
+  local k = keys[i]
   local v = data[k]
   if i < n then
     if not v then
       v = {}
       data[k] = v
     end
-    return insert(i, n, v, key, value)
+    return insert(i, n, v, keys, value)
   else
     if v == nil then
       data[k] = value
@@ -51,26 +51,26 @@ local function insert(i, n, data, key, value)
   end
 end
 
-local function erase(i, key, path)
-  local k = key[i]
+local function erase(i, keys, path)
+  local k = keys[i]
   local v = path[i]
   v[k] = nil
   if i > 1 and not next(v) then
-    return erase(i - 1, key, path)
+    return erase(i - 1, keys, path)
   end
 end
 
-local function each(i, n, data, key)
+local function each(i, n, data, keys)
   i = i + 1
   if i < n then
     for k, v in pairs(data) do
-      key[i] = k
-      each(i, n, v, key)
+      keys[i] = k
+      each(i, n, v, keys)
     end
   else
     for k, v in pairs(data) do
-      key[i] = k
-      coroutine.yield(key, v)
+      keys[i] = k
+      coroutine.yield(keys, v)
     end
   end
 end
@@ -80,34 +80,34 @@ return function ()
 
   local self = {}
 
-  function self:insert(key, value)
-    local n = #key
+  function self:insert(keys, value)
+    local n = #keys
     local data = _dataset[n]
     if not data then
       data = {}
       _dataset[n] = data
     end
-    return insert(0, n, data, key, value)
+    return insert(0, n, data, keys, value)
   end
 
-  function self:erase(key)
-    local n = #key
+  function self:erase(keys)
+    local n = #keys
     local data = _dataset[n]
     if data then
       local path = { data }
-      local v = find(0, n, data, key, path)
+      local v = find(0, n, data, keys, path)
       if v ~= nil then
-        erase(n, key, path)
+        erase(n, keys, path)
       end
       return v
     end
   end
 
-  function self:find(key)
-    local n = #key
+  function self:find(keys)
+    local n = #keys
     local data = _dataset[n]
     if data then
-      return find(0, n, data, key)
+      return find(0, n, data, keys)
     end
   end
 
