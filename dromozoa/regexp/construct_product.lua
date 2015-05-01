@@ -100,17 +100,17 @@ local function constructor(_a, _b, _g)
     local u = _map:find({ a.id, b.id })
     local transition_a = self:create_transition(a)
     local transition_b = self:create_transition(b)
-    local transition_g = {}
+    local transition = {}
     for i = 0, 255 do
       local v = _map:find({ transition_a[i].id, transition_b[i].id })
-      local transition = transition_g[v.id]
-      if transition then
-        transition:set(i)
-      else
-        transition_g[v.id] = bitset():set(i)
+      local condition = transition[v.id]
+      if not condition then
+        condition = bitset()
+        transition[v.id] = condition
       end
+      condition:set(i)
     end
-    for k, v in pairs(transition_g) do
+    for k, v in pairs(transition) do
       _g:create_edge(u, k).condition = bitset_to_node(v)
     end
   end
