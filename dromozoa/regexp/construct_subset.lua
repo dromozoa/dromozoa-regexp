@@ -112,8 +112,8 @@ local function constructor(_a, _b)
     return transition
   end
 
-  function self:visit(U)
-    local epsilon_closure = self:create_epsilon_closure(U)
+  function self:visit(useq)
+    local epsilon_closure = self:create_epsilon_closure(useq)
     local u = self:vertex(epsilon_closure)
     local uid = u.id
     if not _color[uid] then

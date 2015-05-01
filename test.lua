@@ -17,9 +17,10 @@
 
 local construct_nfa = require "dromozoa.regexp.construct_nfa"
 local construct_subset = require "dromozoa.regexp.construct_subset"
+local minimize = require "dromozoa.regexp.minimize"
 local parse = require "dromozoa.regexp.parse"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local nfa = construct_nfa(parse(arg[1]))
-local dfa = construct_subset(nfa)
+local dfa = minimize(construct_subset(nfa))
 write_graphviz(dfa, io.stdout)
