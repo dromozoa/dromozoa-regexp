@@ -39,62 +39,19 @@ local function copy_seq(A)
   return B
 end
 
-local function create_epsilon_closure(A, U)
-  local visitor = dfs_visitor {
-    set = {};
-    discover_vertex = function (self, g, u)
-      self.set[u.id] = true
-    end;
-    examine_edge = function (self, g, e, u, v)
-      return e.condition[1] == "epsilon"
-    end;
-  }
-  for i = 1, #U do
-    A:get_vertex(U[i]):dfs(visitor)
-  end
-  return set_to_seq(visitor.set)
-end
-
-local function create_transition(A, U)
-  local matrix = {}
-  for i = 0, 257 do
-    matrix[i] = {}
-  end
-  for i = 1, #U do
-    for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
-      local vid = v.id
-      for k in node_to_bitset(e.condition):each() do
-        matrix[k][vid] = true
-      end
-    end
-  end
-  local map = tree_map()
-  for i = 0, 257 do
-    local row = matrix[i]
-    if next(row) ~= nil then
-      map:insert(set_to_seq(row), bitset()):set(i)
-    end
-  end
-  local transition = {}
-  for k, v in map:each() do
-    transition[#transition + 1] = { bitset_to_node(v), copy_seq(k) }
-  end
-  return transition
-end
-
-local function constructor()
+local function constructor(_a, _b)
   local self = {
     _map = tree_map();
     _color = {};
   }
 
-  function self:vertex(A, B, U)
+  function self:vertex(U)
     local map = self._map
     local v = map:find(U)
     if not v then
-      v = B:create_vertex()
+      v = _b:create_vertex()
       for i = 1, #U do
-        if A:get_vertex(U[i]).accept then
+        if _a:get_vertex(U[i]).accept then
           v.accept = true
           break
         end
@@ -104,37 +61,80 @@ local function constructor()
     return v
   end
 
-  function self:visit(A, B, U)
-    local E = create_epsilon_closure(A, U)
-    local u = self:vertex(A, B, E)
+  function self:create_epsilon_closure(U)
+    local visitor = dfs_visitor {
+      set = {};
+      discover_vertex = function (self, g, u)
+        self.set[u.id] = true
+      end;
+      examine_edge = function (self, g, e, u, v)
+        return e.condition[1] == "epsilon"
+      end;
+    }
+    for i = 1, #U do
+      _a:get_vertex(U[i]):dfs(visitor)
+    end
+    return set_to_seq(visitor.set)
+  end
+
+  function self:create_transition(A, U)
+    local matrix = {}
+    for i = 0, 257 do
+      matrix[i] = {}
+    end
+    for i = 1, #U do
+      for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
+        local vid = v.id
+        for k in node_to_bitset(e.condition):each() do
+          matrix[k][vid] = true
+        end
+      end
+    end
+    local map = tree_map()
+    for i = 0, 257 do
+      local row = matrix[i]
+      if next(row) ~= nil then
+        map:insert(set_to_seq(row), bitset()):set(i)
+      end
+    end
+    local transition = {}
+    for k, v in map:each() do
+      transition[#transition + 1] = { bitset_to_node(v), copy_seq(k) }
+    end
+    return transition
+  end
+
+  function self:visit(U)
+    local E = self:create_epsilon_closure(U)
+    local u = self:vertex(E)
     local color = self._color
     local uid = u.id
     if not color[uid] then
       color[uid] = true
-      local transition = create_transition(A, E)
+      local transition = self:create_transition(_a, E)
       for i = 1, #transition do
         local t = transition[i]
-        B:create_edge(u, self:visit(A, B, t[2])).condition = t[1]
+        _b:create_edge(u, self:visit(t[2])).condition = t[1]
       end
     end
     return u
   end
 
-  function self:construct(A, B)
-    local S = {}
-    for u in A:each_vertex "start" do
-      S[#S + 1] = u.id
+  function self:construct()
+    local start = {}
+    for u in _a:each_vertex("start") do
+      start[#start + 1] = u.id
     end
-    if #S > 0 then
-      local s = self:visit(A, B, S)
+    if #start > 0 then
+      local s = self:visit(start)
       s.start = true
     end
-    return B
+    return _b
   end
 
   return self
 end
 
 return function (a)
-  return constructor():construct(a, graph())
+  return constructor(a, graph()):construct()
 end
