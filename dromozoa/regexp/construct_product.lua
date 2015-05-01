@@ -17,8 +17,8 @@
 
 local graph = require "dromozoa.graph"
 local bitset = require "dromozoa.regexp.bitset"
-local node_to_condition = require "dromozoa.regexp.node_to_condition"
-local condition_to_node = require "dromozoa.regexp.condition_to_node"
+local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
+local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local tree_map = require "dromozoa.regexp.tree_map"
 
 local coroutine_wrap = coroutine.wrap
@@ -48,7 +48,7 @@ local function create_transition(u)
     transition[i] = dummy_vertex
   end
   for v, e in u:each_adjacent_vertex() do
-    for k in node_to_condition(e.condition):each() do
+    for k in node_to_bitset(e.condition):each() do
       transition[k] = v
     end
   end
@@ -71,7 +71,7 @@ local function create_edge(g, map, a, b)
     end
   end
   for k, v in pairs(transition) do
-    g:create_edge(u, k).condition = condition_to_node(v)
+    g:create_edge(u, k).condition = bitset_to_node(v)
   end
 end
 
