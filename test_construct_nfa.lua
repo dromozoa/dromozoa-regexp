@@ -15,8 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local decode = require "dromozoa.regexp.decode"
+local construct_nfa = require "dromozoa.regexp.construct_nfa"
 local parse = require "dromozoa.regexp.parse"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-write_graphviz(decode(parse(arg[1])), io.stdout)
+write_graphviz(construct_nfa(parse(arg[1])), io.stdout)
