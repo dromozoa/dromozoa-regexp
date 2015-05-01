@@ -77,13 +77,13 @@ local function constructor(_a, _b)
     return set_to_seq(visitor.set)
   end
 
-  function self:create_transition(A, U)
+  function self:create_transition(U)
     local matrix = {}
     for i = 0, 257 do
       matrix[i] = {}
     end
     for i = 1, #U do
-      for v, e in A:get_vertex(U[i]):each_adjacent_vertex() do
+      for v, e in _a:get_vertex(U[i]):each_adjacent_vertex() do
         local vid = v.id
         for k in node_to_bitset(e.condition):each() do
           matrix[k][vid] = true
@@ -111,7 +111,7 @@ local function constructor(_a, _b)
     local uid = u.id
     if not color[uid] then
       color[uid] = true
-      local transition = self:create_transition(_a, E)
+      local transition = self:create_transition(E)
       for i = 1, #transition do
         local t = transition[i]
         _b:create_edge(u, self:visit(t[2])).condition = t[1]
