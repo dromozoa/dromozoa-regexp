@@ -26,22 +26,28 @@ local function remove_assertion(g, op, color)
   end
 end
 
+local function assertion_visitor(_color)
+  local self = {}
+
+  function self:examine_edge(g, e, u, v)
+    local op = e.condition[1]
+    if op == "^" or op == "$" then
+      _color[e.id] = true
+    else
+      return false
+    end
+  end
+
+  return dfs_visitor(self)
+end
+
 local function remove_nonmatching_assertion(g, key, mode, op)
-  local visitor = dfs_visitor {
-    color = {};
-    examine_edge = function (self, g, e, u, v)
-      local op = e.condition[1]
-      if op == "^" or op == "$" then
-        self.color[e.id] = true
-      else
-        return false
-      end
-    end;
-  }
+  local color = {}
+  local visitor = assertion_visitor(color)
   for v in g:each_vertex(key) do
     v:dfs(visitor, mode)
   end
-  remove_assertion(g, op, visitor.color)
+  remove_assertion(g, op, color)
 end
 
 local function collapse_assertion(g, op, color)
