@@ -64,7 +64,7 @@ end
 local function collapse_end_assertion(g)
   local color = {}
   for v in g:each_vertex "accept" do
-    for u, e in v:each_adjacent_vertex "v" do
+    for u, e in v:each_adjacent_vertex("v") do
       color[e.id] = true
     end
   end
