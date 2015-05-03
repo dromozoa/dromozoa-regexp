@@ -17,10 +17,8 @@
 
 local graph = require "dromozoa.graph"
 
-local function decoder(g)
+local function constructor(_g)
   local self = {
-    _g = g;
-
     ["|"] = function (self, u, node, a, b)
       if b then
         local v = self:create_vertex()
@@ -66,14 +64,14 @@ local function decoder(g)
   }
 
   function self:create_vertex()
-    return self._g:create_vertex()
+    return _g:create_vertex()
   end
 
   function self:create_edge(u, v, condition)
     if not v then
       v = self:create_vertex()
     end
-    local e = self._g:create_edge(u, v)
+    local e = _g:create_edge(u, v)
     if condition then
       e.condition = condition
     else
@@ -101,20 +99,27 @@ local function decoder(g)
   end
 
   function self:visit(u, node)
-    return (self[node[1]] or self.fallback)(self, u, node, node[2], node[3], node[4])
+    local fn = self[node[1]]
+    if not fn then
+      fn = self.fallback
+    end
+    return fn(self, u, node, node[2], node[3], node[4])
   end
 
-  function self:decode(node)
+  function self:construct(node, token)
+    if not token then
+      token = 1
+    end
     local s = self:create_vertex()
-    s.start = true
+    s.start = token
     local a = self:visit(s, node)
-    a.accept = true
-    return self._g
+    a.accept = token
+    return _g
   end
 
   return self
 end
 
-return function (node)
-  return decoder(graph()):decode(node)
+return function (node, token)
+  return constructor(graph()):construct(node, token)
 end

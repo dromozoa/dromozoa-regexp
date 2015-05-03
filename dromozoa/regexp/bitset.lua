@@ -16,59 +16,63 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 return function()
-  local self = {
-    _t = {};
-  }
+  local _data = {}
+
+  local self = {}
 
   function self:set(m, n)
-    local t = self._t
-    for i = m, n or m do
-      t[i] = true
+    if not n then n = m end
+    for i = m, n do
+      _data[i] = true
     end
     return self
   end
 
   function self:reset(m, n)
-    local t = self._t
-    for i = m, n or m do
-      t[i] = nil
+    if not n then n = m end
+    for i = m, n do
+      _data[i] = nil
     end
     return self
   end
 
   function self:flip(m, n)
-    local t = self._t
-    for i = m, n or m do
-      if t[i] then
-        t[i] = nil
+    if not n then n = m end
+    for i = m, n do
+      if _data[i] then
+        _data[i] = nil
       else
-        t[i] = true
+        _data[i] = true
       end
     end
     return self
   end
 
   function self:test(i)
-    return self._t[i] ~= nil
+    return _data[i]
   end
 
   function self:count()
     local n = 0
-    for k in pairs(self._t) do
+    for _ in pairs(_data) do
       n = n + 1
     end
     return n
   end
 
   function self:set_union(that)
-    for k in pairs(that._t) do
-      self:set(k)
+    for i in pairs(that:impl_get_data()) do
+      self:set(i)
     end
     return self
   end
 
   function self:each()
-    return next, self._t
+    return next, _data
+  end
+
+  function self:impl_get_data()
+    return _data
   end
 
   return self

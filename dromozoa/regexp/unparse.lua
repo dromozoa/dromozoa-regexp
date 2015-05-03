@@ -17,19 +17,17 @@
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 
-local function unparser(out)
+local function unparser(_out)
   local self = {
-    _out = out;
-
     ["|"] = function (self, node, a, b)
       if b then
-        self:write "("
-        self:visit(node[2])
+        _out:write("(")
+        self:visit(a)
         for i = 3, #node do
-          self:write "|"
+          _out:write("|")
           self:visit(node[i])
         end
-        self:write ")"
+        _out:write(")")
       else
         self:visit(a)
       end
@@ -42,104 +40,100 @@ local function unparser(out)
     end;
 
     ["^"] = function (self)
-      self:write "^"
+      _out:write("^")
     end;
 
     ["$"] = function (self)
-      self:write "$"
+      _out:write("$")
     end;
 
     ["char"] = function (self, node, a)
       if a:match "^[%^%.%[%$%(%)%|%*%+%?%{%\\]$" then
-        self:write "\\"
+        _out:write("\\")
       end
-      self:write(a)
+      _out:write(a)
     end;
 
     ["\\"] = function (self, node, a)
-      self:write("\\", a)
+      _out:write("\\", a)
     end;
 
     ["."] = function (self)
-      self:write "."
+      _out:write(".")
     end;
 
     ["+"] = function (self, node, a)
       self:visit(a)
-      self:write "+"
+      _out:write("+")
     end;
 
     ["*"] = function (self, node, a)
       self:visit(a)
-      self:write "*"
+      _out:write("*")
     end;
 
     ["?"] = function (self, node, a)
       self:visit(a)
-      self:write "?"
+      _out:write("?")
     end;
 
     ["{m"] = function (self, node, a, b)
       self:visit(a)
-      self:write("{", b, "}")
+      _out:write("{", b, "}")
     end;
 
     ["{m,"] = function (self, node, a, b)
       self:visit(a)
-      self:write("{", b, ",}")
+      _out:write("{", b, ",}")
     end;
 
     ["{m,n"] = function (self, node, a, b, c)
       self:visit(a)
-      self:write("{", b, ",", c, "}")
+      _out:write("{", b, ",", c, "}")
     end;
 
     ["["] = function (self, node)
-      self:write "["
+      _out:write("[")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write "]"
+      _out:write("]")
     end;
 
     ["[^"] = function (self, node)
-      self:write "[^"
+      _out:write("[^")
       for i = 2, #node do
         self:visit(node[i])
       end
-      self:write "]"
+      _out:write("]")
     end;
 
     ["[="] = function (self, node, a)
-      self:write("[=", a, "=]")
+      _out:write("[=", a, "=]")
     end;
 
     ["[:"] = function (self, node, a)
-      self:write("[:", a, ":]")
+      _out:write("[:", a, ":]")
     end;
 
     ["[-"] = function (self, node, a, b)
       self:visit(a)
-      self:write "-"
+      _out:write("-")
       self:visit(b)
     end;
 
     ["[."] = function (self, node, a)
-      self:write("[.", a, ".]")
+      _out:write("[.", a, ".]")
     end;
 
     ["[char"] = function (self, node, a)
       if a:match "^[%^%-%]]$" then
-        self:write("[.", a, ".]")
+        _out:write("[.", a, ".]")
       else
-        self:write(a)
+        _out:write(a)
       end
     end;
   }
-
-  function self:write(...)
-    self._out:write(...)
-  end
 
   function self:visit(node)
     self[node[1]](self, node, node[2], node[3], node[4]);
@@ -147,12 +141,12 @@ local function unparser(out)
 
   function self:unparse(node)
     self:visit(node)
-    return self._out
+    return _out
   end
 
   return self
 end
 
-return function (node, out)
-  return unparser(out or buffer_writer()):unparse(node):concat()
+return function (node)
+  return unparser(buffer_writer()):unparse(node):concat()
 end

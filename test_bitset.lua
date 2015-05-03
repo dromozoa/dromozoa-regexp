@@ -24,3 +24,9 @@ for i in A:each() do
   print(i)
 end
 assert(A:count() == 11)
+
+local A = bitset():set(1, 4)
+assert(not A:test(6))
+A:set_union(bitset():set(3, 6))
+assert(A:test(6))
+

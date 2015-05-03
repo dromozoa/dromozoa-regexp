@@ -15,24 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graph = require "dromozoa.graph"
+local buffer_writer = require "dromozoa.regexp.buffer_writer"
 
-return function (A)
-  local B = graph()
-  local map = {}
-  for a in A:each_vertex() do
-    local b = B:create_vertex()
-    map[a.id] = b.id
-    if a.start then
-      b.accept = true
-    end
-    if a.accept then
-      b.start = true
-    end
-  end
-  for a in A:each_edge() do
-    local b = B:create_edge(map[a.vid], map[a.uid])
-    b.condition = a.condition
-  end
-  return B
-end
+local writer = buffer_writer()
+writer:write("foo"):write(42)
+writer:write("bar", "baz")
+assert(writer:concat() == "foo42barbaz")

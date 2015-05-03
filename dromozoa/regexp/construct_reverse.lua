@@ -15,28 +15,29 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function write(buffer, i, j, v, ...)
-  buffer[i] = v
-  if i < j then
-    return write(buffer, i + 1, j, ...)
-  end
-end
+local graph = require "dromozoa.graph"
 
-return function ()
-  local _buffer = {}
-
+local function constructor(_a, _b)
   local self = {}
 
-  function self:write(...)
-    local i = #_buffer + 1
-    local j = i + select("#", ...)
-    write(_buffer, i, j, ...)
-    return self
-  end
-
-  function self:concat(...)
-    return table.concat(_buffer, ...)
+  function self:construct()
+    local map = {}
+    for a in _a:each_vertex() do
+      local b = _b:create_vertex()
+      map[a.id] = b.id
+      b.start = a.accept
+      b.accept = a.start
+    end
+    for a in _a:each_edge() do
+      local b = _b:create_edge(map[a.vid], map[a.uid])
+      b.condition = a.condition
+    end
+    return _b
   end
 
   return self
+end
+
+return function (a)
+  return constructor(a, graph()):construct()
 end

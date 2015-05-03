@@ -15,121 +15,108 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function each_n(ctx, n)
-  local t = ctx.t
-  n = next(t, n)
-  if n then
-    local key = {}
-    local s = { t[n] }
-    ctx.s = s
-    for i = 1, n do
-      key[i], s[i + 1] = next(s[i])
-    end
-    return key, s[n + 1]
+local function find(i, n, data, keys, path)
+  i = i + 1
+  local k = keys[i]
+  local v = data[k]
+  if path then
+    path[i + 1] = v
   end
-end
-
-local function each(ctx, key)
-  if key then
-    local n = #key
-    local s = ctx.s
-    for i = n, 1, -1 do
-      local k, v = next(s[i], key[i])
-      key[i], s[i + 1] = k, v
-      if k then
-        for j = i + 1, n do
-          key[j], s[j + 1] = next(s[j])
-        end
-        return key, s[n + 1]
-      end
+  if i < n then
+    if v then
+      return find(i, n, v, keys, path)
     end
-    return each_n(ctx, n)
   else
-    return each_n(ctx)
+    return v
   end
 end
 
-return function ()
-  local self = {
-    _t = {};
-  }
-
-  function self:find(key)
-    local n = #key
-    local t = self._t
-    local u = t[n]
-    if not u then
-      return nil
+local function insert(i, n, data, keys, value)
+  i = i + 1
+  local k = keys[i]
+  local v = data[k]
+  if i < n then
+    if not v then
+      v = {}
+      data[k] = v
     end
-    for i = 1, n do
-      u = u[key[i]]
-      if u == nil then
-        return nil
-      end
-    end
-    return u
-  end
-
-  function self:insert(key, value)
-    local n = #key
-    local t = self._t
-    local u = t[n]
-    if not u then
-      u = {}
-      t[n] = u
-    end
-    for i = 1, n - 1 do
-      local k = key[i]
-      local v = u[k]
-      if not v then
-        v = {}
-        u[k] = v
-      end
-      u = v
-    end
-    local k = key[n]
-    local v = u[k]
+    return insert(i, n, v, keys, value)
+  else
     if v == nil then
-      u[k] = value
+      data[k] = value
       return value, true
     else
       return v, false
     end
   end
+end
 
-  function self:erase(key)
-    local n = #key
-    local t = self._t
-    local u = t[n]
-    if not u then
-      return nil
+local function erase(i, keys, path)
+  local k = keys[i]
+  local v = path[i]
+  v[k] = nil
+  if i > 1 and not next(v) then
+    return erase(i - 1, keys, path)
+  end
+end
+
+local function each(i, n, data, keys)
+  i = i + 1
+  if i < n then
+    for k, v in pairs(data) do
+      keys[i] = k
+      each(i, n, v, keys)
     end
-    local s = { u }
-    for i = 1, n - 1 do
-      u = u[key[i]]
-      if not u then
-        return nil
-      end
-      s[#s + 1] = u
+  else
+    for k, v in pairs(data) do
+      keys[i] = k
+      coroutine.yield(keys, v)
     end
-    local v = u[key[n]]
-    if v == nil then
-      return nil
-    else
-      for i = #s, 1, -1 do
-        local w = s[i]
-        w[key[i]] = nil
-        if next(w) ~= nil then
-          return v
-        end
+  end
+end
+
+return function ()
+  local _dataset = {}
+
+  local self = {}
+
+  function self:insert(keys, value)
+    local n = #keys
+    local data = _dataset[n]
+    if not data then
+      data = {}
+      _dataset[n] = data
+    end
+    return insert(0, n, data, keys, value)
+  end
+
+  function self:erase(keys)
+    local n = #keys
+    local data = _dataset[n]
+    if data then
+      local path = { data }
+      local v = find(0, n, data, keys, path)
+      if v ~= nil then
+        erase(n, keys, path)
       end
-      t[n] = nil
       return v
     end
   end
 
+  function self:find(keys)
+    local n = #keys
+    local data = _dataset[n]
+    if data then
+      return find(0, n, data, keys)
+    end
+  end
+
   function self:each()
-    return each, { t = self._t }
+    return coroutine.wrap(function ()
+      for n, data in pairs(_dataset) do
+        each(0, n, data, {})
+      end
+    end)
   end
 
   return self
