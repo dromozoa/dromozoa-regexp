@@ -15,7 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function construct(_data)
+return function ()
+  local _data = {}
+
   local self = {}
 
   function self:set(m, n)
@@ -70,8 +72,4 @@ local function construct(_data)
   end
 
   return self
-end
-
-return function ()
-  return construct({})
 end
