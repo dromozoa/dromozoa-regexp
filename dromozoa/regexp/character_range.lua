@@ -35,9 +35,6 @@ return function ()
     _b[n] = i
   end
 
-  function self:initialize(bitset, i, j, negate)
-  end
-
   function self:each()
     local n = #_b
     local i = 0
