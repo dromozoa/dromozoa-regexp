@@ -18,7 +18,7 @@
 local construct_reverse = require "dromozoa.regexp.construct_reverse"
 local construct_subset = require "dromozoa.regexp.construct_subset"
 
-return function (a)
+return function (g)
   -- Brzozowski's algorithm
-  return construct_subset(construct_reverse(construct_subset(construct_reverse(a))))
+  return construct_subset(construct_reverse(construct_subset(construct_reverse(g))))
 end

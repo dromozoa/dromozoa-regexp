@@ -15,9 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function()
-  local _data = {}
-
+local function construct(_data)
   local self = {}
 
   function self:set(m, n)
@@ -48,8 +46,19 @@ return function()
     return self
   end
 
+  function self:set_union(that)
+    for i in that:each() do
+      self:set(i)
+    end
+    return self
+  end
+
   function self:test(i)
     return _data[i]
+  end
+
+  function self:each()
+    return next, _data
   end
 
   function self:count()
@@ -60,20 +69,9 @@ return function()
     return n
   end
 
-  function self:set_union(that)
-    for i in pairs(that:impl_get_data()) do
-      self:set(i)
-    end
-    return self
-  end
-
-  function self:each()
-    return next, _data
-  end
-
-  function self:impl_get_data()
-    return _data
-  end
-
   return self
+end
+
+return function ()
+  return construct({})
 end
