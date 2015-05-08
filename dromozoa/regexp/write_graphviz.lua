@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local graphviz = require "dromozoa.graph.graphviz"
+local graphviz_attributes_adapter = require "dromozoa.graph.graphviz_attributes_adapter"
 local unparse = require "dromozoa.regexp.unparse"
 
 local zero_length = {
@@ -23,33 +25,42 @@ local zero_length = {
   ["$"] = "<<font color=\"#CC0000\">$</font>>";
 }
 
-local quote = {
-  ["\""] = "&quot;";
-  ["&"] = "&amp;";
-  ["<"] = "&lt;";
-  [">"] = "&gt;";
-}
-
 local function label(node)
   local a = zero_length[node[1]]
   if a then
     return a
   else
-    return "<" .. unparse(node):gsub("[\"&<>]", quote) .. ">"
+    return "<" .. graphviz.escape_html(unparse(node)) .. ">"
   end
 end
 
+local function attributes()
+  local self = {}
+
+  function self:graph_attributes(g)
+    return {
+      rankdir = "LR";
+    }
+  end
+
+  function self:node_attributes(g, u)
+    if u.accept then
+      return {
+        peripheries = 2;
+      }
+    end
+  end
+
+  function self:edge_attributes(g, e)
+    return {
+      label = label(e.condition);
+    }
+  end
+
+  return self
+end
+
 return function (g, out)
-  out:write("digraph \"graph\" {\n  graph [rankdir = LR];\n")
-  for u in g:each_vertex "start" do
-    out:write("  ", u.id, " [style = filled, fillcolor = \"#CCCCCC\"];\n")
-  end
-  for v in g:each_vertex "accept" do
-    out:write("  ", v.id, " [peripheries = 2];\n")
-  end
-  for e in g:each_edge() do
-    out:write("  ", e.uid, " -> ", e.vid, " [label = ", label(e.condition), "];\n")
-  end
-  out:write("}\n")
+  g:write_graphviz(out, graphviz_attributes_adapter(attributes()))
   return out
 end
