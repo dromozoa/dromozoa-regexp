@@ -15,24 +15,36 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graph = require "dromozoa.graph"
+return function ()
+  local _a = {}
+  local _b = {}
 
-return function (g)
-  local result = graph()
-  local map = {}
+  local self = {}
 
-  for a in g:each_vertex() do
-    local b = result:create_vertex()
-    map[a.id] = b.id
-    b.start = a.accept
-    b.accept = a.start
+  function self:push(i)
+    local n = #_b
+    if n > 0 then
+      local b = _b[n]
+      if b == i - 1 then
+        _b[n] = i
+        return
+      end
+    end
+    n = n + 1
+    _a[n] = i
+    _b[n] = i
   end
 
-  for a in g:each_edge() do
-    local b = result:create_edge(map[a.vid], map[a.uid])
-    -- should clone?
-    b.condition = a.condition
+  function self:each()
+    local n = #_b
+    local i = 0
+    return function ()
+      i = i + 1
+      if i <= n then
+        return _a[i], _b[i]
+      end
+    end
   end
 
-  return result
+  return self
 end

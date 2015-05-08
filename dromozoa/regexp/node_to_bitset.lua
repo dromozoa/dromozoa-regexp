@@ -18,7 +18,9 @@
 local bitset = require "dromozoa.regexp.bitset"
 local character_class = require "dromozoa.regexp.character_class"
 
-local function converter(_bitset)
+local function converter()
+  local _bitset = bitset()
+
   local self = {
     ["epsilon"] = function (self)
     end;
@@ -86,5 +88,5 @@ local function converter(_bitset)
 end
 
 return function (node)
-  return converter(bitset()):convert(node)
+  return converter():convert(node)
 end
