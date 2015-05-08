@@ -15,9 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local clone = require "dromozoa.graph.clone"
-local dfs_visitor = require "dromozoa.graph.dfs_visitor"
+local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
+local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local bitset = require "dromozoa.regexp.bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
