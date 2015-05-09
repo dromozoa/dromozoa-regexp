@@ -34,7 +34,7 @@ local zero_width = {
   };
 }
 
-local function attributes()
+local function attributes_visitor()
   local self = {}
 
   function self:graph_attributes(g)
@@ -76,6 +76,8 @@ local function attributes()
   return self
 end
 
+local visitor = graphviz_attributes_adapter(attributes_visitor())
+
 return function (g, out)
-  return g:write_graphviz(out, graphviz_attributes_adapter(attributes()))
+  return g:write_graphviz(out, visitor)
 end
