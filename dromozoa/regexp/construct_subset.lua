@@ -67,13 +67,13 @@ local function constructor(_g)
   end
 
   function self:get_vertex(keys)
-    local b = _map:find(keys)
-    if not b then
-      b = _result:create_vertex()
-      b.accept = self:get_property(keys, "accept")
-      _map:insert(keys, b)
+    local u = _map:find(keys)
+    if not u then
+      u = _result:create_vertex()
+      u.accept = self:get_property(keys, "accept")
+      _map:insert(keys, u)
     end
-    return b
+    return u
   end
 
   function self:create_epsilon_closure(keys)
@@ -104,36 +104,36 @@ local function constructor(_g)
         map:insert(data_to_keys(data), bitset()):set(i)
       end
     end
-    local result_keys = {}
-    local result_cond = {}
+    local transition_keys = {}
+    local transition_cond = {}
     for k, v in map:each() do
-      result_keys[#result_keys + 1] = clone(k)
-      result_cond[#result_cond + 1] = bitset_to_node(v)
+      transition_keys[#transition_keys + 1] = clone(k)
+      transition_cond[#transition_cond + 1] = bitset_to_node(v)
     end
-    return result_keys, result_cond
+    return transition_keys, transition_cond
   end
 
   function self:visit(keys)
     local epsilon_closure = self:create_epsilon_closure(keys)
-    local b = self:get_vertex(epsilon_closure)
-    if not _color[b.id] then
-      _color[b.id] = true
+    local u = self:get_vertex(epsilon_closure)
+    if not _color[u.id] then
+      _color[u.id] = true
       local transition_keys, transition_cond = self:create_transition(epsilon_closure)
       for i = 1, #transition_keys do
-        _result:create_edge(b, self:visit(transition_keys[i])).condition = transition_cond[i]
+        _result:create_edge(u, self:visit(transition_keys[i])).condition = transition_cond[i]
       end
     end
-    return b
+    return u
   end
 
   function self:construct()
     local keys = {}
-    for a in _g:each_vertex("start") do
-      keys[#keys + 1] = a.id
+    for u in _g:each_vertex("start") do
+      keys[#keys + 1] = u.id
     end
     table.sort(keys)
-    local b = self:visit(keys)
-    b.start = self:get_property(keys, "start")
+    local s = self:visit(keys)
+    s.start = self:get_property(keys, "start")
     return _result
   end
 

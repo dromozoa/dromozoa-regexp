@@ -19,20 +19,46 @@ local graph = require "dromozoa.graph"
 local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 
 local function remove_assertion(g, op, color)
-  for e in g:each_edge() do
-    if e.condition[1] == op and not color[e.id] then
-      e:remove()
+  if color then
+    for e in g:each_edge() do
+      if e.condition[1] == op and not color[e.id] then
+        e:remove()
+      end
+    end
+  else
+    for e in g:each_edge() do
+      if e.condition[1] == op then
+        e:remove()
+      end
     end
   end
 end
 
-local function assertion_visitor(_color)
+local function collapse_assertion(g, op, color)
+  if color then
+    for e in g:each_edge() do
+      if e.condition[1] == op and not color[e.id] then
+        e.u.accept = e.v.accept
+        e:collapse()
+      end
+    end
+  else
+    for e in g:each_edge() do
+      if e.condition[1] == op then
+        e.u.accept = e.v.accept
+        e:collapse()
+      end
+    end
+  end
+end
+
+local function assertion_visitor(_result)
   local self = {}
 
   function self:examine_edge(g, e, u, v)
     local op = e.condition[1]
     if op == "^" or op == "$" then
-      _color[e.id] = true
+      _result[e.id] = true
     else
       return false
     end
@@ -50,35 +76,27 @@ local function remove_nonmatching_assertion(g, key, mode, op)
   remove_assertion(g, op, color)
 end
 
-local function collapse_assertion(g, op, color)
-  for e in g:each_edge() do
-    if e.condition[1] == op and not color[e.id] then
-      if e.v.accept then
-        e.u.accept = true
-      end
-      e:collapse()
-    end
-  end
-end
-
 local function collapse_end_assertion(g)
   local color = {}
-  for v in g:each_vertex "accept" do
-    for u, e in v:each_adjacent_vertex("v") do
+  for v in g:each_vertex("accept") do
+    for _, e in v:each_adjacent_vertex("v") do
       color[e.id] = true
     end
   end
   collapse_assertion(g, "$", color)
 end
 
-return function (A)
-  local B = A:clone()
-  remove_nonmatching_assertion(B, "start", "u", "^")
-  remove_nonmatching_assertion(B, "accept", "v", "$")
-  local C = B:clone()
-  collapse_assertion(B, "^", {})
-  collapse_end_assertion(B)
-  remove_assertion(C, "^", {})
-  collapse_end_assertion(C)
-  return B, C
+return function (g)
+  local a = g:clone()
+  remove_nonmatching_assertion(a, "start", "u", "^")
+  remove_nonmatching_assertion(a, "accept", "v", "$")
+  local b = a:clone()
+
+  collapse_assertion(a, "^")
+  collapse_end_assertion(a)
+
+  remove_assertion(b, "^")
+  collapse_end_assertion(b)
+
+  return a, b
 end

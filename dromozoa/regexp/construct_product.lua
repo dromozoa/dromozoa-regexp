@@ -78,10 +78,10 @@ local function constructor(_a, _b)
   end
 
   function self:create_vertex(a, b, accept)
-    local v = _result:create_vertex()
-    v.start = start(a.start, b.start)
-    v.accept = accept(a.accept, b.accept)
-    _map:insert({ a.id, b.id }, v)
+    local u = _result:create_vertex()
+    u.start = start(a.start, b.start)
+    u.accept = accept(a.accept, b.accept)
+    _map:insert({ a.id, b.id }, u)
   end
 
   function self:create_transition(u)
