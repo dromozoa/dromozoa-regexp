@@ -17,13 +17,13 @@
 
 local construct_nfa = require "dromozoa.regexp.construct_nfa"
 local construct_product = require "dromozoa.regexp.construct_product"
-local construct_subset = require "dromozoa.regexp.construct_subset"
 local minimize = require "dromozoa.regexp.minimize"
 local parse = require "dromozoa.regexp.parse"
+local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-local dfa1 = minimize(construct_subset(construct_nfa(parse(arg[1]))))
-local dfa2 = minimize(construct_subset(construct_nfa(parse(arg[2]))))
+local dfa1 = minimize(powerset_construction(construct_nfa(parse(arg[1]))))
+local dfa2 = minimize(powerset_construction(construct_nfa(parse(arg[2]))))
 local dfa3 = construct_product[arg[3]](dfa1, dfa2)
 local dfa4 = minimize(dfa3)
 

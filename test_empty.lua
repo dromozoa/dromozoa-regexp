@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local graph = require "dromozoa.graph"
-local construct_subset = require "dromozoa.regexp.construct_subset"
+local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-write_graphviz(construct_subset(graph()), assert(io.open("test-empty.dot", "w"))):close()
+write_graphviz(powerset_construction(graph()), assert(io.open("test-empty.dot", "w"))):close()

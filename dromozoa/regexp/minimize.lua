@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local graph = require "dromozoa.graph"
-local construct_subset = require "dromozoa.regexp.construct_subset"
+local powerset_construction = require "dromozoa.regexp.powerset_construction"
 
 local function reverse(g)
   local result = graph()
@@ -40,5 +40,5 @@ end
 
 return function (g)
   -- Brzozowski's algorithm
-  return construct_subset(reverse(construct_subset(reverse(g))))
+  return powerset_construction(reverse(powerset_construction(reverse(g))))
 end
