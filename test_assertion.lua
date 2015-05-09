@@ -15,15 +15,15 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local construct_nfa = require "dromozoa.regexp.construct_nfa"
 local minimize = require "dromozoa.regexp.minimize"
+local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local remove_assertion = require "dromozoa.regexp.remove_assertion"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local ast = parse(arg[1])
-local nfa = construct_nfa(parse(arg[1]))
+local nfa = node_to_nfa(parse(arg[1]))
 local dfa1 = powerset_construction(nfa)
 local dfa2 = minimize(dfa1)
 local dfa3, dfa4 = remove_assertion(dfa2)
