@@ -18,7 +18,10 @@
 local character_class = require "dromozoa.regexp.character_class"
 local unparse = require "dromozoa.regexp.unparse"
 
-local function parser(_text, _i, _stack)
+local function parser(_text)
+  local _i = 1
+  local _stack = {}
+
   local self = {}
 
   function self:parse()
@@ -240,5 +243,5 @@ local function parser(_text, _i, _stack)
 end
 
 return function (text)
-  return parser(text, 1, {}):parse()
+  return parser(text):parse()
 end

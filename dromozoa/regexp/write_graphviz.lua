@@ -24,10 +24,12 @@ local zero_width = {
     fontcolor = "red";
     label = "<&epsilon;>";
   };
+
   ["^"] = {
     fontcolor = "red";
     label = graphviz.quote_string("^");
   };
+
   ["$"] = {
     fontcolor = "red";
     label = graphviz.quote_string("$");
