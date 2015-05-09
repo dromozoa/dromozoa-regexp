@@ -29,3 +29,7 @@ lua test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
 lua test.lua '^[a-z]+A*$'
 
 lua test_assertion.lua '^abc|d^e$f|ghi$'
+lua test_assertion.lua '^$'
+lua test_assertion.lua '^$^$^$^$'
+lua test_assertion.lua '$^$^$^$^'
+lua test_assertion.lua '^^^^aaaa$$$$|bbbb$$$$'
