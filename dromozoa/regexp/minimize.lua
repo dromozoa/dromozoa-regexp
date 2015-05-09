@@ -15,10 +15,30 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local construct_reverse = require "dromozoa.regexp.construct_reverse"
+local graph = require "dromozoa.graph"
 local construct_subset = require "dromozoa.regexp.construct_subset"
+
+local function reverse(g)
+  local result = graph()
+  local map = {}
+
+  for a in g:each_vertex() do
+    local b = result:create_vertex()
+    map[a.id] = b.id
+    b.start = a.accept
+    b.accept = a.start
+  end
+
+  for a in g:each_edge() do
+    local b = result:create_edge(map[a.vid], map[a.uid])
+    -- should clone?
+    b.condition = a.condition
+  end
+
+  return result
+end
 
 return function (g)
   -- Brzozowski's algorithm
-  return construct_subset(construct_reverse(construct_subset(construct_reverse(g))))
+  return construct_subset(reverse(construct_subset(reverse(g))))
 end
