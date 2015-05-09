@@ -131,9 +131,11 @@ local function constructor(_g)
     for u in _g:each_vertex("start") do
       keys[#keys + 1] = u.id
     end
-    table.sort(keys)
-    local s = self:visit(keys)
-    s.start = self:get_property(keys, "start")
+    if #keys > 0 then
+      table.sort(keys)
+      local s = self:visit(keys)
+      s.start = self:get_property(keys, "start")
+    end
     return _result
   end
 

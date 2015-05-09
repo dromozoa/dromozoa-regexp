@@ -20,5 +20,12 @@
 lua test_bitset.lua
 lua test_buffer_writer.lua
 lua test_character_class.lua
+lua test_empty.lua
 lua test_parse.lua
 lua test_tree_map.lua
+
+lua test.lua '[a-c]{2,}(abc|abd|acc)'
+lua test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
+lua test.lua '^[a-z]+A*$'
+
+lua test_assertion.lua '^abc|d^e$f|ghi$'
