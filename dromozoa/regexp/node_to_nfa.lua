@@ -17,7 +17,7 @@
 
 local graph = require "dromozoa.graph"
 
-local function constructor()
+local function converter()
   local _g = graph()
 
   local self = {
@@ -108,7 +108,7 @@ local function constructor()
     return fn(self, u, node, node[2], node[3], node[4])
   end
 
-  function self:construct(node, token)
+  function self:convert(node, token)
     if not token then
       token = 1
     end
@@ -123,5 +123,5 @@ local function constructor()
 end
 
 return function (node, token)
-  return constructor():construct(node, token)
+  return converter():convert(node, token)
 end

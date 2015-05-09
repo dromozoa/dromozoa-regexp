@@ -15,30 +15,43 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
-local powerset_construction = require "dromozoa.regexp.powerset_construction"
 
-local function reverse(g)
-  local result = graph()
+local function get_property(g, key, min)
+  for u in g:each_vertex(key) do
+    local v = u[key]
+    if min == nil or min > v then
+      min = v
+    end
+  end
+  return min
+end
+
+local function copy(g, result, s)
   local map = {}
 
   for a in g:each_vertex() do
     local b = result:create_vertex()
     map[a.id] = b.id
-    b.start = a.accept
-    b.accept = a.start
+    if a.start then
+      local e = result:create_edge(s, b)
+      e.condition = { "epsilon" }
+    end
+    b.accept = a.accept
   end
 
   for a in g:each_edge() do
-    local b = result:create_edge(map[a.vid], map[a.uid])
-    -- not clone
-    b.condition = a.condition
+    local b = result:create_edge(map[a.uid], map[a.vid])
+    b.condition = clone(a.condition)
   end
-
-  return result
 end
 
-return function (g)
-  -- Brzozowski's algorithm
-  return powerset_construction(reverse(powerset_construction(reverse(g))))
+return function (a, b)
+  local result = graph()
+  local s = result:create_vertex()
+  s.start = get_property(b, "start", get_property(a, "start"))
+  copy(a, result, s)
+  copy(b, result, s)
+  return result
 end
