@@ -18,7 +18,7 @@
 local character_class = require "dromozoa.regexp.character_class"
 
 assert(character_class.xdigit)
-assert(character_class.punct:test(string.byte "["))
-assert(character_class.punct:test(string.byte "|"))
-assert(character_class.punct:test(string.byte "]"))
-assert(character_class.punct:test(string.byte "~"))
+assert(character_class.punct:test(string.byte("[")))
+assert(character_class.punct:test(string.byte("|")))
+assert(character_class.punct:test(string.byte("]")))
+assert(character_class.punct:test(string.byte("~")))

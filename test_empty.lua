@@ -15,31 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function (P, text, i)
-  local transition = P.transition
-  local start = P.start
-  local accept = P.accept
+local graph = require "dromozoa.graph"
+local construct_subset = require "dromozoa.regexp.construct_subset"
+local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-  local b
-  local u = P.start
-  while true do
-    local c = text:byte(i)
-    if c == nil then
-      c = 256
-    else
-      c = c + 1
-    end
-    local v = transition[u][c]
-    if v == 0 then
-      if accept[u] then
-        return u, string.char(b - 1)
-      else
-        return
-      end
-      return accept[u]
-    end
-    b = c
-    u = v
-    i = i + 1
-  end
-end
+write_graphviz(construct_subset(graph()), assert(io.open("test-empty.dot", "w"))):close()
