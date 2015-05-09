@@ -56,7 +56,8 @@ local function accept_difference(a, b)
   end
 end
 
-local function constructor(_a, _b, _g)
+local function constructor(_a, _b)
+  local _g = graph()
   local _map = tree_map()
 
   local self = {}
@@ -97,7 +98,6 @@ local function constructor(_a, _b, _g)
   end
 
   function self:create_edge(a, b)
-    local u = _map:find({ a.id, b.id })
     local transition_a = self:create_transition(a)
     local transition_b = self:create_transition(b)
     local transition = {}
@@ -110,6 +110,7 @@ local function constructor(_a, _b, _g)
       end
       condition:set(i)
     end
+    local u = _map:find({ a.id, b.id })
     for k, v in pairs(transition) do
       _g:create_edge(u, k).condition = bitset_to_node(v)
     end
@@ -129,15 +130,15 @@ local function constructor(_a, _b, _g)
 end
 
 return {
-  intersection = function (a, b)
-    return constructor(a, b, graph()):construct(accept_intersection)
+  set_intersection = function (a, b)
+    return constructor(a, b):construct(accept_intersection)
   end;
 
-  union = function (a, b)
-    return constructor(a, b, graph()):construct(accept_union)
+  set_union = function (a, b)
+    return constructor(a, b):construct(accept_union)
   end;
 
-  difference = function (a, b)
-    return constructor(a, b, graph()):construct(accept_difference)
+  set_difference = function (a, b)
+    return constructor(a, b):construct(accept_difference)
   end;
 }

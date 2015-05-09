@@ -46,7 +46,8 @@ local function epsilon_closure_visitor(_result)
   return dfs_visitor(self)
 end
 
-local function constructor(_a, _b)
+local function constructor(_a)
+  local _b = graph()
   local _map = tree_map()
   local _color = {}
 
@@ -140,5 +141,5 @@ local function constructor(_a, _b)
 end
 
 return function (a)
-  return constructor(a, graph()):construct()
+  return constructor(a):construct()
 end
