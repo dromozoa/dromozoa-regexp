@@ -34,6 +34,6 @@ lua test_assertion.lua '^$^$^$^$'
 lua test_assertion.lua '$^$^$^$^'
 lua test_assertion.lua '^^^^aaaa$$$$|bbbb$$$$'
 
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' set_intersection
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' set_union
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' set_difference
+lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
+lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' union
+lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' difference

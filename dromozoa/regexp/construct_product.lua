@@ -130,15 +130,15 @@ local function constructor(_a, _b)
 end
 
 return {
-  set_intersection = function (a, b)
+  intersection = function (a, b)
     return constructor(a, b):construct(accept_intersection)
   end;
 
-  set_union = function (a, b)
+  union = function (a, b)
     return constructor(a, b):construct(accept_union)
   end;
 
-  set_difference = function (a, b)
+  difference = function (a, b)
     return constructor(a, b):construct(accept_difference)
   end;
 }
