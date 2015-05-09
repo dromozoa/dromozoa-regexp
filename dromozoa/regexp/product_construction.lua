@@ -56,7 +56,7 @@ local function accept_difference(a, b)
   end
 end
 
-local function constructor(_a, _b)
+local function construction(_a, _b)
   local _result = graph()
   local _map = tree_map()
 
@@ -131,14 +131,14 @@ end
 
 return {
   intersection = function (a, b)
-    return constructor(a, b):construct(accept_intersection)
+    return construction(a, b):construct(accept_intersection)
   end;
 
   union = function (a, b)
-    return constructor(a, b):construct(accept_union)
+    return construction(a, b):construct(accept_union)
   end;
 
   difference = function (a, b)
-    return constructor(a, b):construct(accept_difference)
+    return construction(a, b):construct(accept_difference)
   end;
 }
