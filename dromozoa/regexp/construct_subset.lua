@@ -46,7 +46,8 @@ local function epsilon_closure_visitor(_result)
   return dfs_visitor(self)
 end
 
-local function constructor(_a, _b)
+local function constructor(_g)
+  local _result = graph()
   local _map = tree_map()
   local _color = {}
 
@@ -55,7 +56,7 @@ local function constructor(_a, _b)
   function self:get_property(keys, key)
     local min
     for i = 1, #keys do
-      local v = _a:get_vertex(keys[i])[key]
+      local v = _g:get_vertex(keys[i])[key]
       if v ~= nil then
         if min == nil or min > v then
           min = v
@@ -66,22 +67,22 @@ local function constructor(_a, _b)
   end
 
   function self:get_vertex(keys)
-    local b = _map:find(keys)
-    if not b then
-      b = _b:create_vertex()
-      b.accept = self:get_property(keys, "accept")
-      _map:insert(keys, b)
+    local u = _map:find(keys)
+    if not u then
+      u = _result:create_vertex()
+      u.accept = self:get_property(keys, "accept")
+      _map:insert(keys, u)
     end
-    return b
+    return u
   end
 
   function self:create_epsilon_closure(keys)
-    local result = {}
-    local visitor = epsilon_closure_visitor(result)
+    local data = {}
+    local visitor = epsilon_closure_visitor(data)
     for i = 1, #keys do
-      _a:get_vertex(keys[i]):dfs(visitor)
+      _g:get_vertex(keys[i]):dfs(visitor)
     end
-    return data_to_keys(result)
+    return data_to_keys(data)
   end
 
   function self:create_transition(keys)
@@ -90,7 +91,7 @@ local function constructor(_a, _b)
       dataset[i] = {}
     end
     for i = 1, #keys do
-      for v, e in _a:get_vertex(keys[i]):each_adjacent_vertex() do
+      for v, e in _g:get_vertex(keys[i]):each_adjacent_vertex() do
         for k in node_to_bitset(e.condition):each() do
           dataset[k][v.id] = true
         end
@@ -103,42 +104,42 @@ local function constructor(_a, _b)
         map:insert(data_to_keys(data), bitset()):set(i)
       end
     end
-    local result_keys = {}
-    local result_cond = {}
+    local transition_keys = {}
+    local transition_cond = {}
     for k, v in map:each() do
-      result_keys[#result_keys + 1] = clone(k)
-      result_cond[#result_cond + 1] = bitset_to_node(v)
+      transition_keys[#transition_keys + 1] = clone(k)
+      transition_cond[#transition_cond + 1] = bitset_to_node(v)
     end
-    return result_keys, result_cond
+    return transition_keys, transition_cond
   end
 
   function self:visit(keys)
     local epsilon_closure = self:create_epsilon_closure(keys)
-    local b = self:get_vertex(epsilon_closure)
-    if not _color[b.id] then
-      _color[b.id] = true
+    local u = self:get_vertex(epsilon_closure)
+    if not _color[u.id] then
+      _color[u.id] = true
       local transition_keys, transition_cond = self:create_transition(epsilon_closure)
       for i = 1, #transition_keys do
-        _b:create_edge(b, self:visit(transition_keys[i])).condition = transition_cond[i]
+        _result:create_edge(u, self:visit(transition_keys[i])).condition = transition_cond[i]
       end
     end
-    return b
+    return u
   end
 
   function self:construct()
     local keys = {}
-    for a in _a:each_vertex("start") do
-      keys[#keys + 1] = a.id
+    for u in _g:each_vertex("start") do
+      keys[#keys + 1] = u.id
     end
     table.sort(keys)
-    local b = self:visit(keys)
-    b.start = self:get_property(keys, "start")
-    return _b
+    local s = self:visit(keys)
+    s.start = self:get_property(keys, "start")
+    return _result
   end
 
   return self
 end
 
-return function (a)
-  return constructor(a, graph()):construct()
+return function (g)
+  return constructor(g):construct()
 end

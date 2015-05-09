@@ -56,7 +56,8 @@ local function accept_difference(a, b)
   end
 end
 
-local function constructor(_a, _b, _g)
+local function constructor(_a, _b)
+  local _result = graph()
   local _map = tree_map()
 
   local self = {}
@@ -77,10 +78,10 @@ local function constructor(_a, _b, _g)
   end
 
   function self:create_vertex(a, b, accept)
-    local v = _g:create_vertex()
-    v.start = start(a.start, b.start)
-    v.accept = accept(a.accept, b.accept)
-    _map:insert({ a.id, b.id }, v)
+    local u = _result:create_vertex()
+    u.start = start(a.start, b.start)
+    u.accept = accept(a.accept, b.accept)
+    _map:insert({ a.id, b.id }, u)
   end
 
   function self:create_transition(u)
@@ -97,7 +98,6 @@ local function constructor(_a, _b, _g)
   end
 
   function self:create_edge(a, b)
-    local u = _map:find({ a.id, b.id })
     local transition_a = self:create_transition(a)
     local transition_b = self:create_transition(b)
     local transition = {}
@@ -110,8 +110,9 @@ local function constructor(_a, _b, _g)
       end
       condition:set(i)
     end
+    local u = _map:find({ a.id, b.id })
     for k, v in pairs(transition) do
-      _g:create_edge(u, k).condition = bitset_to_node(v)
+      _result:create_edge(u, k).condition = bitset_to_node(v)
     end
   end
 
@@ -122,22 +123,22 @@ local function constructor(_a, _b, _g)
     for a, b in self:each_product() do
       self:create_edge(a, b)
     end
-    return _g
+    return _result
   end
 
   return self
 end
 
 return {
-  intersection = function (a, b)
-    return constructor(a, b, graph()):construct(accept_intersection)
+  set_intersection = function (a, b)
+    return constructor(a, b):construct(accept_intersection)
   end;
 
-  union = function (a, b)
-    return constructor(a, b, graph()):construct(accept_union)
+  set_union = function (a, b)
+    return constructor(a, b):construct(accept_union)
   end;
 
-  difference = function (a, b)
-    return constructor(a, b, graph()):construct(accept_difference)
+  set_difference = function (a, b)
+    return constructor(a, b):construct(accept_difference)
   end;
 }
