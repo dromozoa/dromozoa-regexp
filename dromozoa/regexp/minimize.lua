@@ -31,7 +31,7 @@ local function reverse(g)
 
   for a in g:each_edge() do
     local b = result:create_edge(map[a.vid], map[a.uid])
-    -- should clone?
+    -- not clone
     b.condition = a.condition
   end
 
