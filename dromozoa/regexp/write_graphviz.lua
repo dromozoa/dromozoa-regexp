@@ -19,21 +19,6 @@ local graphviz = require "dromozoa.graph.graphviz"
 local graphviz_attributes_adapter = require "dromozoa.graph.graphviz_attributes_adapter"
 local unparse = require "dromozoa.regexp.unparse"
 
-local zero_length = {
-  ["epsilon"] = "<<font color=\"#CC0000\">&epsilon;</font>>";
-  ["^"] = "<<font color=\"#CC0000\">^</font>>";
-  ["$"] = "<<font color=\"#CC0000\">$</font>>";
-}
-
-local function label(node)
-  local a = zero_length[node[1]]
-  if a then
-    return a
-  else
-    return "<" .. graphviz.escape_html(unparse(node)) .. ">"
-  end
-end
-
 local function attributes()
   local self = {}
 
@@ -44,23 +29,46 @@ local function attributes()
   end
 
   function self:node_attributes(g, u)
-    if u.accept then
-      return {
-        peripheries = 2;
-      }
+    local start = u.start
+    local accept = u.accept
+    if start or accept then
+      local attributes = {}
+      if start then
+        attributes.style = "filled"
+        attributes.fontcolor = "white"
+        attributes.fillcolor = "black"
+      end
+      if accept then
+        attributes.peripheries = 2
+        attributes.label = graphviz.quote_string(u.id .. " / " .. accept)
+      end
+      return attributes
     end
   end
 
   function self:edge_attributes(g, e)
-    return {
-      label = label(e.condition);
-    }
+    local node = e.condition
+    local op = node[1]
+    if op == "epsilon" then
+      return {
+        fontcolor = "red";
+        label = "<&epsilon;>";
+      }
+    elseif op == "^" or op == "$" then
+      return {
+        fontcolor = "red";
+        label = graphviz.quote_string(unparse(node));
+      }
+    else
+      return {
+        label = graphviz.quote_string(unparse(node));
+      }
+    end
   end
 
   return self
 end
 
 return function (g, out)
-  g:write_graphviz(out, graphviz_attributes_adapter(attributes()))
-  return out
+  return g:write_graphviz(out, graphviz_attributes_adapter(attributes()))
 end
