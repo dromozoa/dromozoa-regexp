@@ -15,41 +15,69 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local graphviz = require "dromozoa.graph.graphviz"
+local graphviz_attributes_adapter = require "dromozoa.graph.graphviz_attributes_adapter"
 local unparse = require "dromozoa.regexp.unparse"
 
-local zero_length = {
-  ["epsilon"] = "<<font color=\"#CC0000\">&epsilon;</font>>";
-  ["^"] = "<<font color=\"#CC0000\">^</font>>";
-  ["$"] = "<<font color=\"#CC0000\">$</font>>";
+local zero_width = {
+  ["epsilon"] = {
+    fontcolor = "red";
+    label = "<&epsilon;>";
+  };
+  ["^"] = {
+    fontcolor = "red";
+    label = graphviz.quote_string("^");
+  };
+  ["$"] = {
+    fontcolor = "red";
+    label = graphviz.quote_string("$");
+  };
 }
 
-local quote = {
-  ["\""] = "&quot;";
-  ["&"] = "&amp;";
-  ["<"] = "&lt;";
-  [">"] = "&gt;";
-}
+local function attributes_visitor()
+  local self = {}
 
-local function label(node)
-  local a = zero_length[node[1]]
-  if a then
-    return a
-  else
-    return "<" .. unparse(node):gsub("[\"&<>]", quote) .. ">"
+  function self:graph_attributes(g)
+    return {
+      rankdir = "LR";
+    }
   end
+
+  function self:node_attributes(g, u)
+    local start = u.start
+    local accept = u.accept
+    if start or accept then
+      local attributes = {}
+      if start then
+        attributes.style = "filled"
+        attributes.fontcolor = "white"
+        attributes.fillcolor = "black"
+      end
+      if accept then
+        attributes.peripheries = 2
+        attributes.label = graphviz.quote_string(u.id .. " / " .. accept)
+      end
+      return attributes
+    end
+  end
+
+  function self:edge_attributes(g, e)
+    local node = e.condition
+    local attributes = zero_width[node[1]]
+    if attributes then
+      return attributes
+    else
+      return {
+        label = graphviz.quote_string(unparse(node));
+      }
+    end
+  end
+
+  return self
 end
 
+local visitor = graphviz_attributes_adapter(attributes_visitor())
+
 return function (g, out)
-  out:write("digraph \"graph\" {\n  graph [rankdir = LR];\n")
-  for u in g:each_vertex "start" do
-    out:write("  ", u.id, " [style = filled, fillcolor = \"#CCCCCC\"];\n")
-  end
-  for v in g:each_vertex "accept" do
-    out:write("  ", v.id, " [peripheries = 2];\n")
-  end
-  for e in g:each_edge() do
-    out:write("  ", e.uid, " -> ", e.vid, " [label = ", label(e.condition), "];\n")
-  end
-  out:write("}\n")
-  return out
+  return g:write_graphviz(out, visitor)
 end
