@@ -19,6 +19,21 @@ local graphviz = require "dromozoa.graph.graphviz"
 local graphviz_attributes_adapter = require "dromozoa.graph.graphviz_attributes_adapter"
 local unparse = require "dromozoa.regexp.unparse"
 
+local zero_width = {
+  ["epsilon"] = {
+    fontcolor = "red";
+    label = "<&epsilon;>";
+  };
+  ["^"] = {
+    fontcolor = "red";
+    label = graphviz.quote_string("^");
+  };
+  ["$"] = {
+    fontcolor = "red";
+    label = graphviz.quote_string("$");
+  };
+}
+
 local function attributes()
   local self = {}
 
@@ -48,17 +63,9 @@ local function attributes()
 
   function self:edge_attributes(g, e)
     local node = e.condition
-    local op = node[1]
-    if op == "epsilon" then
-      return {
-        fontcolor = "red";
-        label = "<&epsilon;>";
-      }
-    elseif op == "^" or op == "$" then
-      return {
-        fontcolor = "red";
-        label = graphviz.quote_string(unparse(node));
-      }
+    local attributes = zero_width[node[1]]
+    if attributes then
+      return attributes
     else
       return {
         label = graphviz.quote_string(unparse(node));
