@@ -18,19 +18,19 @@
 local graph = require "dromozoa.graph"
 local merge = require "dromozoa.regexp.merge"
 
-local function get_property(g, key, min)
-  for u in g:each_vertex(key) do
-    local v = u[key]
-    if min == nil or min > v then
-      min = v
+return function (this, that)
+  this:merge(that)
+  local s = this:create_vertex()
+  local token
+  for u in this:each_vertex("start") do
+    local v = u.start
+    if token == nil or token > v then
+      token = v
     end
+    local e = this:create_edge(s, u)
+    e.condition = { "epsilon" }
   end
-  return min
-end
-
-return function (a, b)
-  local result = graph()
-  local s = result:create_vertex()
-  s.start = get_property(b, "start", get_property(a, "start"))
-  return merge.start(b, merge.start(a, result, s), s)
+  this:clear_vertex_properties("start")
+  s.start = token
+  return this
 end
