@@ -17,6 +17,7 @@
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 local dfa = require "dromozoa.regexp.dfa"
+local decompile = require "dromozoa.regexp.decompile"
 local generate = require "dromozoa.regexp.generate"
 
 local loadstring = loadstring or load
@@ -24,7 +25,7 @@ local loadstring = loadstring or load
 local a = dfa("/\\*"):concat(dfa(".*"):difference(".*\\*/.*")):concat("\\*/")
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
-  :branch("[[:space:]]*")
+  :branch("[[:alpha:]]*", 4)
 a:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 
 local function check_code(code)
@@ -40,5 +41,6 @@ check_code(code)
 local code = assert(loadstring(generate(code, buffer_writer()):concat()))()
 check_code(code)
 
--- local b = decompile(code)
+local b = decompile(code)
+dfa(b):write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 
