@@ -32,33 +32,29 @@ local function construct(_g)
     return construct(_g:clone())
   end
 
-  function self:minimize()
-    _g = minimize(_g)
-    return self
-  end
-
   function self:branch(that)
+    -- not minimize
     _g = powerset_construction(branch(_g, that:impl_get()))
     return self
   end
 
   function self:concat(that)
-    _g = powerset_construction(concat(_g, that:impl_get()))
+    _g = minimize(powerset_construction(concat(_g, that:impl_get())))
     return self
   end
 
   function self:intersection(that)
-    _g = product_construction.intersection(_g, that:impl_get())
+    _g = minimize(product_construction.intersection(_g, that:impl_get()))
     return self
   end
 
   function self:union(that)
-    _g = product_construction.union(_g, that:impl_get())
+    _g = minimize(product_construction.union(_g, that:impl_get()))
     return self
   end
 
   function self:difference(that)
-    _g = product_construction.difference(_g, that:impl_get())
+    _g = minimize(product_construction.difference(_g, that:impl_get()))
     return self
   end
 
@@ -79,5 +75,5 @@ local function construct(_g)
 end
 
 return function (regexp, token)
-  return construct(powerset_construction(node_to_nfa(parse(regexp), token)))
+  return construct(minimize(powerset_construction(node_to_nfa(parse(regexp), token))))
 end

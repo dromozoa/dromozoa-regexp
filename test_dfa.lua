@@ -19,23 +19,16 @@ local dfa = require "dromozoa.regexp.dfa"
 
 local p = dfa("ab|bc|cd|e*")
 p:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
-p:minimize()
-p:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 p:set_token(2)
-p:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 
 local p = dfa(".*")
 p:difference(dfa(".*\\*/.*"))
-p:write_graphviz(assert(io.open("test-dfa4.dot", "w"))):close()
-p:minimize()
-p:write_graphviz(assert(io.open("test-dfa5.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
 
 local p = dfa("/\\*"):concat(p):concat(dfa("\\*/"))
-p:write_graphviz(assert(io.open("test-dfa6.dot", "w"))):close()
-p:minimize()
-p:write_graphviz(assert(io.open("test-dfa7.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa4.dot", "w"))):close()
 
-p:branch(dfa("-?(0|[1-9][0-9]*)", 2):minimize())
-p:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][0-9]+)?", 3):minimize())
-p:write_graphviz(assert(io.open("test-dfa8.dot", "w"))):close()
-
+p:branch(dfa("-?(0|[1-9][0-9]*)", 2))
+p:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][0-9]+)?", 3))
+p:write_graphviz(assert(io.open("test-dfa5.dot", "w"))):close()
