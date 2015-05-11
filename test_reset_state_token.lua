@@ -24,5 +24,7 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local dfa = powerset_construction(node_to_nfa(parse(arg[1])))
 write_graphviz(dfa, assert(io.open("test-dfa1.dot", "w"))):close()
+assert(dfa:each_vertex("start")().start == 1)
 reset_state_token(dfa, 42)
+assert(dfa:each_vertex("start")().start == 42)
 write_graphviz(dfa, assert(io.open("test-dfa2.dot", "w"))):close()
