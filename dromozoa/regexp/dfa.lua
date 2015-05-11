@@ -22,7 +22,7 @@ local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local product_construction = require "dromozoa.regexp.product_construction"
-local reset_state_token = require "dromozoa.regexp.reset_state_token"
+local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local function construct(_g)
@@ -62,8 +62,8 @@ local function construct(_g)
     return self
   end
 
-  function self:reset_state_token(token)
-    reset_state_token(_g, token)
+  function self:set_token(token)
+    set_token(_g, token)
     return self
   end
 

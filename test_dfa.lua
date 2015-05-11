@@ -21,7 +21,7 @@ local p = dfa("ab|bc|cd|e*")
 p:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 p:minimize()
 p:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
-p:reset_state_token(2)
+p:set_token(2)
 p:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
 
 local p = dfa(".*")
