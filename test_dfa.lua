@@ -15,27 +15,27 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local P = require "dromozoa.regexp.pattern"
+local dfa = require "dromozoa.regexp.dfa"
 
-local p = P("ab|bc|cd|e*")
-p:write_graphviz(assert(io.open("test-p1.dot", "w"))):close()
+local p = dfa("ab|bc|cd|e*")
+p:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 p:minimize()
-p:write_graphviz(assert(io.open("test-p2.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 p:reset_state_token(2)
-p:write_graphviz(assert(io.open("test-p3.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
 
-local p = P(".*")
-p:difference(P(".*\\*/.*"))
-p:write_graphviz(assert(io.open("test-p4.dot", "w"))):close()
+local p = dfa(".*")
+p:difference(dfa(".*\\*/.*"))
+p:write_graphviz(assert(io.open("test-dfa4.dot", "w"))):close()
 p:minimize()
-p:write_graphviz(assert(io.open("test-p5.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa5.dot", "w"))):close()
 
-local p = P("/\\*"):concat(p):concat(P("\\*/"))
-p:write_graphviz(assert(io.open("test-p6.dot", "w"))):close()
+local p = dfa("/\\*"):concat(p):concat(dfa("\\*/"))
+p:write_graphviz(assert(io.open("test-dfa6.dot", "w"))):close()
 p:minimize()
-p:write_graphviz(assert(io.open("test-p7.dot", "w"))):close()
+p:write_graphviz(assert(io.open("test-dfa7.dot", "w"))):close()
 
-p:branch(P("-?(0|[1-9][0-9]*)", 2):minimize())
-p:branch(P("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][0-9]+)?", 3):minimize())
-p:write_graphviz(assert(io.open("test-p8.dot", "w"))):close()
+p:branch(dfa("-?(0|[1-9][0-9]*)", 2):minimize())
+p:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][0-9]+)?", 3):minimize())
+p:write_graphviz(assert(io.open("test-dfa8.dot", "w"))):close()
 
