@@ -22,12 +22,11 @@ local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-local dfa1 = minimize(powerset_construction(node_to_nfa(parse(arg[1]), 1)))
-local dfa2 = minimize(powerset_construction(node_to_nfa(parse(arg[2]), 2)))
-local nfa = branch(dfa1, dfa2)
-local dfa3 = powerset_construction(nfa)
-
-write_graphviz(nfa, assert(io.open("test-nfa.dot", "w"))):close()
-write_graphviz(dfa1, assert(io.open("test-dfa1.dot", "w"))):close()
-write_graphviz(dfa2, assert(io.open("test-dfa2.dot", "w"))):close()
-write_graphviz(dfa3, assert(io.open("test-dfa3.dot", "w"))):close()
+local m1 = minimize(powerset_construction(node_to_nfa(parse(arg[1]), 1)))
+local m2 = minimize(powerset_construction(node_to_nfa(parse(arg[2]), 2)))
+write_graphviz(m1, assert(io.open("test-m1a.dot", "w"))):close()
+write_graphviz(m2, assert(io.open("test-m2.dot", "w"))):close()
+branch(m1, m2)
+write_graphviz(m1, assert(io.open("test-m1b.dot", "w"))):close()
+local m3 = powerset_construction(m1)
+write_graphviz(m3, assert(io.open("test-m3.dot", "w"))):close()

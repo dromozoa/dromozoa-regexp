@@ -57,7 +57,7 @@ local function accept_difference(a, b)
 end
 
 local function construction(_a, _b)
-  local _result = graph()
+  local _that = graph()
   local _map = tree_map()
 
   local self = {}
@@ -78,7 +78,7 @@ local function construction(_a, _b)
   end
 
   function self:create_vertex(a, b, accept)
-    local u = _result:create_vertex()
+    local u = _that:create_vertex()
     u.start = start(a.start, b.start)
     u.accept = accept(a.accept, b.accept)
     _map:insert({ a.id, b.id }, u)
@@ -112,7 +112,7 @@ local function construction(_a, _b)
     end
     local u = _map:find({ a.id, b.id })
     for k, v in pairs(transition) do
-      _result:create_edge(u, k).condition = bitset_to_node(v)
+      _that:create_edge(u, k).condition = bitset_to_node(v)
     end
   end
 
@@ -123,7 +123,7 @@ local function construction(_a, _b)
     for a, b in self:each_product() do
       self:create_edge(a, b)
     end
-    return _result
+    return _that
   end
 
   return self

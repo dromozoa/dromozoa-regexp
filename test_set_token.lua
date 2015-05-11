@@ -19,12 +19,12 @@ local minimize = require "dromozoa.regexp.minimize"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
-local reset_state_token = require "dromozoa.regexp.reset_state_token"
+local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local dfa = powerset_construction(node_to_nfa(parse(arg[1])))
 write_graphviz(dfa, assert(io.open("test-dfa1.dot", "w"))):close()
 assert(dfa:each_vertex("start")().start == 1)
-reset_state_token(dfa, 42)
+set_token(dfa, 42)
 assert(dfa:each_vertex("start")().start == 42)
 write_graphviz(dfa, assert(io.open("test-dfa2.dot", "w"))):close()

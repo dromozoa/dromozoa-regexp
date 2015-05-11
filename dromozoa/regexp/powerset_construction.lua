@@ -46,30 +46,30 @@ local function epsilon_closure_visitor(_result)
   return dfs_visitor(self)
 end
 
-local function construction(_g)
-  local _result = graph()
+local function construction(_this)
+  local _that = graph()
   local _map = tree_map()
   local _color = {}
 
   local self = {}
 
   function self:get_property(keys, key)
-    local min
+    local token
     for i = 1, #keys do
-      local v = _g:get_vertex(keys[i])[key]
+      local v = _this:get_vertex(keys[i])[key]
       if v ~= nil then
-        if min == nil or min > v then
-          min = v
+        if token == nil or token > v then
+          token = v
         end
       end
     end
-    return min
+    return token
   end
 
   function self:get_vertex(keys)
     local u = _map:find(keys)
     if not u then
-      u = _result:create_vertex()
+      u = _that:create_vertex()
       u.accept = self:get_property(keys, "accept")
       _map:insert(keys, u)
     end
@@ -80,7 +80,7 @@ local function construction(_g)
     local data = {}
     local visitor = epsilon_closure_visitor(data)
     for i = 1, #keys do
-      _g:get_vertex(keys[i]):dfs(visitor)
+      _this:get_vertex(keys[i]):dfs(visitor)
     end
     return data_to_keys(data)
   end
@@ -91,7 +91,7 @@ local function construction(_g)
       dataset[i] = {}
     end
     for i = 1, #keys do
-      for v, e in _g:get_vertex(keys[i]):each_adjacent_vertex() do
+      for v, e in _this:get_vertex(keys[i]):each_adjacent_vertex() do
         for k in node_to_bitset(e.condition):each() do
           dataset[k][v.id] = true
         end
@@ -120,7 +120,7 @@ local function construction(_g)
       _color[u.id] = true
       local transition_keys, transition_cond = self:create_transition(epsilon_closure)
       for i = 1, #transition_keys do
-        _result:create_edge(u, self:visit(transition_keys[i])).condition = transition_cond[i]
+        _that:create_edge(u, self:visit(transition_keys[i])).condition = transition_cond[i]
       end
     end
     return u
@@ -128,7 +128,7 @@ local function construction(_g)
 
   function self:construct()
     local keys = {}
-    for u in _g:each_vertex("start") do
+    for u in _this:each_vertex("start") do
       keys[#keys + 1] = u.id
     end
     if #keys > 0 then
@@ -136,7 +136,7 @@ local function construction(_g)
       local s = self:visit(keys)
       s.start = self:get_property(keys, "start")
     end
-    return _result
+    return _that
   end
 
   return self

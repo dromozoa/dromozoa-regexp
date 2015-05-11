@@ -15,11 +15,15 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graph = require "dromozoa.graph"
 local merge = require "dromozoa.regexp.merge"
 
-return function (a, b)
-  local result = graph()
-  local s = result:create_vertex()
-  return merge.start(b, merge.accept(a, result, s), s)
+return function (this, that)
+  local s = this:create_vertex()
+  local u = this:create_vertex()
+  local token = merge.start(this, s)
+  merge.accept(this, u)
+  this:merge(that)
+  merge.start(this, u)
+  s.start = token
+  return this
 end

@@ -15,42 +15,30 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local clone = require "dromozoa.commons.clone"
-
-local function merge(g, result, map)
-  for a in g:each_edge() do
-    local b = result:create_edge(map[a.uid], map[a.vid])
-    b.condition = clone(a.condition)
-  end
-  return result
-end
-
 return {
-  start = function (g, result, u)
-    local map = {}
-    for a in g:each_vertex() do
-      local b = result:create_vertex()
-      map[a.id] = b.id
-      if a.start then
-        local e = result:create_edge(u, b)
-        e.condition = { "epsilon" }
+  start = function (g, s)
+    local token
+    for u in g:each_vertex("start") do
+      local v = u.start
+      if token == nil or token > v then
+        token = v
       end
-      b.accept = a.accept
+      g:create_edge(s, u).condition = { "epsilon" }
     end
-    return merge(g, result, map)
+    g:clear_vertex_properties("start")
+    return token
   end;
 
-  accept = function (g, result, u)
-    local map = {}
-    for a in g:each_vertex() do
-      local b = result:create_vertex()
-      map[a.id] = b.id
-      b.start = a.start
-      if a.accept then
-        local e = result:create_edge(b, u)
-        e.condition = { "epsilon" }
+  accept = function (g, a)
+    local token
+    for u in g:each_vertex("accept") do
+      local v = u.accept
+      if token == nil or token > v then
+        token = v
       end
+      g:create_edge(u, a).condition = { "epsilon" }
     end
-    return merge(g, result, map)
+    g:clear_vertex_properties("accept")
+    return token
   end;
 }
