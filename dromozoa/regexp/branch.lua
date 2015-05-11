@@ -15,8 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
+local merge = require "dromozoa.regexp.merge"
 
 local function get_property(g, key, min)
   for u in g:each_vertex(key) do
@@ -28,30 +28,9 @@ local function get_property(g, key, min)
   return min
 end
 
-local function copy(g, result, s)
-  local map = {}
-
-  for a in g:each_vertex() do
-    local b = result:create_vertex()
-    map[a.id] = b.id
-    if a.start then
-      local e = result:create_edge(s, b)
-      e.condition = { "epsilon" }
-    end
-    b.accept = a.accept
-  end
-
-  for a in g:each_edge() do
-    local b = result:create_edge(map[a.uid], map[a.vid])
-    b.condition = clone(a.condition)
-  end
-end
-
 return function (a, b)
   local result = graph()
   local s = result:create_vertex()
   s.start = get_property(b, "start", get_property(a, "start"))
-  copy(a, result, s)
-  copy(b, result, s)
-  return result
+  return merge.start(b, merge.start(a, result, s), s)
 end
