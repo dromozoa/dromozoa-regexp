@@ -36,4 +36,5 @@ return function (code, out)
   end
   out:write("};\n")
   out:write("}\n")
+  return out
 end
