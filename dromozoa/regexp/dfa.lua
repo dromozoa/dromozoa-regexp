@@ -27,68 +27,68 @@ local product_construction = require "dromozoa.regexp.product_construction"
 local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-local function regexp_to_dfa(regexp, token)
+local function convert(regexp, token)
   return minimize(powerset_construction(node_to_nfa(parse(regexp), token)))
 end
 
-local function construct(_dfa)
+local function construct(_g)
   local self = {}
 
   function self:clone()
-    return construct(_dfa:clone())
+    return construct(_g:clone())
   end
 
   function self:minimize()
-    _dfa = minimize(_dfa)
+    _g = minimize(_g)
     return self
   end
 
   function self:branch(that, token)
-    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(convert(that, token)) end
     -- not minimize
-    _dfa = powerset_construction(branch(_dfa, that:impl_get_dfa()))
+    _g = powerset_construction(branch(_g, that:impl_get()))
     return self
   end
 
   function self:concat(that, token)
-    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
-    _dfa = minimize(powerset_construction(concat(_dfa, that:impl_get_dfa())))
+    if type(that) == "string" then that = construct(convert(that, token)) end
+    _g = minimize(powerset_construction(concat(_g, that:impl_get())))
     return self
   end
 
   function self:intersection(that, token)
-    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
-    _dfa = minimize(product_construction.intersection(_dfa, that:impl_get_dfa()))
+    if type(that) == "string" then that = construct(convert(that, token)) end
+    _g = minimize(product_construction.intersection(_g, that:impl_get()))
     return self
   end
 
   function self:union(that, token)
-    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
-    _dfa = minimize(product_construction.union(_dfa, that:impl_get_dfa()))
+    if type(that) == "string" then that = construct(convert(that, token)) end
+    _g = minimize(product_construction.union(_g, that:impl_get()))
     return self
   end
 
   function self:difference(that, token)
-    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
-    _dfa = minimize(product_construction.difference(_dfa, that:impl_get_dfa()))
+    if type(that) == "string" then that = construct(convert(that, token)) end
+    _g = minimize(product_construction.difference(_g, that:impl_get()))
     return self
   end
 
   function self:set_token(token)
-    set_token(_dfa, token)
+    set_token(_g, token)
     return self
   end
 
   function self:write_graphviz(out)
-    return write_graphviz(_dfa, out)
+    return write_graphviz(_g, out)
   end
 
   function self:compile()
-    return compile(_dfa)
+    return compile(_g)
   end
 
-  function self:impl_get_dfa()
-    return _dfa
+  function self:impl_get()
+    return _g
   end
 
   return self
@@ -96,7 +96,7 @@ end
 
 return function (that, token)
   if type(that) == "string" then
-    return construct(regexp_to_dfa(that, token))
+    return construct(convert(that, token))
   else
     return construct(that)
   end
