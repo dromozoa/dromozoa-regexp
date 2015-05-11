@@ -24,6 +24,7 @@ lua test_empty.lua
 lua test_parse.lua
 lua test_tree_map.lua
 lua test_dfa.lua
+lua test_compile.lua
 
 lua test.lua '[a-c]{2,}(abc|abd|acc)'
 lua test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'

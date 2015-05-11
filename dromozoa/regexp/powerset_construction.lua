@@ -101,7 +101,13 @@ local function construction(_this)
     for i = 0, 257 do
       local data = dataset[i]
       if next(data) then
-        map:insert(data_to_keys(data), bitset()):set(i)
+        local keys = data_to_keys(data)
+        local class = map:find(keys)
+        if not class then
+          class = bitset()
+          map:insert(keys, class)
+        end
+        class:set(i)
       end
     end
     local transition_keys = {}
