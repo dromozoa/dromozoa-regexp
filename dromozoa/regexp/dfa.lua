@@ -25,50 +25,50 @@ local product_construction = require "dromozoa.regexp.product_construction"
 local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-local function construct(_g)
+local function construct(_dfa)
   local self = {}
 
   function self:clone()
-    return construct(_g:clone())
+    return construct(_dfa:clone())
   end
 
-  function self:branch(that)
+  function self:branch(that, token)
     -- not minimize
-    _g = powerset_construction(branch(_g, that:impl_get()))
+    _dfa = powerset_construction(branch(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:concat(that)
-    _g = minimize(powerset_construction(concat(_g, that:impl_get())))
+    _dfa = minimize(powerset_construction(concat(_dfa, that:impl_get_dfa())))
     return self
   end
 
   function self:intersection(that)
-    _g = minimize(product_construction.intersection(_g, that:impl_get()))
+    _dfa = minimize(product_construction.intersection(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:union(that)
-    _g = minimize(product_construction.union(_g, that:impl_get()))
+    _dfa = minimize(product_construction.union(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:difference(that)
-    _g = minimize(product_construction.difference(_g, that:impl_get()))
+    _dfa = minimize(product_construction.difference(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:set_token(token)
-    set_token(_g, token)
+    set_token(_dfa, token)
     return self
   end
 
   function self:write_graphviz(out)
-    return write_graphviz(_g, out)
+    return write_graphviz(_dfa, out)
   end
 
-  function self:impl_get()
-    return _g
+  function self:impl_get_dfa()
+    return _dfa
   end
 
   return self
