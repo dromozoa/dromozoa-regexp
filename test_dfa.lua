@@ -28,7 +28,12 @@ p:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
 
 local p = dfa("/\\*"):concat(p):concat(dfa("\\*/"))
 p:write_graphviz(assert(io.open("test-dfa4.dot", "w"))):close()
-
 p:branch(dfa("-?(0|[1-9][0-9]*)", 2))
-p:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][0-9]+)?", 3))
 p:write_graphviz(assert(io.open("test-dfa5.dot", "w"))):close()
+p:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3))
+p:write_graphviz(assert(io.open("test-dfa6.dot", "w"))):close()
+
+dfa("/\\*"):concat(dfa(".*"):difference(".*\\*/.*")):concat("\\*/")
+  :branch("-?(0|[1-9][0-9]*)", 2)
+  :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
+  :write_graphviz(assert(io.open("test-dfa7.dot", "w"))):close()
