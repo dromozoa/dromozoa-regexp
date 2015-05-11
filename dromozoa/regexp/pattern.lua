@@ -17,7 +17,9 @@
 
 local graph = require "dromozoa.graph"
 local branch = require "dromozoa.regexp.branch"
+local compile = require "dromozoa.regexp.compile"
 local concat = require "dromozoa.regexp.concat"
+local generate_lua = require "dromozoa.regexp.generate_lua"
 local minimize = require "dromozoa.regexp.minimize"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
@@ -80,6 +82,14 @@ local function construct(_dfa)
 
   function self:write_graphviz(out)
     return write_graphviz(_dfa, out)
+  end
+
+  function self:compile()
+    return compile(_dfa)
+  end
+
+  function self:generate_lua(out)
+    return generate_lua(compile(_dfa), out)
   end
 
   function self:impl_get_dfa()

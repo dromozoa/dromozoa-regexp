@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local json = require "dromozoa.json"
 local pattern = require "dromozoa.regexp.pattern"
 
 local p = pattern("ab|bc|cd|e*")
@@ -37,5 +38,7 @@ local p = pattern("/\\*"):concat(pattern(".*"):difference(".*\\*/.*")):concat("\
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
 p:write_graphviz(assert(io.open("test-p7.dot", "w"))):close()
+p:generate_lua(assert(io.open("test-p7.lua", "w")))
 p:minimize()
 p:write_graphviz(assert(io.open("test-p8.dot", "w"))):close()
+
