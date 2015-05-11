@@ -26,8 +26,8 @@ local product_construction = require "dromozoa.regexp.product_construction"
 local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
-local function ere_to_dfa(ere, token)
-  return minimize(powerset_construction(node_to_nfa(parse(ere), token)))
+local function regexp_to_dfa(regexp, token)
+  return minimize(powerset_construction(node_to_nfa(parse(regexp), token)))
 end
 
 local function construct(_dfa)
@@ -43,32 +43,32 @@ local function construct(_dfa)
   end
 
   function self:branch(that, token)
-    if type(that) == "string" then that = construct(ere_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
     -- not minimize
     _dfa = powerset_construction(branch(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:concat(that, token)
-    if type(that) == "string" then that = construct(ere_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
     _dfa = minimize(powerset_construction(concat(_dfa, that:impl_get_dfa())))
     return self
   end
 
   function self:intersection(that, token)
-    if type(that) == "string" then that = construct(ere_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
     _dfa = minimize(product_construction.intersection(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:union(that, token)
-    if type(that) == "string" then that = construct(ere_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
     _dfa = minimize(product_construction.union(_dfa, that:impl_get_dfa()))
     return self
   end
 
   function self:difference(that, token)
-    if type(that) == "string" then that = construct(ere_to_dfa(that, token)) end
+    if type(that) == "string" then that = construct(regexp_to_dfa(that, token)) end
     _dfa = minimize(product_construction.difference(_dfa, that:impl_get_dfa()))
     return self
   end
@@ -89,6 +89,6 @@ local function construct(_dfa)
   return self
 end
 
-return function (ere, token)
-  return construct(ere_to_dfa(ere, token))
+return function (regexp, token)
+  return construct(regexp_to_dfa(regexp, token))
 end
