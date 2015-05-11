@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local graph = require "dromozoa.graph"
 local branch = require "dromozoa.regexp.branch"
 local concat = require "dromozoa.regexp.concat"
 local minimize = require "dromozoa.regexp.minimize"
@@ -34,6 +35,11 @@ local function construct(_dfa)
 
   function self:clone()
     return construct(_dfa:clone())
+  end
+
+  function self:minimize()
+    _dfa = minimize(_dfa)
+    return self
   end
 
   function self:branch(that, token)
