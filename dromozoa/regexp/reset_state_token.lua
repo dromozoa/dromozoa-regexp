@@ -16,10 +16,10 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 return function (g, token)
-  for u in g:get_vertex("start") do
+  for u in g:each_vertex("start") do
     u.start = token
   end
-  for u in g:get_vertex("accept") do
+  for u in g:each_vertex("accept") do
     u.accept = token
   end
   return g
