@@ -40,6 +40,6 @@ lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
 lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' union
 lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
 
-lua test_alternation.lua 'abb' 'abc'
-lua test_alternation.lua 'else' 'elseif'
-lua test_alternation.lua 'abc' '.{3}'
+lua test_branch.lua 'abb' 'abc'
+lua test_branch.lua 'else' 'elseif'
+lua test_branch.lua 'abc' '.{3}'

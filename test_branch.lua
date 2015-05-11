@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local alternation = require "dromozoa.regexp.alternation"
+local branch = require "dromozoa.regexp.branch"
 local minimize = require "dromozoa.regexp.minimize"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
@@ -24,7 +24,7 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local dfa1 = minimize(powerset_construction(node_to_nfa(parse(arg[1]), 1)))
 local dfa2 = minimize(powerset_construction(node_to_nfa(parse(arg[2]), 2)))
-local nfa = alternation(dfa1, dfa2)
+local nfa = branch(dfa1, dfa2)
 local dfa3 = powerset_construction(nfa)
 
 write_graphviz(nfa, assert(io.open("test-nfa.dot", "w"))):close()
