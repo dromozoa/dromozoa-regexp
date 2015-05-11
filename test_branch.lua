@@ -24,7 +24,6 @@ local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local m1 = minimize(powerset_construction(node_to_nfa(parse(arg[1]), 1)))
 local m2 = minimize(powerset_construction(node_to_nfa(parse(arg[2]), 2)))
-
 write_graphviz(m1, assert(io.open("test-m1a.dot", "w"))):close()
 write_graphviz(m2, assert(io.open("test-m2.dot", "w"))):close()
 branch(m1, m2)

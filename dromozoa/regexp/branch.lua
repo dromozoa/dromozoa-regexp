@@ -15,22 +15,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graph = require "dromozoa.graph"
 local merge = require "dromozoa.regexp.merge"
 
 return function (this, that)
   this:merge(that)
   local s = this:create_vertex()
-  local token
-  for u in this:each_vertex("start") do
-    local v = u.start
-    if token == nil or token > v then
-      token = v
-    end
-    local e = this:create_edge(s, u)
-    e.condition = { "epsilon" }
-  end
-  this:clear_vertex_properties("start")
+  local token = merge.start(this, s)
   s.start = token
   return this
 end
