@@ -23,8 +23,8 @@ return function (code)
   local start = code.start
   local accept_min = code.accept_min
   local accept_max = code.accept_max
-  local accept_token = code.accept_token
-  local transition = code.transition
+  local accept_tokens = code.accept_tokens
+  local transitions = code.transitions
 
   local g = graph()
 
@@ -32,9 +32,9 @@ return function (code)
   for i = 1, accept_min - 1 do
     g:create_vertex()
   end
-  for i = 1, #accept_token do
+  for i = 1, #accept_tokens do
     local u = g:create_vertex()
-    local v = accept_token[i]
+    local v = accept_tokens[i]
     u.accept = v
     if token == nil or token > v then
       token = v
@@ -46,7 +46,7 @@ return function (code)
     local offset = u.id * 257 + 1
     local map = {}
     for i = 0, 256 do
-      local v = transition[offset + i]
+      local v = transitions[offset + i]
       if v > 0 then
         local class = map[v]
         if not class then

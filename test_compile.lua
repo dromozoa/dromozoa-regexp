@@ -32,8 +32,8 @@ local function check_code(code)
   assert(code.start == 8)
   assert(code.accept_min == 8)
   assert(code.accept_max == 14)
-  assert(#code.accept_token == 7)
-  assert(#code.transition == (1 + 14) * 257)
+  assert(#code.accept_tokens == 7)
+  assert(#code.transitions == (1 + 14) * 257)
 end
 
 local code = a:compile()
@@ -43,4 +43,3 @@ check_code(code)
 
 local b = decompile(code)
 dfa(b):write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
-

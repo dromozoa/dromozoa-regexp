@@ -20,16 +20,16 @@ return function (code, out)
   out:write(string.format("start = %d;\n", code.start))
   out:write(string.format("accept_min = %d;\n", code.accept_min))
   out:write(string.format("accept_max = %d;\n", code.accept_max))
-  out:write("accept_token = {")
-  local accept_token = code.accept_token
-  for i = 1, #accept_token do
-    out:write(string.format("%d,", accept_token[i]))
+  out:write("accept_tokens = {")
+  local accept_tokens = code.accept_tokens
+  for i = 1, #accept_tokens do
+    out:write(string.format("%d,", accept_tokens[i]))
   end
   out:write("};\n")
-  out:write("transition = {\n")
-  local transition = code.transition
-  for i = 1, #transition do
-    out:write(string.format("%d,", transition[i]))
+  out:write("transitions = {\n")
+  local transitions = code.transitions
+  for i = 1, #transitions do
+    out:write(string.format("%d,", transitions[i]))
     if i % 257 == 0 then
       out:write("\n")
     end
