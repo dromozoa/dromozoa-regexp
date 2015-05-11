@@ -18,7 +18,7 @@
 local character_class = require "dromozoa.regexp.character_class"
 local unparse = require "dromozoa.regexp.unparse"
 
-local function parser(_text)
+local function parser(_regexp)
   local _i = 1
   local _stack = {}
 
@@ -26,7 +26,7 @@ local function parser(_text)
 
   function self:parse()
     if self:extended_reg_exp() then
-      if _i == #_text + 1 and #_stack == 1 then
+      if _i == #_regexp + 1 and #_stack == 1 then
         return self:pop()
       else
         self:raise()
@@ -58,7 +58,7 @@ local function parser(_text)
   end
 
   function self:match(pattern)
-    local a, b, c, d = _text:find("^" .. pattern, _i)
+    local a, b, c, d = _regexp:find("^" .. pattern, _i)
     if b then
       _i = b + 1
       if c then
@@ -242,6 +242,6 @@ local function parser(_text)
   return self
 end
 
-return function (text)
-  return parser(text):parse()
+return function (regexp)
+  return parser(regexp):parse()
 end
