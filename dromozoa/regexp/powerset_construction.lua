@@ -54,16 +54,16 @@ local function construction(_this)
   local self = {}
 
   function self:get_property(keys, key)
-    local min
+    local token
     for i = 1, #keys do
       local v = _this:get_vertex(keys[i])[key]
       if v ~= nil then
-        if min == nil or min > v then
-          min = v
+        if token == nil or token > v then
+          token = v
         end
       end
     end
-    return min
+    return token
   end
 
   function self:get_vertex(keys)
