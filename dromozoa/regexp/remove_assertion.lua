@@ -86,8 +86,7 @@ local function collapse_end_assertion(g)
   collapse_assertion(g, "$", color)
 end
 
-return function (g)
-  local a = g:clone()
+return function (a)
   remove_nonmatching_assertion(a, "start", "u", "^")
   remove_nonmatching_assertion(a, "accept", "v", "$")
   local b = a:clone()
@@ -98,5 +97,5 @@ return function (g)
   remove_assertion(b, "^")
   collapse_end_assertion(b)
 
-  return a, b
+  return b
 end
