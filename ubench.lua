@@ -15,12 +15,22 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local dfa = require "dromozoa.regexp.dfa"
 local match = require "dromozoa.regexp.match"
 
 local string_byte = string.byte
 
-local s = string.rep("0123456789", 100)
+local head = dfa("^[0-9]+")
+local tail = head:remove_assertions()
+local code = head:compile()
+local s = string.rep("0123456789", 10)
 
+return {
+  { "dromozoa.regexp.match", function () match(code, s) end };
+  { "string.find", function () s:find("^[0-9]+") end };
+}
+
+--[====[
 local function tailcall1(x, s, i, j, n, v, ...)
   if v then
     return tailcall1(x + v, s, i + 1, j, n, ...)
@@ -85,3 +95,4 @@ return {
   { "loop/48", function () loop48(0, s, 1, #s) end };
   { "loop/64", function () loop64(0, s, 1, #s) end };
 }
+]====]
