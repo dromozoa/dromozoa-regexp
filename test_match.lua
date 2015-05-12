@@ -22,8 +22,10 @@ local match = require "dromozoa.regexp.match"
 local head = dfa("^[0-9]+")
 local tail = head:remove_assertions()
 local code = head:compile()
-local s = string.rep("012345678", 99)
 
-print(match(code, s))
-print(s:find("^[0-9]+"))
-
+for i = 1, 99 do
+  local s = string.rep("0", i)
+  local _, j = match(code, s)
+  local _, k = s:find("^[0-9]+")
+  assert(j == k)
+end
