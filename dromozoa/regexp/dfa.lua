@@ -19,11 +19,13 @@ local graph = require "dromozoa.graph"
 local branch = require "dromozoa.regexp.branch"
 local compile = require "dromozoa.regexp.compile"
 local concat = require "dromozoa.regexp.concat"
+local has_assertion = require "dromozoa.regexp.has_assertion"
 local minimize = require "dromozoa.regexp.minimize"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local product_construction = require "dromozoa.regexp.product_construction"
+local remove_assertions = require "dromozoa.regexp.remove_assertions"
 local set_token = require "dromozoa.regexp.set_token"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
@@ -74,6 +76,12 @@ local function construct(_g)
     return self
   end
 
+  function self:remove_assertions()
+    local g = remove_assertions(_g)
+    _g = minimize(_g)
+    return construct(minimize(g))
+  end
+
   function self:set_token(token)
     set_token(_g, token)
     return self
@@ -85,6 +93,18 @@ local function construct(_g)
 
   function self:compile()
     return compile(_g)
+  end
+
+  function self:empty()
+    return _g:empty()
+  end
+
+  function self:has_start_assertion()
+    return has_assertion(_g, "^")
+  end
+
+  function self:has_end_assertion()
+    return has_assertion(_g, "$")
   end
 
   function self:impl_get()

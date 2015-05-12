@@ -30,10 +30,9 @@ a:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 
 local function check_code(code)
   assert(code.start == 8)
-  assert(code.accept_min == 8)
-  assert(code.accept_max == 14)
+  assert(code.nonaccept_max == 7)
   assert(#code.accept_tokens == 7)
-  assert(#code.transitions == (1 + 14) * 257)
+  assert(#code.transitions == 256 + 14 * 257)
 end
 
 local code = a:compile()

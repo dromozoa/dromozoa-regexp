@@ -16,10 +16,10 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 return function (code, out)
+  out:write("local f = false\n")
   out:write("return {\n")
   out:write(string.format("start = %d;\n", code.start))
-  out:write(string.format("accept_min = %d;\n", code.accept_min))
-  out:write(string.format("accept_max = %d;\n", code.accept_max))
+  out:write(string.format("nonaccept_max = %d;\n", code.nonaccept_max))
   out:write("accept_tokens = {")
   local accept_tokens = code.accept_tokens
   for i = 1, #accept_tokens do
@@ -28,9 +28,24 @@ return function (code, out)
   out:write("};\n")
   out:write("transitions = {\n")
   local transitions = code.transitions
-  for i = 1, #transitions do
-    out:write(string.format("%d,", transitions[i]))
-    if i % 257 == 0 then
+  for i = 1, 256 do
+    local v = transitions[i]
+    if v == false then
+      out:write("f,")
+    else
+      out:write(string.format("%d,", v))
+    end
+  end
+  out:write("\n")
+
+  for i = 257, #transitions do
+    local v = transitions[i]
+    if v == false then
+      out:write("f,")
+    else
+      out:write(string.format("%d,", v))
+    end
+    if i % 257 == 256 then
       out:write("\n")
     end
   end
