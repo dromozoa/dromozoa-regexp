@@ -87,9 +87,10 @@ end
 end
 
 -- print(generate(4))
-return assert(loadstring(generate(32)))()
-
 --[====[
+return assert(loadstring(generate(32)))()
+]====]
+
 local string_byte = string.byte
 
 return function (code, s, i, j)
@@ -103,10 +104,10 @@ return function (code, s, i, j)
   local transitions = code.transitions
 
   while true do
-    local k = i + 1
+    local k = i + 3
     if k > j then k = j end
 
-    local b01, b02 = string_byte(s, i, k)
+    local b01, b02, b03, b04 = string_byte(s, i, k)
 
     if b01 then
       sb = transitions[sa * 257 + b01]
@@ -134,7 +135,32 @@ return function (code, s, i, j)
       end
     end
 
-    i = i + 2
+    if b03 then
+      sb = transitions[sa * 257 + b03]
+    else
+      sb = transitions[sa * 257 + 256]
+    end
+    if not sb then
+      if sa > nonaccept_max then
+        return accept_tokens[sa - nonaccept_max], i + 1
+      else
+        return
+      end
+    end
+
+    if b04 then
+      sa = transitions[sb * 257 + b04]
+    else
+      sa = transitions[sb * 257 + 256]
+    end
+    if not sa then
+      if sb > nonaccept_max then
+        return accept_tokens[sb - nonaccept_max], i + 2
+      else
+        return
+      end
+    end
+
+    i = i + 4
   end
 end
-]====]
