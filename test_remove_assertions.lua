@@ -19,14 +19,14 @@ local minimize = require "dromozoa.regexp.minimize"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
 local parse = require "dromozoa.regexp.parse"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
-local remove_assertion = require "dromozoa.regexp.remove_assertion"
+local remove_assertions = require "dromozoa.regexp.remove_assertions"
 local write_graphviz = require "dromozoa.regexp.write_graphviz"
 
 local ast = parse(arg[1])
 local nfa = node_to_nfa(parse(arg[1]))
 local dfa1 = powerset_construction(nfa)
 local dfa2 = minimize(dfa1)
-local dfa3 = remove_assertion(dfa2)
+local dfa3 = remove_assertions(dfa2)
 local dfa4 = minimize(dfa2)
 local dfa5 = minimize(dfa3)
 

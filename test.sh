@@ -42,8 +42,8 @@ lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
 lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' union
 lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
 
-lua test_remove_assertion.lua '^abc|d^e$f|ghi$'
-lua test_remove_assertion.lua '^$'
-lua test_remove_assertion.lua '^$^$^$^$'
-lua test_remove_assertion.lua '$^$^$^$^'
-lua test_remove_assertion.lua '^^^^aaaa$$$$|bbbb$$$$'
+lua test_remove_assertions.lua '^abc|d^e$f|ghi$'
+lua test_remove_assertions.lua '^$'
+lua test_remove_assertions.lua '^$^$^$^$'
+lua test_remove_assertions.lua '$^$^$^$^'
+lua test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
