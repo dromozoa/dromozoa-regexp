@@ -23,7 +23,7 @@ local string_byte = string.byte
 local head = dfa("^[0-9]+")
 local tail = head:remove_assertions()
 local code = head:compile()
-local s = string.rep("0123456789", 10)
+local s = string.rep("0123456789", 100)
 
 return {
   { "dromozoa.regexp.match", function () match(code, s) end };

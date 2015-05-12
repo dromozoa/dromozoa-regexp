@@ -27,7 +27,7 @@ return function (code, s, i, j)
 
   local cs = code.start
   local ns
-  local accept_offset = code.accept_min - 1
+  local nonaccept_max = code.nonaccept_max
   local accept_tokens = code.accept_tokens
   local transitions = code.transitions
 
@@ -46,13 +46,13 @@ return function (code, s, i, j)
   for i = 1, n do
     buffer = buffer .. string.format([[
     if b%02d then
-      ns = transitions[cs * 257 + b%02d + 1]
+      ns = transitions[cs * 257 + b%02d]
     else
-      ns = transitions[cs * 257 + 257]
+      ns = transitions[cs * 257 + 256]
     end
-    if ns == 0 then
-      if cs > accept_offset then
-        return accept_tokens[cs - accept_offset], i - 1
+    if not ns then
+      if cs > nonaccept_max then
+        return accept_tokens[cs - nonaccept_max], i - 1
       else
         return
       end
@@ -70,9 +70,10 @@ end
   return buffer
 end
 
-return assert(loadstring(generate(32)))()
-
 --[====[
+return assert(loadstring(generate(32)))()
+]====]
+
 local string_byte = string.byte
 
 return function (code, s, i, j)
@@ -81,7 +82,7 @@ return function (code, s, i, j)
 
   local cs = code.start
   local ns
-  local accept_offset = code.accept_min - 1
+  local nonaccept_max = code.nonaccept_max
   local accept_tokens = code.accept_tokens
   local transitions = code.transitions
 
@@ -91,13 +92,13 @@ return function (code, s, i, j)
 
     local b01 = string_byte(s, i, k)
     if b01 then
-      ns = transitions[cs * 257 + b01 + 1]
+      ns = transitions[cs * 257 + b01]
     else
-      ns = transitions[cs * 257 + 257]
+      ns = transitions[cs * 257 + 256]
     end
-    if ns == 0 then
-      if cs > accept_offset then
-        return accept_tokens[cs - accept_offset], i - 1
+    if not ns then
+      if cs > nonaccept_max then
+        return accept_tokens[cs - nonaccept_max], i - 1
       else
         return
       end
@@ -106,4 +107,3 @@ return function (code, s, i, j)
     cs = ns
   end
 end
-]====]

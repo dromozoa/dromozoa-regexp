@@ -28,16 +28,14 @@ return function (g)
     end
   end
 
-  local accept_min = n + 1
+  local nonaccept_max = n
   local accept_tokens = {}
 
   for u in g:each_vertex("accept") do
     n = n + 1
     map[u.id] = n
-    accept_tokens[n - accept_min + 1] = u.accept
+    accept_tokens[n - nonaccept_max] = u.accept
   end
-
-  local accept_max = n
 
   local n = 0
   for u in g:each_vertex("start") do
@@ -49,13 +47,13 @@ return function (g)
   local start = map[g:each_vertex("start")().id]
 
   local transitions = {}
-  for i = 1, 257 do
-    transitions[i] = 0
+  for i = 1, 256 do
+    transitions[i] = false
   end
   for u in g:each_vertex() do
-    local offset = map[u.id] * 257 + 1
+    local offset = map[u.id] * 257
     for i = 0, 256 do
-      transitions[offset + i] = 0
+      transitions[offset + i] = false
     end
     for v, e in u:each_adjacent_vertex() do
       local state = map[v.id]
@@ -67,8 +65,7 @@ return function (g)
 
   return {
     start = start;
-    accept_min = accept_min;
-    accept_max = accept_max;
+    nonaccept_max = nonaccept_max;
     accept_tokens = accept_tokens;
     transitions = transitions;
   }

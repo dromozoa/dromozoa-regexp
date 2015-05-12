@@ -22,7 +22,7 @@ local match = require "dromozoa.regexp.match"
 local head = dfa("^[0-9]+")
 local tail = head:remove_assertions()
 local code = head:compile()
-local s = string.rep("0123456789", 100)
+local s = string.rep("012345678", 99)
 
 print(match(code, s))
 print(s:find("^[0-9]+"))
