@@ -93,9 +93,9 @@ return assert(loadstring(generate(32)))()
 
 local string_byte = string.byte
 
-return function (code, s, i, j)
-  if not i then i = 1 end
-  if not j then j = #s end
+return function (code, s, m, n)
+  if not m then m = 1 end
+  if not n then n = #s end
 
   local sa = code.start
   local sb
@@ -103,17 +103,13 @@ return function (code, s, i, j)
   local accept_tokens = code.accept_tokens
   local transitions = code.transitions
 
-  while true do
-    local k = i + 3
-    if k > j then k = j end
+  local x = n - m + 1
+  x = x - x % 4
 
-    local b01, b02, b03, b04 = string_byte(s, i, k)
+  for i = m, x - 1, 4 do
+    local b01, b02, b03, b04 = string_byte(s, i, i + 3)
 
-    if b01 then
-      sb = transitions[sa * 257 + b01]
-    else
-      sb = transitions[sa * 257 + 256]
-    end
+    sb = transitions[sa * 257 + b01]
     if not sb then
       if sa > nonaccept_max then
         return accept_tokens[sa - nonaccept_max], i - 1
@@ -122,11 +118,7 @@ return function (code, s, i, j)
       end
     end
 
-    if b02 then
-      sa = transitions[sb * 257 + b02]
-    else
-      sa = transitions[sb * 257 + 256]
-    end
+    sa = transitions[sb * 257 + b02]
     if not sa then
       if sb > nonaccept_max then
         return accept_tokens[sb - nonaccept_max], i
@@ -135,11 +127,7 @@ return function (code, s, i, j)
       end
     end
 
-    if b03 then
-      sb = transitions[sa * 257 + b03]
-    else
-      sb = transitions[sa * 257 + 256]
-    end
+    sb = transitions[sa * 257 + b03]
     if not sb then
       if sa > nonaccept_max then
         return accept_tokens[sa - nonaccept_max], i + 1
@@ -148,11 +136,7 @@ return function (code, s, i, j)
       end
     end
 
-    if b04 then
-      sa = transitions[sb * 257 + b04]
-    else
-      sa = transitions[sb * 257 + 256]
-    end
+    sa = transitions[sb * 257 + b04]
     if not sa then
       if sb > nonaccept_max then
         return accept_tokens[sb - nonaccept_max], i + 2
@@ -160,7 +144,69 @@ return function (code, s, i, j)
         return
       end
     end
+  end
 
-    i = i + 4
+  local i = x
+  local b01, b02, b03, b04 = string_byte(s, i, i + 3)
+
+  if b01 then
+    sb = transitions[sa * 257 + b01]
+  else
+    sb = transitions[sa * 257 + 256]
+  end
+  if not sb then
+    if sa > nonaccept_max then
+      return accept_tokens[sa - nonaccept_max], i - 1
+    else
+      return
+    end
+  end
+
+  if b02 then
+    sa = transitions[sb * 257 + b02]
+  else
+    sa = transitions[sb * 257 + 256]
+  end
+  if not sa then
+    if sb > nonaccept_max then
+      return accept_tokens[sb - nonaccept_max], i
+    else
+      return
+    end
+  end
+
+  if b03 then
+    sb = transitions[sa * 257 + b03]
+  else
+    sb = transitions[sa * 257 + 256]
+  end
+  if not sb then
+    if sa > nonaccept_max then
+      return accept_tokens[sa - nonaccept_max], i + 1
+    else
+      return
+    end
+  end
+
+  if b04 then
+    sa = transitions[sb * 257 + b04]
+  else
+    sa = transitions[sb * 257 + 256]
+  end
+  if not sa then
+    if sb > nonaccept_max then
+      return accept_tokens[sb - nonaccept_max], i + 2
+    else
+      return
+    end
+  end
+
+  sb = transitions[sa * 257 + 256]
+  if not sb then
+    if sa > nonaccept_max then
+      return accept_tokens[sa - nonaccept_max], i + 3
+    else
+      return
+    end
   end
 end
