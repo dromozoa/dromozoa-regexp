@@ -39,13 +39,14 @@ return function (g)
 
   local accept_max = n
 
-  local start
   local n = 0
   for u in g:each_vertex("start") do
     n = n + 1
-    start = map[u.id]
   end
-  assert(n == 1)
+  if n ~= 1 then
+    error("compile error")
+  end
+  local start = map[g:each_vertex("start")().id]
 
   local transitions = {}
   for i = 1, 257 do
