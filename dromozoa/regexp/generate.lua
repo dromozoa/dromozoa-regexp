@@ -19,16 +19,20 @@ return function (code, out)
   out:write("local f = false\n")
   out:write("return {\n")
   out:write(string.format("start = %d;\n", code.start))
-  out:write(string.format("nonaccept_max = %d;\n", code.nonaccept_max))
-  out:write("accept_tokens = {")
-  local accept_tokens = code.accept_tokens
-  for i = 1, #accept_tokens do
-    out:write(string.format("%d,", accept_tokens[i]))
+  out:write("accepts = {")
+  local accepts = code.accepts
+  for i = 1, #accepts do
+    local v = accepts[i]
+    if v == false then
+      out:write("f,")
+    else
+      out:write(string.format("%d,", accepts[i]))
+    end
   end
   out:write("};\n")
   out:write("transitions = {\n")
   local transitions = code.transitions
-  for i = 1, 256 do
+  for i = 1, 255 do
     local v = transitions[i]
     if v == false then
       out:write("f,")
@@ -37,16 +41,27 @@ return function (code, out)
     end
   end
   out:write("\n")
-
-  for i = 257, #transitions do
+  for i = 256, #transitions do
     local v = transitions[i]
     if v == false then
       out:write("f,")
     else
+      -- print(i, v, #transitions)
       out:write(string.format("%d,", v))
     end
-    if i % 257 == 256 then
+    if i % 256 == 255 then
       out:write("\n")
+    end
+  end
+  out:write("};\n")
+  out:write("end_assertions = {")
+  local end_assertions = code.end_assertions
+  for i = 1, #end_assertions do
+    local v = end_assertions[i]
+    if v == false then
+      out:write("f,")
+    else
+      out:write(string.format("%d,", v))
     end
   end
   out:write("};\n")

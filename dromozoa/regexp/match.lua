@@ -37,9 +37,9 @@ return function (code, s, m, n)
 
   local sa = code.start
   local sb
-  local nonaccept_max = code.nonaccept_max
-  local accept_tokens = code.accept_tokens
+  local accepts = code.accepts
   local transitions = code.transitions
+  local end_assertions = code.end_assertions
 
   for i = m + {:m:}, n, {:n:} do
     local {:params:} = string_byte(s, i - {:m:}, i)
@@ -51,13 +51,9 @@ return function (code, s, m, n)
 
   for i = 1, n do
     buffer = buffer .. string.gsub([[
-    {:ns:} = transitions[{:cs:} * 257 + {:b:}]
+    {:ns:} = transitions[{:cs:} * 256 + {:b:}]
     if not {:ns:} then
-      if {:cs:} > nonaccept_max then
-        return accept_tokens[{:cs:} - nonaccept_max], i - {:m:}
-      else
-        return
-      end
+      return accepts[{:cs:}], i - {:m:}
     end
 ]], "{:(.-):}", {
       cs = i % 2 == 1 and "sa" or "sb";
@@ -86,22 +82,14 @@ return function (code, s, m, n)
 
     buffer = buffer .. string.gsub([[
   if {:b:} then
-    {:ns:} = transitions[{:cs:} * 257 + {:b:}]
+    {:ns:} = transitions[{:cs:} * 256 + {:b:}]
     if not {:ns:} then
-      if {:cs:} > nonaccept_max then
-        return accept_tokens[{:cs:} - nonaccept_max], i{:m:}
-      else
-        return
-      end
+      return accepts[{:cs:}], i{:m:}
     end
   else
-    {:ns:} = transitions[{:cs:} * 257 + 256]
+    {:ns:} = end_assertions[{:cs:}]
     if not {:ns:} then
-      if {:cs:} > nonaccept_max then
-        return accept_tokens[{:cs:} - nonaccept_max], i{:m:}
-      else
-        return
-      end
+      return accepts[{:cs:}], i{:m:}
     end
   end
 ]], "{:(.-):}", {
@@ -113,13 +101,9 @@ return function (code, s, m, n)
   end
 
   buffer = buffer .. string.gsub([[
-  sb = transitions[sa * 257 + 256]
+  sb = transitions[sa]
   if not sb then
-    if sa > nonaccept_max then
-      return accept_tokens[sa - nonaccept_max], i + {:m:}
-    else
-      return
-    end
+    return accepts[sa], i + {:m:}
   end
 end
 ]], "{:(.-):}", { m = n - 1 })
