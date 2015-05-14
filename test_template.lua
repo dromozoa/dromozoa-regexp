@@ -55,13 +55,12 @@ local code = template([[
 1
 2
 [%= "foo" %]
-[% >> %]3
+[% > %]3
 4
 5
-[% << %]6
+[% < %]6
 7
 8
 ]])
-print(code)
 local result = assert(loadstring(code))()({}, buffer_writer()):concat()
-io.write(result)
+assert(result == "1\n2\n  foo3\n  4\n  5\n6\n7\n8\n")

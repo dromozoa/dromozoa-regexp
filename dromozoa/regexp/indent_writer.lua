@@ -62,7 +62,7 @@ return function (_out, _indent)
     for i = 1, #_buffer do
       _buffer[i] = nil
     end
-    return self
+    return _out
   end
 
   return self
