@@ -54,12 +54,19 @@ return function (code, s, m, n)
 
   local i = n + 1 - (n - m + 1) % [%= n +%]
   local [% params() %] = string_byte(s, i, n)
-[% for i = 1, n do %]
+
+if b32 then
+
+[% for i = 1, 32 do %]
+  [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+  if not [% ns(i) %] then
+    return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+  end
+[% end %]
+
+[% for i = 33, n do %]
   if b[%= i %] then
     [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
-    if not [% ns(i) %] then
-      return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
-    end
   else
     [% ns(i) %] = end_assertions[[% cs(i) %]]
   end
@@ -68,11 +75,50 @@ return function (code, s, m, n)
   end
 [% end %]
 
+else
+
+[% for i = 1, 32 do %]
+  if b[%= i %] then
+    [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+  else
+    [% ns(i) %] = end_assertions[[% cs(i) %]]
+  end
+  if not [% ns(i) %] then
+    return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+  end
+[% end %]
+
+end
+
   sb = transitions[sa]
   if not sb then
     return accepts[sa], i + [%= n - 1 +%]
   end
 end
+
+[% local function binary(x, y) %]
+  -- [%= x %], [%= y +%]
+  if b[%= y %] then
+[% for i = x, x + y - 1 do %]
+    [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+    if not [% ns(i) %] then
+      return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+    end
+[% end %]
+  else
+[% if y >= 4 then %]
+[% binary(x, y / 2) %]
+[% binary(x + y / 2, y / 2) %]
+[% else %]
+[% end %]
+  end
+[% end %]
+
+--[==[
+[% binary(1, 4) %]
+]==]
 ]====])))()
+
+-- tmpl({ n = 8 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()

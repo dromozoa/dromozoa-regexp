@@ -50,3 +50,18 @@ local result = assert(loadstring(template([[
 [%= "baz" %] [%= "qux" %]
 ]])))()({}, buffer_writer()):concat()
 assert(result == "foobar\nbaz qux")
+
+local code = template([[
+1
+2
+[%= "foo" %]
+[% >> %]3
+4
+5
+[% << %]6
+7
+8
+]])
+print(code)
+local result = assert(loadstring(code))()({}, buffer_writer()):concat()
+io.write(result)

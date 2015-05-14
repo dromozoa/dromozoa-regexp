@@ -18,7 +18,7 @@
 # along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 lua test_bitset.lua
-lua test_buffer_writer.lua
+lua test_writer.lua
 lua test_character_class.lua
 lua test_empty.lua
 lua test_parse.lua
