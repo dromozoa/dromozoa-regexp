@@ -21,6 +21,51 @@ local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 
 return function (code)
   local start = code.start
+  local accepts = code.accepts
+  local transitions = code.transitions
+  local end_assertions = code.end_assertions
+
+  local g = graph()
+
+  local token
+  for i = 1, #accepts do
+    local u = g:create_vertex()
+    local v = accepts[i]
+    if v then
+      u.accept = v
+      if token == nil or token > v then
+        token = v
+      end
+    end
+  end
+  g:get_vertex(start).start = token
+
+  for u in g:each_vertex() do
+    local cs = u.id
+    local map = {}
+    for i = 0, 255 do
+      local ns = transitions[cs * 256 + i]
+      if ns then
+        local class = map[ns]
+        if not class then
+          class = bitset()
+          map[ns] = class
+        end
+        class:set(i)
+      end
+    end
+    local ns = end_assertions[cs]
+    if ns then
+      map[ns] = bitset():set(256)
+    end
+    for k, v in pairs(map) do
+      g:create_edge(cs, k).condition = bitset_to_node(v)
+    end
+  end
+
+  return g
+
+--[====[
   local nonaccept_max = code.nonaccept_max
   local accept_tokens = code.accept_tokens
   local transitions = code.transitions
@@ -60,4 +105,5 @@ return function (code)
   end
 
   return g
+]====]
 end
