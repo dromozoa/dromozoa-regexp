@@ -20,7 +20,7 @@ local template = require "dromozoa.regexp.template"
 
 local loadstring = loadstring or load
 
-local code = assert(loadstring(template([====[
+local tmpl = assert(loadstring(template([====[
 [% local function params() %]
 b1[% for i = 2, n do %], b[%= i %][% end %]
 [% end %]
@@ -75,4 +75,4 @@ return function (code, s, m, n)
 end
 ]====])))()
 
-return assert(loadstring(code({ n = 64 }, buffer_writer()):concat()))()
+return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
