@@ -40,25 +40,19 @@ return function (template)
   local out = buffer_writer()
   out:write(header)
 
-  local prechomp = 0
-  local postchomp = 0
   local is_expr = 0
+  local not_chomp = 0
 
   for a, b in (template .. "[%%]"):gmatch("(.-)%[%%%s*(.-)%s*%%%]") do
-    b, prechomp = b:gsub("^%-%s*", "")
-
-    if prechomp > 0 then
-      a = a:gsub("%s$", "")
-    end
-    if postchomp > 0 then
-      a = a:gsub("^%s", "")
+    if not_chomp == 0 then
+      a = a:gsub("^\n", "")
     end
     if #a > 0 then
       out:write(string.format("out:write(%q)\n", a))
     end
 
-    b, postchomp = b:gsub("%s*%-$", "")
     b, is_expr = b:gsub("^=%s*", "")
+    b, not_chomp = b:gsub("%s*%+$", "")
 
     if #b > 0 then
       if is_expr > 0 then
