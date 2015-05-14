@@ -18,7 +18,6 @@
 local dfa = require "dromozoa.regexp.dfa"
 local match = require "dromozoa.regexp.match"
 
--- matcher():match("foobarbaz")
 local head = dfa("^[0-9]+")
 local tail = head:remove_assertions()
 local code = head:compile()
