@@ -16,8 +16,17 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
+local indent_writer = require "dromozoa.regexp.indent_writer"
 
-local writer = buffer_writer()
-writer:write("foo"):write(42)
-writer:write("bar", "baz")
-assert(writer:concat() == "foo42barbaz")
+local out = buffer_writer()
+out:write("foo"):write(42)
+out:write("bar", "baz")
+out:write()
+assert(out:concat() == "foo42barbaz")
+
+local out = indent_writer(buffer_writer(), "  ")
+out:write("foo\nb")
+out:inc():write("ar\nb"):dec()
+out:write("az\n\n")
+out:write("\n\nqux"):flush()
+assert(out:flush():concat() == "foo\n  bar\nbaz\n\n\n\nqux")

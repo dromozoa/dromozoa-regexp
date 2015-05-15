@@ -15,25 +15,49 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local buffer_writer = require "dromozoa.regexp.buffer_writer"
+local template = require "dromozoa.regexp.template"
+
 local loadstring = loadstring or load
 
-local function generate_params(format, n)
-  local buffer = {}
-  for i = 1, n do
-    buffer[i] = string.format(format, i)
+local tmpl = assert(loadstring(template([====[
+[% local function params() %]
+b1[% for i = 2, n do %], b[%= i %][% end %]
+[% end %]
+[% local function cs(i) %]
+[% if i % 2 == 1 then %]sa[% else %]sb[% end %]
+[% end %]
+[% local function ns(i) %]
+[% if i % 2 == 1 then %]sb[% else %]sa[% end %]
+[% end %]
+[% local function transitions(x, y, z) %]
+[% >> %]
+if b[%= y %] then
+[% for i = x, y do %]
+  [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+  if not [% ns(i) %] then
+    return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
   end
-  return table.concat(buffer, ", ")
+[% end %]
+[% if y < z then %]
+[% transitions(y + 1, math.floor((y + z + 1) / 2), z) %]
+[% end %]
+else
+[% if x < y then %]
+[% transitions(x, math.floor((x + y) / 2), y - 1) %]
+[% end %]
+  [% ns(y) %] = end_assertions[[% cs(y) %]]
+  if not [% ns(y) %] then
+    return accepts[[%= cs(y) %]], i[% if y == 1 then %] - 1[% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+  end
 end
-
-local function generate(n)
-  local params = generate_params("b%02d", n)
-
-  local buffer = string.gsub([[
+[% << %]
+[% end %]
 local string_byte = string.byte
 
-return function (code, s, m, n)
-  if not m then m = 1 end
-  if not n then n = #s end
+return function (code, s, i, j)
+  if not i then i = 1 end
+  if not j then j = #s end
 
   local sa = code.start
   local sb
@@ -41,74 +65,20 @@ return function (code, s, m, n)
   local transitions = code.transitions
   local end_assertions = code.end_assertions
 
-  for i = m + {:m:}, n, {:n:} do
-    local {:params:} = string_byte(s, i - {:m:}, i)
-]], "{:(.-):}", {
-    m = n - 1;
-    n = n;
-    params = params;
-  })
-
-  for i = 1, n do
-    buffer = buffer .. string.gsub([[
-    {:ns:} = transitions[{:cs:} * 256 + {:b:}]
-    if not {:ns:} then
-      return accepts[{:cs:}], i - {:m:}
+  for i = i, j - [%= n - 1 %], [%= n %] do
+    local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
+[% for i = 1, n do %]
+    [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+    if not [% ns(i) %] then
+      return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
     end
-]], "{:(.-):}", {
-      cs = i % 2 == 1 and "sa" or "sb";
-      ns = i % 2 == 1 and "sb" or "sa";
-      b = string.format("b%02d", i);
-      m = n - i + 1
-    })
+[% end %]
   end
 
-  buffer = buffer .. string.gsub([[
-  end
-  local i = n + 1 - (n - m + 1) % {:n:}
-  local {:params:} = string_byte(s, i, n)
-]], "{:(.-):}", {
-    n = n;
-    params = params;
-  })
-
-  for i = 1, n do
-    local m = ""
-    if i == 1 then
-      m = " - 1"
-    elseif i > 2 then
-      m = string.format(" + %d", i - 2)
-    end
-
-    buffer = buffer .. string.gsub([[
-  if {:b:} then
-    {:ns:} = transitions[{:cs:} * 256 + {:b:}]
-    if not {:ns:} then
-      return accepts[{:cs:}], i{:m:}
-    end
-  else
-    {:ns:} = end_assertions[{:cs:}]
-    if not {:ns:} then
-      return accepts[{:cs:}], i{:m:}
-    end
-  end
-]], "{:(.-):}", {
-      cs = i % 2 == 1 and "sa" or "sb";
-      ns = i % 2 == 1 and "sb" or "sa";
-      b = string.format("b%02d", i);
-      m = m
-    })
-  end
-
-  buffer = buffer .. string.gsub([[
-  sb = transitions[sa]
-  if not sb then
-    return accepts[sa], i + {:m:}
-  end
+  local i = j + 1 - (j + 1 - i) % [%= n +%]
+  local [% params() %] = string_byte(s, i, j)
+[% transitions(1, n // 2, n) %]
 end
-]], "{:(.-):}", { m = n - 1 })
+]====])))()
 
-  return buffer
-end
-
-return assert(loadstring(generate(64)))()
+return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()

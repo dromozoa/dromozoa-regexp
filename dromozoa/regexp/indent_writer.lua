@@ -15,7 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function ()
+return function (_out, _indent)
+  local _depth = 0
   local _buffer = {}
 
   local self = {}
@@ -23,20 +24,45 @@ return function ()
   local function write(i, j, v, ...)
     if i < j then
       i = i + 1
-      _buffer[i] = v
+      if type(v) == "string" then
+        for a, b in v:gmatch("([^\n]*)(\n?)") do
+          if #a > 0 then
+            _buffer[#_buffer + 1] = a
+          end
+          if #b > 0 then
+            self:flush()
+            _out:write(b)
+          end
+        end
+      else
+        _buffer[#_buffer + 1] = v
+      end
       return write(i, j, ...)
     else
       return self
     end
   end
 
-  function self:write(...)
-    local n = #_buffer
-    return write(n, n + select("#", ...), ...)
+  function self:inc()
+    _depth = _depth + 1
+    return self
   end
 
-  function self:concat(...)
-    return table.concat(_buffer, ...)
+  function self:dec()
+    _depth = _depth - 1
+    return self
+  end
+
+  function self:write(...)
+    return write(0, select("#", ...), ...)
+  end
+
+  function self:flush()
+    _out:write(string.rep(_indent, _depth), table.concat(_buffer))
+    for i = 1, #_buffer do
+      _buffer[i] = nil
+    end
+    return _out
   end
 
   return self

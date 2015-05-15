@@ -18,6 +18,8 @@
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 
 local header = [[
+local indent_writer = require "dromozoa.regexp.indent_writer"
+
 return function (ctx, out)
   local save = {}
   for k, v in pairs(_G) do
@@ -26,13 +28,14 @@ return function (ctx, out)
   for k, v in pairs(ctx) do
     _G[k] = v
   end
+  local out = indent_writer(out, "  ")
 ]]
 
 local footer = [[
   for k, v in pairs(_G) do
     _G[k] = save[k]
   end
-  return out
+  return out:flush()
 end
 ]]
 
@@ -40,25 +43,30 @@ return function (template)
   local out = buffer_writer()
   out:write(header)
 
-  local prechomp = 0
-  local postchomp = 0
+  local inc_indent = 0
+  local dec_indent = 0
   local is_expr = 0
+  local not_chomp = 0
 
   for a, b in (template .. "[%%]"):gmatch("(.-)%[%%%s*(.-)%s*%%%]") do
-    b, prechomp = b:gsub("^%-%s*", "")
-
-    if prechomp > 0 then
-      a = a:gsub("%s$", "")
-    end
-    if postchomp > 0 then
-      a = a:gsub("^%s", "")
+    if not_chomp == 0 then
+      a = a:gsub("^\n", "")
     end
     if #a > 0 then
       out:write(string.format("out:write(%q)\n", a))
     end
 
-    b, postchomp = b:gsub("%s*%-$", "")
+    b, inc_indent = b:gsub("^>>%s*", "")
+    b, dec_indent = b:gsub("^<<%s*", "")
     b, is_expr = b:gsub("^=%s*", "")
+    b, not_chomp = b:gsub("%s*%+$", "")
+
+    if inc_indent > 0 then
+      out:write("out:inc()\n")
+    end
+    if dec_indent > 0 then
+      out:write("out:dec()\n")
+    end
 
     if #b > 0 then
       if is_expr > 0 then
