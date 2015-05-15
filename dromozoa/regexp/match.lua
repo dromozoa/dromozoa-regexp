@@ -32,7 +32,6 @@ b1[% for i = 2, n do %], b[%= i %][% end %]
 [% end %]
 [% local function transitions(x, y, z) %]
 [% >> %]
--- [%= x %], [%= y %], [%= z +%]
 if b[%= y %] then
 [% for i = x, y do %]
   [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
@@ -43,8 +42,7 @@ if b[%= y %] then
 [% if y < z then %]
 [% transitions(y + 1, math.floor((y + z + 1) / 2), z) %]
 [% end %]
--- [%= x %], [%= y %], [%= z +%]
-else -- b[%= y +%]
+else
 [% if x < y then %]
 [% transitions(x, math.floor((x + y) / 2), y - 1) %]
 [% end %]
@@ -52,7 +50,7 @@ else -- b[%= y +%]
   if not [% ns(y) %] then
     return accepts[[%= cs(y) %]], i[% if y == 1 then %] - 1[% elseif y > 2 then %] + [%= y - 2 %][% end +%]
   end
-end -- b[%= y +%]
+end
 [% << %]
 [% end %]
 local string_byte = string.byte
@@ -67,12 +65,12 @@ return function (code, s, i, j)
   local transitions = code.transitions
   local end_assertions = code.end_assertions
 
-  for i = i + [%= n - 1 %], j, [%= n %] do
-    local [% params() %] = string_byte(s, i - [%= n - 1 %], i)
+  for i = i, j - [%= n - 1 %], [%= n %] do
+    local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
 [% for i = 1, n do %]
     [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
     if not [% ns(i) %] then
-      return accepts[[% cs(i) %]], i - [%= n - i + 1 +%]
+      return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
     end
 [% end %]
   end
@@ -82,7 +80,5 @@ return function (code, s, i, j)
 [% transitions(1, n // 2, n) %]
 end
 ]====])))()
-
-tmpl({ n = 8 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
