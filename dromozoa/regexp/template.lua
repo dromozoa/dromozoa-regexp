@@ -56,8 +56,8 @@ return function (template)
       out:write(string.format("out:write(%q)\n", a))
     end
 
-    b, inc_indent = b:gsub("^>%s*", "")
-    b, dec_indent = b:gsub("^<%s*", "")
+    b, inc_indent = b:gsub("^>>%s*", "")
+    b, dec_indent = b:gsub("^<<%s*", "")
     b, is_expr = b:gsub("^=%s*", "")
     b, not_chomp = b:gsub("%s*%+$", "")
 
