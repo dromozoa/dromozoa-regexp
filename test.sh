@@ -39,9 +39,9 @@ lua test_branch.lua 'abc' '.{3}'
 
 lua test_concat.lua 'ab|bc|cd|e*' '(bc)+'
 
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' union
-lua test_product.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
+lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
+lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
+lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
 
 lua test_remove_assertions.lua '^abc|d^e$f|ghi$'
 lua test_remove_assertions.lua '^$'
