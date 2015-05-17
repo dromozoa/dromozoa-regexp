@@ -36,7 +36,7 @@ if b[%= y %] then
 [% for i = x, y do %]
   [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
   if not [% ns(i) %] then
-    return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+    return accepts[[%= cs(i) %]], i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
   end
 [% end %]
 [% if y < z then %]
@@ -47,8 +47,10 @@ else
 [% transitions(x, math.floor((x + y) / 2), y - 1) %]
 [% end %]
   [% ns(y) %] = end_assertions[[% cs(y) %]]
-  if not [% ns(y) %] then
-    return accepts[[%= cs(y) %]], i[% if y == 1 then %] - 1[% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+  if [% ns(y) %] then
+    return accepts[[%= ns(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+  else
+    return accepts[[%= cs(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
   end
 end
 [% << %]
@@ -70,14 +72,14 @@ return function (code, s, i, j)
 [% for i = 1, n do %]
     [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
     if not [% ns(i) %] then
-      return accepts[[%= cs(i) %]], i[% if i == 1 then %] - 1[% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+      return accepts[[%= cs(i) %]], i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
     end
 [% end %]
   end
 
   local i = j + 1 - (j + 1 - i) % [%= n +%]
   local [% params() %] = string_byte(s, i, j)
-[% transitions(1, n // 2, n) %]
+[% transitions(1, math.floor(n / 2), n) %]
 end
 ]====])))()
 

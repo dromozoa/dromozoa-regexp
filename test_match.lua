@@ -18,13 +18,29 @@
 local dfa = require "dromozoa.regexp.dfa"
 local match = require "dromozoa.regexp.match"
 
-local head = dfa("^[0-9]+")
-local tail = head:remove_assertions()
-local code = head:compile()
+do
+  local head = dfa("^[0-9]+")
+  local tail = head:remove_assertions()
+  local code = head:compile()
 
-for i = 1, 99 do
-  local s = string.rep("0", i)
-  local _, j = match(code, s)
-  local _, k = s:find("^[0-9]+")
-  assert(j == k)
+  for i = 1, 256 do
+    local s = string.rep("0", i)
+    local _, j = match(code, s)
+    local _, k = s:find("^[0-9]+")
+    assert(j == k)
+  end
 end
+
+do
+  local head = dfa("^[0-9]+$")
+  local tail = head:remove_assertions()
+  local code = head:compile()
+
+  for i = 1, 256 do
+    local s = string.rep("0", i)
+    local _, j = match(code, s)
+    local _, k = s:find("^[0-9]+$")
+    assert(j == k)
+  end
+end
+
