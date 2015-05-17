@@ -83,6 +83,4 @@ return function (code, s, i, j)
 end
 ]====])))()
 
--- tmpl({n = 8}, io.stdout)
--- return assert(loadstring(tmpl({ n = 8 }, buffer_writer()):concat()))()
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
