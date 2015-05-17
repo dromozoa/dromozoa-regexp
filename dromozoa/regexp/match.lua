@@ -77,10 +77,8 @@ return function (code, s, i, j)
 
   local i = j + 1 - (j + 1 - i) % [%= n +%]
   local [% params() %] = string_byte(s, i, j)
-[% transitions(1, n // 2, n) %]
+[% transitions(1, math.floor(n / 2), n) %]
 end
 ]====])))()
-
-tmpl({ n = 8 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
