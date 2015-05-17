@@ -47,7 +47,9 @@ else
 [% transitions(x, math.floor((x + y) / 2), y - 1) %]
 [% end %]
   [% ns(y) %] = end_assertions[[% cs(y) %]]
-  if not [% ns(y) %] then
+  if [% ns(y) %] then
+    return accepts[[%= ns(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+  else
     return accepts[[%= cs(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
   end
 end
@@ -81,4 +83,6 @@ return function (code, s, i, j)
 end
 ]====])))()
 
+-- tmpl({n = 8}, io.stdout)
+-- return assert(loadstring(tmpl({ n = 8 }, buffer_writer()):concat()))()
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
