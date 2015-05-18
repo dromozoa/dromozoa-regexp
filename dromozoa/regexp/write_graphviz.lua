@@ -70,7 +70,7 @@ local function attributes_visitor()
       return attributes
     else
       return {
-        label = graphviz.quote_string(unparse(node));
+        label = "<" .. graphviz.escape_html(unparse(node)) .. ">";
       }
     end
   end
