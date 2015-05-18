@@ -86,7 +86,7 @@ local function construction(_a, _b)
 
   function self:create_transition(u)
     local transition = {}
-    for i = 0, 255 do
+    for i = 0, 256 do
       transition[i] = dummy_vertex
     end
     for v, e in u:each_adjacent_vertex() do
@@ -101,7 +101,7 @@ local function construction(_a, _b)
     local transition_a = self:create_transition(a)
     local transition_b = self:create_transition(b)
     local transition = {}
-    for i = 0, 255 do
+    for i = 0, 256 do
       local v = _map:find({ transition_a[i].id, transition_b[i].id })
       local condition = transition[v.id]
       if not condition then
