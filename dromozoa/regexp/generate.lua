@@ -15,56 +15,38 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local template = require "dromozoa.regexp.template"
+
+local loadstring = loadstring or load
+
+local tmpl = assert(loadstring(template([====[
+local _ = false
+return {
+  start = [%= code.start %];
+  accepts = {
+    [% for i = 1, #code.accepts do %]
+[% local v = code.accepts[i] %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+  transitions = {
+    [% for i = 1, 255 do %]_,[% end %]
+[% for i = 256, #code.transitions do %]
+[% local v = code.transitions[i] %]
+[% if i % 256 == 0 then +%]
+    [% end %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+  end_assertions = {
+    [% for i = 1, #code.end_assertions do %]
+[% local v = code.end_assertions[i] %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+}
+]====])))()
+
 return function (code, out)
-  out:write("local f = false\n")
-  out:write("return {\n")
-  out:write(string.format("start = %d;\n", code.start))
-  out:write("accepts = {")
-  local accepts = code.accepts
-  for i = 1, #accepts do
-    local v = accepts[i]
-    if v == false then
-      out:write("f,")
-    else
-      out:write(string.format("%d,", accepts[i]))
-    end
-  end
-  out:write("};\n")
-  out:write("transitions = {\n")
-  local transitions = code.transitions
-  for i = 1, 255 do
-    local v = transitions[i]
-    if v == false then
-      out:write("f,")
-    else
-      out:write(string.format("%d,", v))
-    end
-  end
-  out:write("\n")
-  for i = 256, #transitions do
-    local v = transitions[i]
-    if v == false then
-      out:write("f,")
-    else
-      -- print(i, v, #transitions)
-      out:write(string.format("%d,", v))
-    end
-    if i % 256 == 255 then
-      out:write("\n")
-    end
-  end
-  out:write("};\n")
-  out:write("end_assertions = {")
-  local end_assertions = code.end_assertions
-  for i = 1, #end_assertions do
-    local v = end_assertions[i]
-    if v == false then
-      out:write("f,")
-    else
-      out:write(string.format("%d,", v))
-    end
-  end
-  out:write("};\n")
-  out:write("}\n")
-  return out
+  return tmpl({ code = code }, out)
 end
