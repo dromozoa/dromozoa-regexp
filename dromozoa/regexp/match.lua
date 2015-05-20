@@ -30,7 +30,7 @@ b1[% for i = 2, n do %], b[%= i %][% end %]
 [% local function ns(i) %]
 [% if i % 2 == 1 then %]sb[% else %]sa[% end %]
 [% end %]
-[% local function transitions(x, y, z) %]
+[% local function generate_transition(x, y, z) %]
 [% >> %]
 if b[%= y %] then
 [% for i = x, y do %]
@@ -40,11 +40,11 @@ if b[%= y %] then
   end
 [% end %]
 [% if y < z then %]
-[% transitions(y + 1, math.floor((y + z + 1) / 2), z) %]
+[% generate_transition(y + 1, math.floor((y + z + 1) / 2), z) %]
 [% end %]
 else
 [% if x < y then %]
-[% transitions(x, math.floor((x + y) / 2), y - 1) %]
+[% generate_transition(x, math.floor((x + y) / 2), y - 1) %]
 [% end %]
   [% ns(y) %] = end_assertions[[% cs(y) %]]
   if [% ns(y) %] then
@@ -80,7 +80,7 @@ return function (code, s, i, j)
 
   local i = j + 1 - (j + 1 - i) % [%= n +%]
   local [% params() %] = string_byte(s, i, j)
-[% transitions(1, math.floor(n / 2), n) %]
+[% generate_transition(1, math.floor(n / 2), n) %]
 end
 ]====])))()
 

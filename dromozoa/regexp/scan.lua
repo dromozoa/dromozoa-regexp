@@ -30,6 +30,32 @@ b1[% for i = 2, n do %], b[%= i %][% end %]
 [% local function ns(i) %]
 [% if i % 2 == 1 then %]sb[% else %]sa[% end %]
 [% end %]
+[% local function generate_action(i, indent) %]
+[% out:add(indent) %]
+action = actions[token]
+if action > -2 then
+  n = n + 1
+  tokens[n] = token
+  begins[n] = p + 1
+  p = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+  ends[n] = p
+  if action > -1 then
+    if action == 0 then
+      code = stack[m]
+      m = m - 1
+    else
+      m = m + 1
+      stack[m] = code
+      code = codes[action]
+    end
+    start = code.start
+    accepts = code.accepts
+    transitions = code.transitions
+    end_assertions = code.end_assertions
+  end
+end
+[% out:sub(indent) %]
+[% end %]
 local string_byte = string.byte
 
 return function (codes, actions, s, i, j)
@@ -46,8 +72,7 @@ return function (codes, actions, s, i, j)
   local sb
   local token
   local action
-  local a
-  local b = 0
+  local p = 0
   local m = 0
   local n = 0
 
@@ -64,29 +89,7 @@ return function (codes, actions, s, i, j)
       if not [% ns(i) %] then
         token = accepts[[%= cs(i) %]]
         if token then
-          action = actions[token]
-          a = b + 1
-          b = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
-          if action > -2 then
-            n = n + 1
-            tokens[n] = token
-            begins[n] = a
-            ends[n] = b
-            if action > -1 then
-              if action > 0 then
-                m = m + 1
-                stack[m] = code
-                code = codes[action]
-              else
-                code = stack[m]
-                m = m - 1
-              end
-              start = code.start
-              accepts = code.accepts
-              transitions = code.transitions
-              end_assertions = code.end_assertions
-            end
-          end
+[% generate_action(i, 5) %]
           [% ns(i) %] = transitions[start * 256 + b[%= i %]]
           if not [% ns(i) %] then
             error("scan error")
@@ -103,29 +106,7 @@ return function (codes, actions, s, i, j)
         token = accepts[[%= cs(i) %]]
       end
       if token then
-        action = actions[token]
-        a = b + 1
-        b = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
-        if action > -2 then
-          n = n + 1
-          tokens[n] = token
-          begins[n] = a
-          ends[n] = b
-          if action > -1 then
-            if action > 0 then
-              m = m + 1
-              stack[m] = code
-              code = codes[action]
-            else
-              code = stack[m]
-              m = m - 1
-            end
-            start = code.start
-            accepts = code.accepts
-            transitions = code.transitions
-            end_assertions = code.end_assertions
-          end
-        end
+[% generate_action(i, 4) %]
         break
       else
         error("scan error")
@@ -133,7 +114,6 @@ return function (codes, actions, s, i, j)
     end
 [% end %]
   end
-  print(m)
   if m ~= 0 then
     error("stack error")
   end
@@ -141,6 +121,6 @@ return function (codes, actions, s, i, j)
 end
 ]====]))()
 
--- tmpl({ n = 4 }, io.stdout)
+tmpl({ n = 4 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 4 }, buffer_writer()):concat()))()
