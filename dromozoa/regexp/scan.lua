@@ -141,6 +141,6 @@ return function (codes, actions, s, i, j)
 end
 ]====]))()
 
-tmpl({ n = 4 }, io.stdout)
+-- tmpl({ n = 4 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 4 }, buffer_writer()):concat()))()
