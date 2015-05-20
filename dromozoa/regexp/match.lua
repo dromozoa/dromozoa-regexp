@@ -61,11 +61,12 @@ return function (code, s, i, j)
   if not i then i = 1 end
   if not j then j = #s end
 
-  local sa = code.start
-  local sb
   local accepts = code.accepts
   local transitions = code.transitions
   local end_assertions = code.end_assertions
+
+  local sa = code.start
+  local sb
 
   for i = i, j - [%= n - 1 %], [%= n %] do
     local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
