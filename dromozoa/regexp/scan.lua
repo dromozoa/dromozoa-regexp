@@ -33,12 +33,13 @@ b1[% for i = 2, n do %], b[%= i %][% end %]
 [% local function generate_action(i, indent) %]
 [% out:add(indent) %]
 action = actions[token]
+a = b + 1
+b = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
 if action > -2 then
   n = n + 1
   tokens[n] = token
-  begins[n] = p + 1
-  p = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
-  ends[n] = p
+  begins[n] = a
+  ends[n] = b
   if action > -1 then
     if action == 0 then
       code = stack[m]
@@ -72,7 +73,8 @@ return function (codes, actions, s, i, j)
   local sb
   local token
   local action
-  local p = 0
+  local a
+  local b = 0
   local m = 0
   local n = 0
 
@@ -81,7 +83,7 @@ return function (codes, actions, s, i, j)
   local ends = {}
   local stack = {}
 
-  for i = i, #s, [%= n %] do
+  for i = i, j, [%= n %] do
     local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
 [% for i = 1, n do %]
     if b[%= i %] then
@@ -92,10 +94,10 @@ return function (codes, actions, s, i, j)
 [% generate_action(i, 5) %]
           [% ns(i) %] = transitions[start * 256 + b[%= i %]]
           if not [% ns(i) %] then
-            error("scan error")
+            error("scanner error at position " .. (b + 1))
           end
         else
-          error("scan error")
+          error("scanner error at position " .. (b + 1))
         end
       end
     else
@@ -109,13 +111,10 @@ return function (codes, actions, s, i, j)
 [% generate_action(i, 4) %]
         break
       else
-        error("scan error")
+        error("unexpected eof")
       end
     end
 [% end %]
-  end
-  if m ~= 0 then
-    error("stack error")
   end
   return tokens, begins, ends
 end
