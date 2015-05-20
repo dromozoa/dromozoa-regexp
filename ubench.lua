@@ -17,6 +17,8 @@
 
 local dfa = require "dromozoa.regexp.dfa"
 local match = require "dromozoa.regexp.match"
+local scan = require "dromozoa.regexp.scan"
+local scanner = require "dromozoa.regexp.scanner"
 
 local string_byte = string.byte
 
@@ -25,8 +27,12 @@ local tail = head:remove_assertions()
 local code = head:compile()
 local s = string.rep("0123456789", 10)
 
+local codes = { code }
+local actions = { scanner.PUSH }
+
 return {
   { "dromozoa.regexp.match", function () match(code, s) end };
+  { "dromozoa.regexp.scan", function () scan(codes, actions, s) end };
   { "string.find", function () s:find("^[0-9]+") end };
   { "empty", function () end };
 }
