@@ -111,7 +111,7 @@ return function (codes, actions, s, i, j)
 [% generate_action(i, 4) %]
         break
       else
-        error("unexpected eof")
+        error("scanner error at eof")
       end
     end
 [% end %]
@@ -120,6 +120,6 @@ return function (codes, actions, s, i, j)
 end
 ]====]))()
 
-tmpl({ n = 4 }, io.stdout)
+-- tmpl({ n = 64 }, io.stdout)
 
 return assert(loadstring(tmpl({ n = 4 }, buffer_writer()):concat()))()
