@@ -15,7 +15,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local json = require "dromozoa.json"
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 local dfa = require "dromozoa.regexp.dfa"
