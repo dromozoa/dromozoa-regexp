@@ -62,10 +62,10 @@ return function (template)
     b, not_chomp = b:gsub("%s*%+$", "")
 
     if inc_indent > 0 then
-      out:write("out:inc()\n")
+      out:write("out:add()\n")
     end
     if dec_indent > 0 then
-      out:write("out:dec()\n")
+      out:write("out:sub()\n")
     end
 
     if #b > 0 then

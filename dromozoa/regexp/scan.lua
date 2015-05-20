@@ -20,7 +20,7 @@ local template = require "dromozoa.regexp.template"
 
 local loadstring = loadstring or load
 
-local tmpl = assert(loadstring(template([====[
+local tmpl = assert(loadstring(template[====[
 [% local function params() %]
 b1[% for i = 2, n do %], b[%= i %][% end %]
 [% end %]
@@ -30,13 +30,49 @@ b1[% for i = 2, n do %], b[%= i %][% end %]
 [% local function ns(i) %]
 [% if i % 2 == 1 then %]sb[% else %]sa[% end %]
 [% end %]
+[% local function generate_action(i, indent) %]
+[% out:add(indent) %]
+action = actions[token]
+a = b + 1
+b = i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+if action > -2 then
+  n = n + 1
+  tokens[n] = token
+  begins[n] = a
+  ends[n] = b
+  if action > -1 then
+    if action == 0 then
+      code = stack[m]
+      m = m - 1
+    else
+      m = m + 1
+      stack[m] = code
+      code = codes[action]
+    end
+    start = code.start
+    accepts = code.accepts
+    transitions = code.transitions
+    end_assertions = code.end_assertions
+  end
+end
+[% out:sub(indent) %]
+[% end %]
 [% local function generate_transition(x, y, z) %]
 [% >> %]
 if b[%= y %] then
 [% for i = x, y do %]
   [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
   if not [% ns(i) %] then
-    return accepts[[%= cs(i) %]], i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+    token = accepts[[%= cs(i) %]]
+    if token then
+[% generate_action(i, 3) %]
+      [% ns(i) %] = transitions[start * 256 + b[%= i %]]
+      if not [% ns(i) %] then
+        error("scanner error at position " .. (b + 1))
+      end
+    else
+      error("scanner error at position " .. (b + 1))
+    end
   end
 [% end %]
 [% if y < z then %]
@@ -48,32 +84,60 @@ else
 [% end %]
   [% ns(y) %] = end_assertions[[% cs(y) %]]
   if [% ns(y) %] then
-    return accepts[[%= ns(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+    token = accepts[[%= ns(y) %]]
   else
-    return accepts[[%= cs(y) %]], i[% if y < 2 then %] - [%= 2 - y %][% elseif y > 2 then %] + [%= y - 2 %][% end +%]
+    token = accepts[[%= cs(y) %]]
+  end
+  if token then
+[% generate_action(y, 2) %]
+    return tokens, begins, ends
+  else
+    error("scanner error at eof")
   end
 end
 [% << %]
 [% end %]
 local string_byte = string.byte
 
-return function (code, s, i, j)
+return function (codes, actions, s, i, j)
   if not i then i = 1 end
   if not j then j = #s end
 
+  local code = codes[1]
+  local start = code.start
   local accepts = code.accepts
   local transitions = code.transitions
   local end_assertions = code.end_assertions
 
-  local sa = code.start
+  local sa = start
   local sb
+  local token
+  local action
+  local a
+  local b = 0
+  local m = 0
+  local n = 0
+
+  local tokens = {}
+  local begins = {}
+  local ends = {}
+  local stack = {}
 
   for i = i, j - [%= n - 1 %], [%= n %] do
     local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
 [% for i = 1, n do %]
     [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
     if not [% ns(i) %] then
-      return accepts[[%= cs(i) %]], i[% if i < 2 then %] - [%= 2 - i %][% elseif i > 2 then %] + [%= i - 2 %][% end +%]
+      token = accepts[[%= cs(i) %]]
+      if token then
+[% generate_action(i, 4) %]
+        [% ns(i) %] = transitions[start * 256 + b[%= i %]]
+        if not [% ns(i) %] then
+          error("scanner error at position " .. (b + 1))
+        end
+      else
+        error("scanner error at position " .. (b + 1))
+      end
     end
 [% end %]
   end
@@ -82,6 +146,6 @@ return function (code, s, i, j)
   local [% params() %] = string_byte(s, i, j)
 [% generate_transition(1, math.floor(n / 2), n) %]
 end
-]====])))()
+]====]))()
 
 return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()
