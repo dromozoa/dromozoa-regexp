@@ -43,13 +43,15 @@ return function (_out, _indent)
     end
   end
 
-  function self:inc()
-    _depth = _depth + 1
+  function self:add(n)
+    if not n then n = 1 end
+    _depth = _depth + n
     return self
   end
 
-  function self:dec()
-    _depth = _depth - 1
+  function self:sub(n)
+    if not n then n = 1 end
+    _depth = _depth - n
     return self
   end
 

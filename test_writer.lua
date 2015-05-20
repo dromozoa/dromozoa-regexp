@@ -26,7 +26,7 @@ assert(out:concat() == "foo42barbaz")
 
 local out = indent_writer(buffer_writer(), "  ")
 out:write("foo\nb")
-out:inc():write("ar\nb"):dec()
+out:add():write("ar\nb"):sub()
 out:write("az\n\n")
 out:write("\n\nqux"):flush()
 assert(out:flush():concat() == "foo\n  bar\nbaz\n\n\n\nqux")
