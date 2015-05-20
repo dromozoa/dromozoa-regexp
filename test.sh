@@ -25,6 +25,7 @@ lua test_dfa.lua
 lua test_empty.lua
 lua test_match.lua
 lua test_parse.lua
+lua test_scan.lua
 lua test_template.lua
 lua test_tree_map.lua
 lua test_writer.lua
