@@ -57,6 +57,46 @@ if action > -2 then
 end
 [% out:sub(indent) %]
 [% end %]
+[% local function generate_transition(x, y, z) %]
+[% >> %]
+if b[%= y %] then
+[% for i = x, y do %]
+  [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+  if not [% ns(i) %] then
+    token = accepts[[%= cs(i) %]]
+    if token then
+[% generate_action(i, 3) %]
+      [% ns(i) %] = transitions[start * 256 + b[%= i %]]
+      if not [% ns(i) %] then
+        error("scanner error at position " .. (b + 1))
+      end
+    else
+      error("scanner error at position " .. (b + 1))
+    end
+  end
+[% end %]
+[% if y < z then %]
+[% generate_transition(y + 1, math.floor((y + z + 1) / 2), z) %]
+[% end %]
+else
+[% if x < y then %]
+[% generate_transition(x, math.floor((x + y) / 2), y - 1) %]
+[% end %]
+  [% ns(y) %] = end_assertions[[% cs(y) %]]
+  if [% ns(y) %] then
+    token = accepts[[%= ns(y) %]]
+  else
+    token = accepts[[%= cs(y) %]]
+  end
+  if token then
+[% generate_action(y, 2) %]
+    return tokens, begins, ends
+  else
+    error("scanner error at eof")
+  end
+end
+[% << %]
+[% end %]
 local string_byte = string.byte
 
 return function (codes, actions, s, i, j)
@@ -83,43 +123,29 @@ return function (codes, actions, s, i, j)
   local ends = {}
   local stack = {}
 
-  for i = i, j, [%= n %] do
+  for i = i, j - [%= n - 1 %], [%= n %] do
     local [% params() %] = string_byte(s, i, i + [%= n - 1 %])
 [% for i = 1, n do %]
-    if b[%= i %] then
-      [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
-      if not [% ns(i) %] then
-        token = accepts[[%= cs(i) %]]
-        if token then
-[% generate_action(i, 5) %]
-          [% ns(i) %] = transitions[start * 256 + b[%= i %]]
-          if not [% ns(i) %] then
-            error("scanner error at position " .. (b + 1))
-          end
-        else
-          error("scanner error at position " .. (b + 1))
-        end
-      end
-    else
-      [% ns(i) %] = end_assertions[[% cs(i) %]]
-      if [% ns(i) %] then
-        token = accepts[[%= ns(i) %]]
-      else
-        token = accepts[[%= cs(i) %]]
-      end
+    [% ns(i) %] = transitions[[% cs(i) %] * 256 + b[%= i %]]
+    if not [% ns(i) %] then
+      token = accepts[[%= cs(i) %]]
       if token then
 [% generate_action(i, 4) %]
-        break
+        [% ns(i) %] = transitions[start * 256 + b[%= i %]]
+        if not [% ns(i) %] then
+          error("scanner error at position " .. (b + 1))
+        end
       else
-        error("scanner error at eof")
+        error("scanner error at position " .. (b + 1))
       end
     end
 [% end %]
   end
-  return tokens, begins, ends
+
+  local i = j + 1 - (j + 1 - i) % [%= n +%]
+  local [% params() %] = string_byte(s, i, j)
+[% generate_transition(1, math.floor(n / 2), n) %]
 end
 ]====]))()
 
--- tmpl({ n = 64 }, io.stdout)
-
-return assert(loadstring(tmpl({ n = 4 }, buffer_writer()):concat()))()
+return assert(loadstring(tmpl({ n = 64 }, buffer_writer()):concat()))()

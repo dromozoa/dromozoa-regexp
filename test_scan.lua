@@ -61,6 +61,7 @@ local data = {
   { 6 };
 }
 
+assert(#tokens == #data)
 for i = 1, #tokens do
   local a = data[i][1]
   local b = data[i][2]
