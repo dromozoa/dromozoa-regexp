@@ -17,41 +17,46 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-lua test_assertions.lua
-lua test_bitset.lua
-lua test_character_class.lua
-lua test_compile.lua
-lua test_dfa.lua
-lua test_empty.lua
-lua test_match.lua
-lua test_parse.lua
-lua test_scan.lua
-lua test_template.lua
-lua test_tree_map.lua
-lua test_writer.lua
+case x$1 in
+  x) lua=lua;;
+  *) lua=$1;;
+esac
 
-lua test.lua '[a-c]{2,}(abc|abd|acc)'
-lua test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
-lua test.lua '^[a-z]+A*$'
+"$lua" test_assertions.lua
+"$lua" test_bitset.lua
+"$lua" test_character_class.lua
+"$lua" test_compile.lua
+"$lua" test_dfa.lua
+"$lua" test_empty.lua
+"$lua" test_match.lua
+"$lua" test_parse.lua
+"$lua" test_scan.lua
+"$lua" test_template.lua
+"$lua" test_tree_map.lua
+"$lua" test_writer.lua
 
-lua test_branch.lua 'abb' 'abc'
-lua test_branch.lua 'else' 'elseif'
-lua test_branch.lua 'abc' '.{3}'
+"$lua" test.lua '[a-c]{2,}(abc|abd|acc)'
+"$lua" test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
+"$lua" test.lua '^[a-z]+A*$'
 
-lua test_concat.lua 'ab|bc|cd|e*' '(bc)+'
+"$lua" test_branch.lua 'abb' 'abc'
+"$lua" test_branch.lua 'else' 'elseif'
+"$lua" test_branch.lua 'abc' '.{3}'
 
-lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
-lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
-lua test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
-lua test_product_construction.lua '.*$' '.*a$' difference
-lua test_product_construction.lua '.*\$' '.*a\$' difference
-lua test_product_construction.lua 'a+$' 'b+$' union
-lua test_product_construction.lua '[ab]+$' '[bc]+$' intersection
+"$lua" test_concat.lua 'ab|bc|cd|e*' '(bc)+'
 
-lua test_remove_assertions.lua '^abc|d^e$f|ghi$'
-lua test_remove_assertions.lua '^$'
-lua test_remove_assertions.lua '^$^$^$^$'
-lua test_remove_assertions.lua '$^$^$^$^'
-lua test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
+"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
+"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
+"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
+"$lua" test_product_construction.lua '.*$' '.*a$' difference
+"$lua" test_product_construction.lua '.*\$' '.*a\$' difference
+"$lua" test_product_construction.lua 'a+$' 'b+$' union
+"$lua" test_product_construction.lua '[ab]+$' '[bc]+$' intersection
 
-lua test_set_token.lua '.+'
+"$lua" test_remove_assertions.lua '^abc|d^e$f|ghi$'
+"$lua" test_remove_assertions.lua '^$'
+"$lua" test_remove_assertions.lua '^$^$^$^$'
+"$lua" test_remove_assertions.lua '$^$^$^$^'
+"$lua" test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
+
+"$lua" test_set_token.lua '.+'
