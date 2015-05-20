@@ -26,34 +26,46 @@ local loadstring = loadstring or load
 
 local dfa1 = dfa("[[:space:]]+", 1)
   :branch("-?(0|[1-9][0-9]*)", 2)
-  :branch("\\{", 3)
-  :branch("}", 4)
-  :branch("\"", 5)
+  :branch("\"", 3)
 
-local dfa2 = dfa("\"", 6)
-  :branch("\\\\.", 7)
-  :branch("[^\\\"]+", 8)
+local dfa2 = dfa("\\\\.", 4)
+  :branch("[^\\\"]+", 5)
+  :branch("\"", 6)
 
 dfa1:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 dfa2:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 
-local s = '  {  0 123 { "aaa" } } '
+local s = [[ 01 42  "foo"   "bar\nbaz" ]]
 local tokens, begins, ends = scan({
   dfa1:compile(), dfa2:compile()
 }, {
   scanner.SKIP;
   scanner.PUSH;
-  scanner.PUSH;
-  scanner.PUSH;
   scanner.CALL(2);
+  scanner.PUSH;
+  scanner.PUSH;
   scanner.RETURN;
-  scanner.PUSH;
-  scanner.PUSH;
 }, s)
-print(json.encode(tokens))
-print(json.encode(begins))
-print(json.encode(ends))
+
+local data = {
+  { 2, "0" };
+  { 2, "1" };
+  { 2, "42" };
+  { 3 };
+  { 5, "foo" };
+  { 6 };
+  { 3 };
+  { 5, "bar" };
+  { 4, "\\n" };
+  { 5, "baz" };
+  { 6 };
+}
 
 for i = 1, #tokens do
-  print(json.encode({ tokens[i], s:sub(begins[i], ends[i]) }))
+  local a = data[i][1]
+  local b = data[i][2]
+  assert(tokens[i] == a)
+  if b then
+    assert(s:sub(begins[i], ends[i]) == b)
+  end
 end
