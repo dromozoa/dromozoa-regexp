@@ -60,8 +60,11 @@ return function (_out, _indent)
   end
 
   function self:flush()
-    _out:write(string.rep(_indent, _depth), table.concat(_buffer))
+    for i = 1, _depth do
+      _out:write(_indent)
+    end
     for i = 1, #_buffer do
+      _out:write(_buffer[i])
       _buffer[i] = nil
     end
     return _out
