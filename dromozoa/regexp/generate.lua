@@ -22,31 +22,31 @@ local loadstring = loadstring or load
 local tmpl = assert(loadstring(template([====[
 local _ = false
 return {
-  start = [%= code.start %];
+  start = [%= data.start %];
   accepts = {
-    [% for i = 1, #code.accepts do %]
-[% local v = code.accepts[i] %]
+    [% for i = 1, #data.accepts do %]
+[% local v = data.accepts[i] %]
 [% if v then %][%= v %],[% else %]_,[% end %]
 [% end +%]
   };
   transitions = {
     [% for i = 1, 255 do %]_,[% end %]
-[% for i = 256, #code.transitions do %]
-[% local v = code.transitions[i] %]
+[% for i = 256, #data.transitions do %]
+[% local v = data.transitions[i] %]
 [% if i % 256 == 0 then +%]
     [% end %]
 [% if v then %][%= v %],[% else %]_,[% end %]
 [% end +%]
   };
   end_assertions = {
-    [% for i = 1, #code.end_assertions do %]
-[% local v = code.end_assertions[i] %]
+    [% for i = 1, #data.end_assertions do %]
+[% local v = data.end_assertions[i] %]
 [% if v then %][%= v %],[% else %]_,[% end %]
 [% end +%]
   };
 }
 ]====])))()
 
-return function (code, out)
-  return tmpl({ code = code }, out)
+return function (data, out)
+  return tmpl({ data = data }, out)
 end

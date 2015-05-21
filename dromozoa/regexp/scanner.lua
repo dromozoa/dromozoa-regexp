@@ -41,17 +41,17 @@ if action > -2 then
   ends[n] = b
   if action > -1 then
     if action == 0 then
-      code = stack[m]
+      data = stack[m]
       m = m - 1
     else
       m = m + 1
-      stack[m] = code
-      code = codes[action]
+      stack[m] = data
+      data = dataset[action]
     end
-    start = code.start
-    accepts = code.accepts
-    transitions = code.transitions
-    end_assertions = code.end_assertions
+    start = data.start
+    accepts = data.accepts
+    transitions = data.transitions
+    end_assertions = data.end_assertions
   end
 end
 [% out:sub(indent) %]
@@ -98,15 +98,15 @@ end
 [% end %]
 local string_byte = string.byte
 
-return function (codes, actions, s, i, j)
+return function (dataset, actions, s, i, j)
   if not i then i = 1 end
   if not j then j = #s end
 
-  local code = codes[1]
-  local start = code.start
-  local accepts = code.accepts
-  local transitions = code.transitions
-  local end_assertions = code.end_assertions
+  local data = dataset[1]
+  local start = data.start
+  local accepts = data.accepts
+  local transitions = data.transitions
+  local end_assertions = data.end_assertions
 
   local sa = start
   local sb

@@ -56,15 +56,15 @@ end
 [% end %]
 local string_byte = string.byte
 
-return function (code, s, i, j)
+return function (data, s, i, j)
   if not i then i = 1 end
   if not j then j = #s end
 
-  local accepts = code.accepts
-  local transitions = code.transitions
-  local end_assertions = code.end_assertions
+  local accepts = data.accepts
+  local transitions = data.transitions
+  local end_assertions = data.end_assertions
 
-  local sa = code.start
+  local sa = data.start
   local sb
 
   for i = i, j - [%= n - 1 %], [%= n %] do
