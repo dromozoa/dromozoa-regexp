@@ -15,32 +15,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local regexp = require "dromozoa.regexp"
-local match = require "dromozoa.regexp.match"
+local dfa = require "dromozoa.regexp.dfa"
 
-do
-  local head = regexp("^[0-9]+")
-  local tail = head:remove_assertions()
-  local code = head:compile()
-
-  for i = 1, 256 do
-    local s = string.rep("0", i)
-    local _, j = match(code, s)
-    local _, k = s:find("^[0-9]+")
-    assert(j == k)
-  end
-end
-
-do
-  local head = regexp("^[0-9]+$")
-  local tail = head:remove_assertions()
-  local code = head:compile()
-
-  for i = 1, 256 do
-    local s = string.rep("0", i)
-    local _, j = match(code, s)
-    local _, k = s:find("^[0-9]+$")
-    assert(j == k)
-  end
-end
-
+return dfa

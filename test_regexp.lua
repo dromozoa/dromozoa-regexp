@@ -15,26 +15,26 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local generate = require "dromozoa.regexp.generate"
 
-local a = dfa("ab|bc|cd|e*")
+local a = regexp("ab|bc|cd|e*")
 a:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
 a:set_token(2)
 a:write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
 
-local a = dfa(".*")
-a:difference(dfa(".*\\*/.*"))
+local a = regexp(".*")
+a:difference(regexp(".*\\*/.*"))
 a:write_graphviz(assert(io.open("test-dfa3.dot", "w"))):close()
 
-local a = dfa("/\\*"):concat(a):concat(dfa("\\*/"))
+local a = regexp("/\\*"):concat(a):concat(regexp("\\*/"))
 a:write_graphviz(assert(io.open("test-dfa4.dot", "w"))):close()
-a:branch(dfa("-?(0|[1-9][0-9]*)", 2))
+a:branch(regexp("-?(0|[1-9][0-9]*)", 2))
 a:write_graphviz(assert(io.open("test-dfa5.dot", "w"))):close()
-a:branch(dfa("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3))
+a:branch(regexp("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3))
 a:write_graphviz(assert(io.open("test-dfa6.dot", "w"))):close()
 
-local a = dfa("/\\*"):concat(dfa(".*"):difference(".*\\*/.*")):concat("\\*/")
+local a = regexp("/\\*"):concat(regexp(".*"):difference(".*\\*/.*")):concat("\\*/")
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
 a:write_graphviz(assert(io.open("test-dfa7.dot", "w"))):close()

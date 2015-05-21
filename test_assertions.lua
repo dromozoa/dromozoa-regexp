@@ -15,10 +15,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local generate = require "dromozoa.regexp.generate"
 
-local head = dfa("^abc|d^e$f|ghi$")
+local head = regexp("^abc|d^e$f|ghi$")
 assert(head:has_start_assertion())
 assert(head:has_end_assertion())
 
@@ -34,7 +34,7 @@ tail:write_graphviz(assert(io.open("test-tail.dot", "w"))):close()
 generate(head:compile(), assert(io.open("test-head.lua", "w"))):close()
 generate(tail:compile(), assert(io.open("test-tail.lua", "w"))):close()
 
-local head = dfa("abc")
+local head = regexp("abc")
 assert(not head:has_start_assertion())
 assert(not head:has_end_assertion())
 
@@ -50,7 +50,7 @@ tail:write_graphviz(assert(io.open("test-tail2.dot", "w"))):close()
 generate(head:compile(), assert(io.open("test-head2.lua", "w"))):close()
 generate(tail:compile(), assert(io.open("test-tail2.lua", "w"))):close()
 
-local head = dfa("^abc")
+local head = regexp("^abc")
 assert(head:has_start_assertion())
 assert(not head:has_end_assertion())
 
