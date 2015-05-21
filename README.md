@@ -1,3 +1,3 @@
 # dromozoa-regexp
 
-Regular expressions library.
+Regular expressions toolkit.
