@@ -21,31 +21,29 @@ local function write_indent(out, indent, depth)
   end
 end
 
-local function dump(value, out, indent, depth)
-  local k, v = next(value)
+local function dump(data, out, indent, depth)
+  local k, v = next(data)
   local t = type(k)
   if t == "number" then
     if type(v) == "table" then
       out:write("{\n")
-      for i = 1, #value do
+      for i = 1, #data do
         write_indent(out, indent, depth + 1)
-        dump(value[i], out, indent, depth + 1)
+        dump(data[i], out, indent, depth + 1)
         out:write(";\n")
       end
       write_indent(out, indent, depth)
       out:write("}")
     else
       out:write("{")
-      for i = 1, #value do
+      for i = 1, #data do
         if i % 64 == 1 then
           out:write("\n")
           write_indent(out, indent, depth + 1)
-        else
-          out:write(" ")
         end
-        local v = value[i]
+        local v = data[i]
         if v == false then
-          out:write("false,")
+          out:write("_,")
         else
           out:write(v, ",")
         end
@@ -56,7 +54,7 @@ local function dump(value, out, indent, depth)
     end
   elseif t == "string" then
     local keys = {}
-    for k in pairs(value) do
+    for k in pairs(data) do
       keys[#keys + 1] = k
     end
     table.sort(keys)
@@ -65,7 +63,7 @@ local function dump(value, out, indent, depth)
       local k = keys[i]
       write_indent(out, indent, depth + 1)
       out:write(k, " = ")
-      dump(value[k], out, indent, depth + 1)
+      dump(data[k], out, indent, depth + 1)
       out:write(";\n")
     end
     write_indent(out, indent, depth)
@@ -73,9 +71,9 @@ local function dump(value, out, indent, depth)
   end
 end
 
-return function (value, out)
-  out:write("return ")
-  dump(value, out, "  ", 0)
+return function (data, out)
+  out:write("local _ = false\nreturn ")
+  dump(data, out, "  ", 0)
   out:write("\n")
   return out
 end
