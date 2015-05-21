@@ -18,7 +18,7 @@
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
 local regexp = require "dromozoa.regexp"
 local decompile = require "dromozoa.regexp.decompile"
-local generate = require "dromozoa.regexp.generate"
+local dump = require "dromozoa.regexp.dump"
 
 local loadstring = loadstring or load
 
@@ -37,7 +37,7 @@ end
 
 local code = a:compile()
 check_code(code)
-local code = assert(loadstring(generate(code, buffer_writer()):concat()))()
+local code = assert(loadstring(dump(code, buffer_writer()):concat()))()
 check_code(code)
 
 local b = decompile(code)

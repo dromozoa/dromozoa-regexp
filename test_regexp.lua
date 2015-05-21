@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local regexp = require "dromozoa.regexp"
-local generate = require "dromozoa.regexp.generate"
+local dump = require "dromozoa.regexp.dump"
 
 local a = regexp("ab|bc|cd|e*")
 a:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
@@ -38,7 +38,7 @@ local a = regexp("/\\*"):concat(regexp(".*"):difference(".*\\*/.*")):concat("\\*
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
 a:write_graphviz(assert(io.open("test-dfa7.dot", "w"))):close()
-generate(a:compile(), assert(io.open("test-dfa7.lua", "w"))):close()
+dump(a:compile(), assert(io.open("test-dfa7.lua", "w"))):close()
 a:minimize()
 a:write_graphviz(assert(io.open("test-dfa8.dot", "w"))):close()
 
