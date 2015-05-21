@@ -20,4 +20,4 @@ local matcher = require "dromozoa.regexp.matcher"
 
 local loadstring = loadstring or load
 
-return assert(loadstring(matcher(64, buffer_writer()):concat()))()
+return assert(loadstring(matcher.generate(64, buffer_writer()):concat()))()

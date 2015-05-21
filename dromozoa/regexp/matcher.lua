@@ -83,6 +83,8 @@ return function (code, s, i, j)
 end
 ]====])))()
 
-return function (n, out)
-  return tmpl({ n = n }, out)
-end
+return {
+  generate = function (n, out)
+    return tmpl({ n = n }, out)
+  end;
+}
