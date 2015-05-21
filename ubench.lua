@@ -15,14 +15,14 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local match = require "dromozoa.regexp.match"
 local scan = require "dromozoa.regexp.scan"
 local scanner = require "dromozoa.regexp.scanner"
 
 local string_byte = string.byte
 
-local head = dfa("^[0-9]+")
+local head = regexp("^[0-9]+")
 local tail = head:remove_assertions()
 local code = head:compile()
 local s = string.rep("0123456789", 10)

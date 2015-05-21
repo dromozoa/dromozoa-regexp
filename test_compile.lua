@@ -16,13 +16,13 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local decompile = require "dromozoa.regexp.decompile"
-local generate = require "dromozoa.regexp.generate"
+local dump = require "dromozoa.regexp.dump"
 
 local loadstring = loadstring or load
 
-local a = dfa("/\\*"):concat(dfa(".*"):difference(".*\\*/.*")):concat("\\*/")
+local a = regexp("/\\*"):concat(regexp(".*"):difference(".*\\*/.*")):concat("\\*/")
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
   :branch("[[:alpha:]]*", 4)
@@ -37,8 +37,8 @@ end
 
 local code = a:compile()
 check_code(code)
-local code = assert(loadstring(generate(code, buffer_writer()):concat()))()
+local code = assert(loadstring(dump(code, buffer_writer()):concat()))()
 check_code(code)
 
 local b = decompile(code)
-dfa(b):write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
+regexp(b):write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()

@@ -17,17 +17,17 @@
 
 
 local buffer_writer = require "dromozoa.regexp.buffer_writer"
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local scan = require "dromozoa.regexp.scan"
 local scanner = require "dromozoa.regexp.scanner"
 
 local loadstring = loadstring or load
 
-local dfa1 = dfa("[[:space:]]+", 1)
+local dfa1 = regexp("[[:space:]]+", 1)
   :branch("-?(0|[1-9][0-9]*)", 2)
   :branch("\"", 3)
 
-local dfa2 = dfa("\\\\.", 4)
+local dfa2 = regexp("\\\\.", 4)
   :branch("[^\\\"]+", 5)
   :branch("\"", 6)
 

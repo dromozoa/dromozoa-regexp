@@ -15,11 +15,11 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local dfa = require "dromozoa.regexp.dfa"
+local regexp = require "dromozoa.regexp"
 local match = require "dromozoa.regexp.match"
 
 do
-  local head = dfa("^[0-9]+")
+  local head = regexp("^[0-9]+")
   local tail = head:remove_assertions()
   local code = head:compile()
 
@@ -32,7 +32,7 @@ do
 end
 
 do
-  local head = dfa("^[0-9]+$")
+  local head = regexp("^[0-9]+$")
   local tail = head:remove_assertions()
   local code = head:compile()
 

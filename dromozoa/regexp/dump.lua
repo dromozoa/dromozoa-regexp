@@ -15,65 +15,38 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local function write_indent(out, indent, depth)
-  for i = 1, depth do
-    out:write(indent)
-  end
-end
+local template = require "dromozoa.regexp.template"
 
-local function dump(data, out, indent, depth)
-  local k, v = next(data)
-  local t = type(k)
-  if t == "number" then
-    if type(v) == "table" then
-      out:write("{\n")
-      for i = 1, #data do
-        write_indent(out, indent, depth + 1)
-        dump(data[i], out, indent, depth + 1)
-        out:write(";\n")
-      end
-      write_indent(out, indent, depth)
-      out:write("}")
-    else
-      out:write("{")
-      for i = 1, #data do
-        if i % 64 == 1 then
-          out:write("\n")
-          write_indent(out, indent, depth + 1)
-        end
-        local v = data[i]
-        if v == false then
-          out:write("_,")
-        else
-          out:write(v, ",")
-        end
-      end
-      out:write("\n")
-      write_indent(out, indent, depth)
-      out:write("}")
-    end
-  elseif t == "string" then
-    local keys = {}
-    for k in pairs(data) do
-      keys[#keys + 1] = k
-    end
-    table.sort(keys)
-    out:write("{\n")
-    for i = 1, #keys do
-      local k = keys[i]
-      write_indent(out, indent, depth + 1)
-      out:write(k, " = ")
-      dump(data[k], out, indent, depth + 1)
-      out:write(";\n")
-    end
-    write_indent(out, indent, depth)
-    out:write("}")
-  end
-end
+local loadstring = loadstring or load
+
+local tmpl = assert(loadstring(template([====[
+local _ = false
+return {
+  start = [%= data.start %];
+  accepts = {
+    [% for i = 1, #data.accepts do %]
+[% local v = data.accepts[i] %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+  transitions = {
+    [% for i = 1, 255 do %]_,[% end %]
+[% for i = 256, #data.transitions do %]
+[% local v = data.transitions[i] %]
+[% if i % 256 == 0 then +%]
+    [% end %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+  end_assertions = {
+    [% for i = 1, #data.end_assertions do %]
+[% local v = data.end_assertions[i] %]
+[% if v then %][%= v %],[% else %]_,[% end %]
+[% end +%]
+  };
+}
+]====])))()
 
 return function (data, out)
-  out:write("local _ = false\nreturn ")
-  dump(data, out, "  ", 0)
-  out:write("\n")
-  return out
+  return tmpl({ data = data }, out)
 end
