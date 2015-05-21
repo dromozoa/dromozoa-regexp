@@ -26,7 +26,6 @@ esac
 "$lua" test_bitset.lua
 "$lua" test_character_class.lua
 "$lua" test_compile.lua
-"$lua" test_dump.lua
 "$lua" test_empty.lua
 "$lua" test_match.lua
 "$lua" test_parse.lua
