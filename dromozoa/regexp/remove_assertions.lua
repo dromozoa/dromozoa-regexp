@@ -15,8 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
-local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 
 local function remove_assertion(g, op, color)
   if color then
@@ -64,7 +64,7 @@ local function assertion_visitor(_result)
     end
   end
 
-  return dfs_visitor(self)
+  return self
 end
 
 local function remove_nonmatching_assertion(g, key, mode, op)
@@ -89,7 +89,7 @@ end
 return function (a)
   remove_nonmatching_assertion(a, "start", "u", "^")
   remove_nonmatching_assertion(a, "accept", "v", "$")
-  local b = a:clone()
+  local b = clone(a)
 
   collapse_assertion(a, "^")
   collapse_end_assertion(a)

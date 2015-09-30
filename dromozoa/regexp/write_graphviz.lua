@@ -15,8 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local graphviz = require "dromozoa.graph.graphviz"
-local graphviz_attributes_adapter = require "dromozoa.graph.graphviz_attributes_adapter"
+local xml = require "dromozoa.commons.xml"
 local unparse = require "dromozoa.regexp.unparse"
 
 local zero_width = {
@@ -27,12 +26,12 @@ local zero_width = {
 
   ["^"] = {
     fontcolor = "red";
-    label = graphviz.quote_string("^");
+    label = "<^>";
   };
 
   ["$"] = {
     fontcolor = "red";
-    label = graphviz.quote_string("$");
+    label = "<$>";
   };
 }
 
@@ -57,7 +56,7 @@ local function attributes_visitor()
       end
       if accept then
         attributes.peripheries = 2
-        attributes.label = graphviz.quote_string(u.id .. " / " .. accept)
+        attributes.label = "<" .. xml.escape(u.id .. " / " .. accept) .. ">"
       end
       return attributes
     end
@@ -70,7 +69,7 @@ local function attributes_visitor()
       return attributes
     else
       return {
-        label = "<" .. graphviz.escape_html(unparse(node)) .. ">";
+        label = "<" .. xml.escape(unparse(node)) .. ">";
       }
     end
   end
@@ -78,7 +77,7 @@ local function attributes_visitor()
   return self
 end
 
-local visitor = graphviz_attributes_adapter(attributes_visitor())
+local visitor = attributes_visitor()
 
 return function (g, out)
   return g:write_graphviz(out, visitor)

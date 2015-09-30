@@ -17,7 +17,6 @@
 
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
-local dfs_visitor = require "dromozoa.graph.dfs_visitor"
 local bitset = require "dromozoa.regexp.bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
@@ -43,7 +42,7 @@ local function epsilon_closure_visitor(_result)
     return e.condition[1] == "epsilon"
   end;
 
-  return dfs_visitor(self)
+  return self
 end
 
 local function construction(_this)
