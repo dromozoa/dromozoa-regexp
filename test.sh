@@ -22,41 +22,41 @@ case x$1 in
   *) lua=$1;;
 esac
 
-"$lua" test_assertions.lua
-"$lua" test_bitset.lua
-"$lua" test_character_class.lua
-"$lua" test_compile.lua
-"$lua" test_empty.lua
-"$lua" test_match.lua
-"$lua" test_parse.lua
-"$lua" test_regexp.lua
-"$lua" test_scan.lua
-"$lua" test_template.lua
-"$lua" test_tree_map.lua
-"$lua" test_writer.lua
+"$lua" test/test_assertions.lua
+"$lua" test/test_bitset.lua
+"$lua" test/test_character_class.lua
+"$lua" test/test_compile.lua
+"$lua" test/test_empty.lua
+"$lua" test/test_match.lua
+"$lua" test/test_parse.lua
+"$lua" test/test_regexp.lua
+"$lua" test/test_scan.lua
+"$lua" test/test_template.lua
+"$lua" test/test_tree_map.lua
+"$lua" test/test_writer.lua
 
-"$lua" test.lua '[a-c]{2,}(abc|abd|acc)'
-"$lua" test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
-"$lua" test.lua '^[a-z]+A*$'
+"$lua" test/test.lua '[a-c]{2,}(abc|abd|acc)'
+"$lua" test/test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
+"$lua" test/test.lua '^[a-z]+A*$'
 
-"$lua" test_branch.lua 'abb' 'abc'
-"$lua" test_branch.lua 'else' 'elseif'
-"$lua" test_branch.lua 'abc' '.{3}'
+"$lua" test/test_branch.lua 'abb' 'abc'
+"$lua" test/test_branch.lua 'else' 'elseif'
+"$lua" test/test_branch.lua 'abc' '.{3}'
 
-"$lua" test_concat.lua 'ab|bc|cd|e*' '(bc)+'
+"$lua" test/test_concat.lua 'ab|bc|cd|e*' '(bc)+'
 
-"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
-"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
-"$lua" test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
-"$lua" test_product_construction.lua '.*$' '.*a$' difference
-"$lua" test_product_construction.lua '.*\$' '.*a\$' difference
-"$lua" test_product_construction.lua 'a+$' 'b+$' union
-"$lua" test_product_construction.lua '[ab]+$' '[bc]+$' intersection
+"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
+"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
+"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
+"$lua" test/test_product_construction.lua '.*$' '.*a$' difference
+"$lua" test/test_product_construction.lua '.*\$' '.*a\$' difference
+"$lua" test/test_product_construction.lua 'a+$' 'b+$' union
+"$lua" test/test_product_construction.lua '[ab]+$' '[bc]+$' intersection
 
-"$lua" test_remove_assertions.lua '^abc|d^e$f|ghi$'
-"$lua" test_remove_assertions.lua '^$'
-"$lua" test_remove_assertions.lua '^$^$^$^$'
-"$lua" test_remove_assertions.lua '$^$^$^$^'
-"$lua" test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
+"$lua" test/test_remove_assertions.lua '^abc|d^e$f|ghi$'
+"$lua" test/test_remove_assertions.lua '^$'
+"$lua" test/test_remove_assertions.lua '^$^$^$^$'
+"$lua" test/test_remove_assertions.lua '$^$^$^$^'
+"$lua" test/test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
 
-"$lua" test_set_token.lua '.+'
+"$lua" test/test_set_token.lua '.+'
