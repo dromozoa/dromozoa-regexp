@@ -13,6 +13,7 @@ description = {
 dependencies = {
   "dromozoa-commons";
   "dromozoa-graph";
+  "dromozoa-tree";
 }
 build = {
   type = "builtin";
