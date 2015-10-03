@@ -55,7 +55,7 @@ end
 local function assertion_visitor(_result)
   local self = {}
 
-  function self:examine_edge(g, e, u, v)
+  function self:examine_edge(e, u, v)
     local op = e.condition[1]
     if op == "^" or op == "$" then
       _result[e.id] = true

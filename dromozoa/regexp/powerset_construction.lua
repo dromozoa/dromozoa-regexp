@@ -34,11 +34,11 @@ end
 local function epsilon_closure_visitor(_result)
   local self = {}
 
-  function self:discover_vertex(g, u)
+  function self:discover_vertex(u)
     _result[u.id] = true
   end;
 
-  function self:examine_edge(g, e, u, v)
+  function self:examine_edge(e, u, v)
     return e.condition[1] == "epsilon"
   end;
 
