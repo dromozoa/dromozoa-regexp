@@ -23,25 +23,31 @@ function class.new()
   return {}
 end
 
-function class:set(m, n)
-  if not n then n = m end
-  for i = m, n do
+function class:set(min, max)
+  if max == nil then
+    max = min
+  end
+  for i = min, max do
     self[i] = true
   end
   return self
 end
 
-function class:reset(m, n)
-  if not n then n = m end
-  for i = m, n do
+function class:reset(min, max)
+  if max == nil then
+    max = min
+  end
+  for i = min, max do
     self[i] = nil
   end
   return self
 end
 
-function class:flip(m, n)
-  if not n then n = m end
-  for i = m, n do
+function class:flip(min, max)
+  if max == nil then
+    max = min
+  end
+  for i = min, max do
     if self[i] then
       self[i] = nil
     else
@@ -52,7 +58,7 @@ function class:flip(m, n)
 end
 
 function class:set_union(that)
-  for i in that:each() do
+  for i in pairs(that) do
     self:set(i)
   end
   return self
