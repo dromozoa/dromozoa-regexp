@@ -49,10 +49,10 @@ function class:flip(min, max)
     max = min
   end
   for i = min, max do
-    if self[i] then
-      self[i] = nil
-    else
+    if self[i] == nil then
       self[i] = true
+    else
+      self[i] = nil
     end
   end
   return self
@@ -72,11 +72,11 @@ function class:each()
 end
 
 function class:count()
-  local n = 0
+  local count = 0
   for _ in pairs(self) do
-    n = n + 1
+    count = count + 1
   end
-  return n
+  return count
 end
 
 local metatable = {
