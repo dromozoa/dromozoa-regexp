@@ -16,6 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local pairs = require "dromozoa.commons.pairs"
+local set_union = require "dromozoa.commons.set_union"
 
 local class = {}
 
@@ -58,9 +59,7 @@ function class:flip(min, max)
 end
 
 function class:set_union(that)
-  for i in pairs(that) do
-    self:set(i)
-  end
+  set_union(self, that)
   return self
 end
 
