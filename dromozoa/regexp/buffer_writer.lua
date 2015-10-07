@@ -15,6 +15,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+return require "dromozoa.commons.sequence_writer"
+
+--[[
+
 return function ()
   local _buffer = {}
 
@@ -41,3 +45,5 @@ return function ()
 
   return self
 end
+
+]]
