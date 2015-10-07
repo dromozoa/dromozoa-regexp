@@ -229,8 +229,8 @@ end
 
 function class:end_range()
   if self:match "%[%." then
-    if self:match "(.)%.%]" then
-      return self:push { "[.", self:pop() }
+    if self:match "(..-)%.%]" then
+      return self:push { "[.", string.char(locale.collating_elements[self:pop()]) }
     elseif self:match "(..-)%.%]" then
       self:raise("collating symbol " .. self:pop() .. " is not supported in the current locale")
     else
