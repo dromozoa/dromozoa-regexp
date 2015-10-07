@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local bitset = require "dromozoa.regexp.bitset"
+local bitset = require "dromozoa.commons.bitset"
 local character_class = require "dromozoa.regexp.character_class"
 
 local function converter()
