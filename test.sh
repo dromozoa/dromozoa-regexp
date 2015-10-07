@@ -23,7 +23,6 @@ case x$1 in
 esac
 
 "$lua" test/test_assertions.lua
-"$lua" test/test_character_class.lua
 "$lua" test/test_compile.lua
 "$lua" test/test_empty.lua
 "$lua" test/test_match.lua

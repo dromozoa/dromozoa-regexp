@@ -15,9 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local locale = require "dromozoa.commons.locale"
 local matcher = require "dromozoa.commons.matcher"
 local sequence = require "dromozoa.commons.sequence"
-local character_class = require "dromozoa.regexp.character_class"
 local unparse = require "dromozoa.regexp.unparse"
 
 local class = {}
@@ -192,7 +192,7 @@ function class:expression_term()
   elseif self:match "%[%:" then
     if self:match "(..-)%:%]" then
       local a = self:pop()
-      if character_class[a] then
+      if locale.character_classes[a] then
         return self:push { "[:", a }
       else
         self:raise("character class " .. a .. " is not supported in the current locale")

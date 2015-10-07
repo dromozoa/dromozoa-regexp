@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local bitset = require "dromozoa.commons.bitset"
-local character_class = require "dromozoa.regexp.character_class"
+local locale = require "dromozoa.commons.locale"
 
 local function converter()
   local _bitset = bitset()
@@ -59,7 +59,7 @@ local function converter()
     end;
 
     ["[:"] = function (self, node, a)
-      _bitset:set_union(character_class[a])
+      _bitset:set_union(locale.character_classes[a])
     end;
 
     ["[-"] = function (self, node, a, b)
