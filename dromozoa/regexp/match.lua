@@ -15,9 +15,90 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local buffer_writer = require "dromozoa.regexp.buffer_writer"
-local matcher = require "dromozoa.regexp.matcher"
+local string_byte = string.byte
 
-local loadstring = loadstring or load
+return function (data, s, min, max)
+  if min == nil then
+    min = 1
+  end
+  if max == nil then
+    max = #s
+  end
 
-return assert(loadstring(matcher.generate(64, buffer_writer()):concat()))()
+  local accepts = data.accepts
+  local transitions = data.transitions
+  local end_assertions = data.end_assertions
+
+  local sa = data.start
+  local sb
+  local sc
+  local sd
+
+  for i = min + 3, max, 4 do
+    local a, b, c, d = string_byte(s, i - 3, i)
+    sd = transitions[sa * 256 + a]
+    if not sd then
+      return accepts[sa], i - 4
+    end
+    sc = transitions[sd * 256 + b]
+    if not sc then
+      return accepts[sd], i - 3
+    end
+    sb = transitions[sc * 256 + c]
+    if not sb then
+      return accepts[sc], i - 2
+    end
+    sa = transitions[sb * 256 + d]
+    if not sa then
+      return accepts[sb], i - 1
+    end
+  end
+
+  local i = max + 1
+  local m = i - (i - min) % 4
+
+  if m < i then
+    local a, b, c = string_byte(s, m, max)
+    if c then
+      sd = transitions[sa * 256 + a]
+      if not sd then
+        return accepts[sa], i - 4
+      end
+      sc = transitions[sd * 256 + b]
+      if not sc then
+        return accepts[sd], i - 3
+      end
+      sb = transitions[sc * 256 + c]
+      if not sb then
+        return accepts[sc], i - 2
+      end
+    elseif b then
+      sc = transitions[sa * 256 + a]
+      if not sc then
+        return accepts[sa], i - 3
+      end
+      sb = transitions[sc * 256 + b]
+      if not sb then
+        return accepts[sc], i - 2
+      end
+    else
+      sb = transitions[sa * 256 + a]
+      if not sb then
+        return accepts[sa], i - 2
+      end
+    end
+    sa = end_assertions[sb]
+    if sa then
+      return accepts[sa], i - 1
+    else
+      return accepts[sb], i - 1
+    end
+  else
+    sb = end_assertions[sa]
+    if sb then
+      return accepts[sb], i - 1
+    else
+      return accepts[sa], i - 1
+    end
+  end
+end
