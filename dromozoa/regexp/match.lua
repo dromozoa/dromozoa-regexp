@@ -17,8 +17,6 @@
 
 local translate_range = require "dromozoa.commons.translate_range"
 
-local string_byte = string.byte
-
 return function (data, s, i, j)
   local min, max = translate_range(#s, i, j)
 
@@ -27,9 +25,8 @@ return function (data, s, i, j)
   local end_assertions = data.end_assertions
 
   local sa = data.start
-
   for i = min + 3, max, 4 do
-    local a, b, c, d = string_byte(s, i - 3, i)
+    local a, b, c, d = string.byte(s, i - 3, i)
     local sd = transitions[sa * 256 + a]
     if not sd then
       return accepts[sa], i - 4
@@ -50,9 +47,8 @@ return function (data, s, i, j)
 
   local i = max + 1
   local m = i - (i - min) % 4
-
   if m < i then
-    local a, b, c = string_byte(s, m, max)
+    local a, b, c = string.byte(s, m, max)
     local sb
     if c then
       local sd = transitions[sa * 256 + a]
