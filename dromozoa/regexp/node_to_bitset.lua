@@ -16,7 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local bitset = require "dromozoa.commons.bitset"
-local locale = require "dromozoa.commons.locale"
+local locale = require "dromozoa.regexp.locale"
 
 local function converter()
   local _bitset = bitset()

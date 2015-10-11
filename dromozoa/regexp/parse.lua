@@ -15,9 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local locale = require "dromozoa.commons.locale"
 local matcher = require "dromozoa.commons.matcher"
 local sequence = require "dromozoa.commons.sequence"
+local locale = require "dromozoa.regexp.locale"
 local unparse = require "dromozoa.regexp.unparse"
 
 local class = {}

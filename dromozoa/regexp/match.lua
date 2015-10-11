@@ -21,8 +21,9 @@ return function (data, s, min, max)
   if min == nil then
     min = 1
   end
-  if max == nil then
-    max = #s
+  local n = #s
+  if max == nil or max > n then
+    max = n
   end
 
   local accepts = data.accepts

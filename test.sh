@@ -25,6 +25,7 @@ esac
 "$lua" test/test_assertions.lua
 "$lua" test/test_compile.lua
 "$lua" test/test_empty.lua
+"$lua" test/test_locale.lua
 "$lua" test/test_match.lua
 "$lua" test/test_parse.lua
 "$lua" test/test_regexp.lua
