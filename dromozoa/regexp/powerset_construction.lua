@@ -16,8 +16,8 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local clone = require "dromozoa.commons.clone"
+local bitset = require "dromozoa.commons.bitset"
 local graph = require "dromozoa.graph"
-local bitset = require "dromozoa.regexp.bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local tree_map = require "dromozoa.regexp.tree_map"

@@ -17,7 +17,7 @@
 
 local matcher = require "dromozoa.commons.matcher"
 local sequence = require "dromozoa.commons.sequence"
-local character_class = require "dromozoa.regexp.character_class"
+local locale = require "dromozoa.regexp.locale"
 local unparse = require "dromozoa.regexp.unparse"
 
 local class = {}
@@ -192,7 +192,7 @@ function class:expression_term()
   elseif self:match "%[%:" then
     if self:match "(..-)%:%]" then
       local a = self:pop()
-      if character_class[a] then
+      if locale.character_classes[a] then
         return self:push { "[:", a }
       else
         self:raise("character class " .. a .. " is not supported in the current locale")
@@ -229,8 +229,8 @@ end
 
 function class:end_range()
   if self:match "%[%." then
-    if self:match "(.)%.%]" then
-      return self:push { "[.", self:pop() }
+    if self:match "(..-)%.%]" then
+      return self:push { "[.", string.char(locale.collating_elements[self:pop()]) }
     elseif self:match "(..-)%.%]" then
       self:raise("collating symbol " .. self:pop() .. " is not supported in the current locale")
     else

@@ -32,6 +32,21 @@ do
 end
 
 do
+  local head = regexp("^[0-9]+")
+  local tail = head:remove_assertions()
+  local code = head:compile()
+
+  for i = 1, 16 do
+    for j = 1, 16 do
+      local s = string.rep("0", i) .. string.rep("x", j)
+      local _, x = match(code, s)
+      local _, y = s:find("^[0-9]+")
+      assert(x == y)
+    end
+  end
+end
+
+do
   local head = regexp("^[0-9]+$")
   local tail = head:remove_assertions()
   local code = head:compile()
