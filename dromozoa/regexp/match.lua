@@ -15,9 +15,13 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local translate_range = require "dromozoa.commons.translate_range"
+
 local string_byte = string.byte
 
-return function (data, s, min, max)
+return function (data, s, i, j)
+  local min, max = translate_range(#s, i, j)
+
   if min == nil then
     min = 1
   end
