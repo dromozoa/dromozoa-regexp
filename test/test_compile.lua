@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local buffer_writer = require "dromozoa.regexp.buffer_writer"
+local sequence_writer = require "dromozoa.commons.sequence_writer"
 local regexp = require "dromozoa.regexp"
 local decompile = require "dromozoa.regexp.decompile"
 local dump = require "dromozoa.regexp.dump"
@@ -37,7 +37,7 @@ end
 
 local code = a:compile()
 check_code(code)
-local code = assert(loadstring(dump(code, buffer_writer()):concat()))()
+local code = assert(loadstring(dump(code, sequence_writer()):concat()))()
 check_code(code)
 
 local b = decompile(code)
