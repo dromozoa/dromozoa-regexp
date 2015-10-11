@@ -22,34 +22,23 @@ local string_byte = string.byte
 return function (data, s, i, j)
   local min, max = translate_range(#s, i, j)
 
-  if min == nil then
-    min = 1
-  end
-  local n = #s
-  if max == nil or max > n then
-    max = n
-  end
-
   local accepts = data.accepts
   local transitions = data.transitions
   local end_assertions = data.end_assertions
 
   local sa = data.start
-  local sb
-  local sc
-  local sd
 
   for i = min + 3, max, 4 do
     local a, b, c, d = string_byte(s, i - 3, i)
-    sd = transitions[sa * 256 + a]
+    local sd = transitions[sa * 256 + a]
     if not sd then
       return accepts[sa], i - 4
     end
-    sc = transitions[sd * 256 + b]
+    local sc = transitions[sd * 256 + b]
     if not sc then
       return accepts[sd], i - 3
     end
-    sb = transitions[sc * 256 + c]
+    local sb = transitions[sc * 256 + c]
     if not sb then
       return accepts[sc], i - 2
     end
@@ -64,12 +53,13 @@ return function (data, s, i, j)
 
   if m < i then
     local a, b, c = string_byte(s, m, max)
+    local sb
     if c then
-      sd = transitions[sa * 256 + a]
+      local sd = transitions[sa * 256 + a]
       if not sd then
         return accepts[sa], i - 4
       end
-      sc = transitions[sd * 256 + b]
+      local sc = transitions[sd * 256 + b]
       if not sc then
         return accepts[sd], i - 3
       end
@@ -78,7 +68,7 @@ return function (data, s, i, j)
         return accepts[sc], i - 2
       end
     elseif b then
-      sc = transitions[sa * 256 + a]
+      local sc = transitions[sa * 256 + a]
       if not sc then
         return accepts[sa], i - 3
       end
@@ -99,7 +89,7 @@ return function (data, s, i, j)
       return accepts[sb], i - 1
     end
   else
-    sb = end_assertions[sa]
+    local sb = end_assertions[sa]
     if sb then
       return accepts[sb], i - 1
     else
