@@ -29,7 +29,6 @@ esac
 "$lua" test/test_match.lua
 "$lua" test/test_parse.lua
 "$lua" test/test_regexp.lua
-"$lua" test/test_scan.lua
 "$lua" test/test_template.lua
 "$lua" test/test_tree_map.lua
 
