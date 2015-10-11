@@ -15,8 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local bitset = require "dromozoa.commons.bitset"
 local graph = require "dromozoa.graph"
-local bitset = require "dromozoa.regexp.bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 
 return function (data)
