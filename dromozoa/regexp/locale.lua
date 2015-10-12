@@ -17,51 +17,43 @@
 
 local bitset = require "dromozoa.commons.bitset"
 
-local function byte(s)
-  local n = #s
-  assert(n == 1 or n == 2)
-  return string.byte(s, 1, n)
-end
-
-local class = {}
-
-function class.get_posix_character_classes()
+function get_posix_character_classes()
   local character_classes = {}
 
   character_classes.upper = bitset()
-    :set(byte("AZ"))
+    :set(string.byte("AZ", 1, 2))
 
   character_classes.lower = bitset()
-    :set(byte("az"))
+    :set(string.byte("az", 1, 2))
 
   character_classes.alpha = bitset()
     :set_union(character_classes.upper)
     :set_union(character_classes.lower)
 
   character_classes.digit = bitset()
-    :set(byte("09"))
+    :set(string.byte("09", 1, 2))
 
   character_classes.alnum = bitset()
     :set_union(character_classes.alpha)
     :set_union(character_classes.digit)
 
   character_classes.space = bitset()
-    :set(byte(" "))
-    :set(byte("\f"))
-    :set(byte("\n"))
-    :set(byte("\r"))
-    :set(byte("\t"))
-    :set(byte("\v"))
+    :set(string.byte(" ", 1, 2))
+    :set(string.byte("\f", 1, 2))
+    :set(string.byte("\n", 1, 2))
+    :set(string.byte("\r", 1, 2))
+    :set(string.byte("\t", 1, 2))
+    :set(string.byte("\v", 1, 2))
 
   character_classes.cntrl = bitset()
     :set(0, 31)
     :set(127)
 
   character_classes.punct = bitset()
-    :set(byte("!/"))
-    :set(byte(":@"))
-    :set(byte("[`"))
-    :set(byte("{~"))
+    :set(string.byte("!/", 1, 2))
+    :set(string.byte(":@", 1, 2))
+    :set(string.byte("[`", 1, 2))
+    :set(string.byte("{~", 1, 2))
 
   character_classes.graph = bitset()
     :set_union(character_classes.alnum)
@@ -69,21 +61,21 @@ function class.get_posix_character_classes()
 
   character_classes.print = bitset()
     :set_union(character_classes.graph)
-    :set(byte(" "))
+    :set(string.byte(" "))
 
   character_classes.xdigit = bitset()
-    :set(byte("09"))
-    :set(byte("AF"))
-    :set(byte("af"))
+    :set(string.byte("09", 1, 2))
+    :set(string.byte("AF", 1, 2))
+    :set(string.byte("af", 1, 2))
 
   character_classes.blank = bitset()
-    :set(byte(" "))
-    :set(byte("\t"))
+    :set(string.byte(" "))
+    :set(string.byte("\t"))
 
   return character_classes
 end
 
-function class.get_posix_collating_elements()
+function get_posix_collating_elements()
   local collating_elements = {}
   for i = 0, 127 do
     collating_elements[string.char(i)] = i
@@ -91,7 +83,7 @@ function class.get_posix_collating_elements()
   return collating_elements
 end
 
-class.character_classes = class.get_posix_character_classes()
-class.collating_elements = class.get_posix_collating_elements()
-
-return class
+return {
+  character_classes = get_posix_character_classes();
+  collating_elements = get_posix_collating_elements();
+}
