@@ -16,6 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local bitset = require "dromozoa.commons.bitset"
+local hash_table = require "dromozoa.commons.hash_table"
 local graph = require "dromozoa.graph"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
@@ -58,7 +59,8 @@ end
 
 local function construction(_a, _b)
   local _that = graph()
-  local _map = tree_map()
+  -- local _map = tree_map()
+  local _map = hash_table()
 
   local self = {}
 
@@ -102,7 +104,8 @@ local function construction(_a, _b)
     local transition_b = self:create_transition(b)
     local transition = {}
     for i = 0, 256 do
-      local v = _map:find({ transition_a[i].id, transition_b[i].id })
+      -- local v = _map:find({ transition_a[i].id, transition_b[i].id })
+      local v = _map[{ transition_a[i].id, transition_b[i].id }]
       local condition = transition[v.id]
       if not condition then
         condition = bitset()
@@ -110,7 +113,8 @@ local function construction(_a, _b)
       end
       condition:set(i)
     end
-    local u = _map:find({ a.id, b.id })
+    -- local u = _map:find({ a.id, b.id })
+    local u = _map[{ a.id, b.id }]
     for k, v in pairs(transition) do
       _that:create_edge(u, k).condition = bitset_to_node(v)
     end
