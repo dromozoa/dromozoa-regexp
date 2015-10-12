@@ -91,16 +91,7 @@ function class.get_posix_collating_elements()
   return collating_elements
 end
 
-function class.get_extended_collating_elements()
-  local collating_elements = {}
-  for i = 0, 255 do
-    collating_elements[string.char(i)] = i
-    collating_elements[string.format("x%02X", i)] = i
-  end
-  return collating_elements
-end
-
 class.character_classes = class.get_posix_character_classes()
-class.collating_elements = class.get_extended_collating_elements()
+class.collating_elements = class.get_posix_collating_elements()
 
 return class

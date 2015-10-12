@@ -40,7 +40,3 @@ print(unparse(parse "[[.^.]]"))
 print(unparse(parse "[[.-.]]"))
 print(unparse(parse "[[.].]]"))
 print(unparse(parse "[[:xdigit:]]"))
-
--- extended collating elemtns
-assert(unparse(parse "[[.x20.]]") == "[[. .]]")
-assert(unparse(parse "[[.x7A.]]") == "[[.z.]]")

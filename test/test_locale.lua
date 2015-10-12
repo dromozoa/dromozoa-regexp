@@ -30,6 +30,4 @@ assert(empty(clone(character_classes.cntrl):set_intersection(character_classes.a
 assert(empty(clone(character_classes.cntrl):set_intersection(character_classes.print)))
 
 local collating_elements = locale.collating_elements
-assert(collating_elements.x00 == 0x00)
-assert(collating_elements.xFF == 0xFF)
 assert(collating_elements.a == string.byte("a"))
