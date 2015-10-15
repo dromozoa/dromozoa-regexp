@@ -38,13 +38,13 @@ local zero_width = {
 local function attributes_visitor()
   local self = {}
 
-  function self:graph_attributes(g)
+  function self:graph_attributes()
     return {
       rankdir = "LR";
     }
   end
 
-  function self:node_attributes(g, u)
+  function self:node_attributes(u)
     local start = u.start
     local accept = u.accept
     if start or accept then
@@ -62,7 +62,7 @@ local function attributes_visitor()
     end
   end
 
-  function self:edge_attributes(g, e)
+  function self:edge_attributes(e)
     local node = e.condition
     local attributes = zero_width[node[1]]
     if attributes then

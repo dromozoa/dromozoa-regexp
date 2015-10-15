@@ -29,9 +29,6 @@ esac
 "$lua" test/test_match.lua
 "$lua" test/test_parse.lua
 "$lua" test/test_regexp.lua
-"$lua" test/test_scan.lua
-"$lua" test/test_template.lua
-"$lua" test/test_tree_map.lua
 
 "$lua" test/test.lua '[a-c]{2,}(abc|abd|acc)'
 "$lua" test/test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'

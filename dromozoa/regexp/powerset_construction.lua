@@ -17,10 +17,10 @@
 
 local clone = require "dromozoa.commons.clone"
 local bitset = require "dromozoa.commons.bitset"
+local hash_table = require "dromozoa.commons.hash_table"
 local graph = require "dromozoa.graph"
 local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
 local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
-local tree_map = require "dromozoa.regexp.tree_map"
 
 local function data_to_keys(data)
   local keys = {}
@@ -47,7 +47,7 @@ end
 
 local function construction(_this)
   local _that = graph()
-  local _map = tree_map()
+  local _map = hash_table()
   local _color = {}
 
   local self = {}
@@ -66,7 +66,7 @@ local function construction(_this)
   end
 
   function self:get_vertex(keys)
-    local u = _map:find(keys)
+    local u = _map:get(keys)
     if not u then
       u = _that:create_vertex()
       u.accept = self:get_property(keys, "accept")
@@ -96,12 +96,12 @@ local function construction(_this)
         end
       end
     end
-    local map = tree_map()
+    local map = hash_table()
     for i = 0, 257 do
       local data = dataset[i]
       if next(data) then
         local keys = data_to_keys(data)
-        local class = map:find(keys)
+        local class = map:get(keys)
         if not class then
           class = bitset()
           map:insert(keys, class)

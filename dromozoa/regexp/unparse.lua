@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local buffer_writer = require "dromozoa.regexp.buffer_writer"
+local sequence_writer = require "dromozoa.commons.sequence_writer"
 
 local function unparser(_out)
   local self = {
@@ -148,5 +148,5 @@ local function unparser(_out)
 end
 
 return function (node)
-  return unparser(buffer_writer()):unparse(node):concat()
+  return unparser(sequence_writer()):unparse(node):concat()
 end

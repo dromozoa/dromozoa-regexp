@@ -41,6 +41,14 @@ print(unparse(parse "[[.-.]]"))
 print(unparse(parse "[[.].]]"))
 print(unparse(parse "[[:xdigit:]]"))
 
--- extended collating elemtns
-assert(unparse(parse "[[.x20.]]") == "[[. .]]")
-assert(unparse(parse "[[.x7A.]]") == "[[.z.]]")
+local result, message = pcall(parse, "[[.\255.]]")
+assert(not result)
+assert(message:find("is not supported in the current locale"))
+
+local result, message = pcall(parse, "[[:foo:]]")
+assert(not result)
+assert(message:find("is not supported in the current locale"))
+
+local result, message = pcall(parse, "[[=foo=]]")
+assert(not result)
+assert(message:find("is not supported in the current locale"))

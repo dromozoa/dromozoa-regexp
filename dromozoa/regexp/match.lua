@@ -15,37 +15,27 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local string_byte = string.byte
+local translate_range = require "dromozoa.commons.translate_range"
 
-return function (data, s, min, max)
-  if min == nil then
-    min = 1
-  end
-  local n = #s
-  if max == nil or max > n then
-    max = n
-  end
+return function (data, s, i, j)
+  local min, max = translate_range(#s, i, j)
 
   local accepts = data.accepts
   local transitions = data.transitions
   local end_assertions = data.end_assertions
 
   local sa = data.start
-  local sb
-  local sc
-  local sd
-
   for i = min + 3, max, 4 do
-    local a, b, c, d = string_byte(s, i - 3, i)
-    sd = transitions[sa * 256 + a]
+    local a, b, c, d = string.byte(s, i - 3, i)
+    local sd = transitions[sa * 256 + a]
     if not sd then
       return accepts[sa], i - 4
     end
-    sc = transitions[sd * 256 + b]
+    local sc = transitions[sd * 256 + b]
     if not sc then
       return accepts[sd], i - 3
     end
-    sb = transitions[sc * 256 + c]
+    local sb = transitions[sc * 256 + c]
     if not sb then
       return accepts[sc], i - 2
     end
@@ -57,15 +47,15 @@ return function (data, s, min, max)
 
   local i = max + 1
   local m = i - (i - min) % 4
-
   if m < i then
-    local a, b, c = string_byte(s, m, max)
+    local a, b, c = string.byte(s, m, max)
+    local sb
     if c then
-      sd = transitions[sa * 256 + a]
+      local sd = transitions[sa * 256 + a]
       if not sd then
         return accepts[sa], i - 4
       end
-      sc = transitions[sd * 256 + b]
+      local sc = transitions[sd * 256 + b]
       if not sc then
         return accepts[sd], i - 3
       end
@@ -74,7 +64,7 @@ return function (data, s, min, max)
         return accepts[sc], i - 2
       end
     elseif b then
-      sc = transitions[sa * 256 + a]
+      local sc = transitions[sa * 256 + a]
       if not sc then
         return accepts[sa], i - 3
       end
@@ -95,7 +85,7 @@ return function (data, s, min, max)
       return accepts[sb], i - 1
     end
   else
-    sb = end_assertions[sa]
+    local sb = end_assertions[sa]
     if sb then
       return accepts[sb], i - 1
     else

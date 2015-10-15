@@ -192,10 +192,11 @@ function class:expression_term()
   elseif self:match "%[%:" then
     if self:match "(..-)%:%]" then
       local a = self:pop()
-      if locale.character_classes[a] then
-        return self:push { "[:", a }
-      else
+      local b = locale.character_classes[a]
+      if b == nil then
         self:raise("character class " .. a .. " is not supported in the current locale")
+      else
+        return self:push { "[:", a }
       end
     else
       self:raise()
@@ -230,9 +231,13 @@ end
 function class:end_range()
   if self:match "%[%." then
     if self:match "(..-)%.%]" then
-      return self:push { "[.", string.char(locale.collating_elements[self:pop()]) }
-    elseif self:match "(..-)%.%]" then
-      self:raise("collating symbol " .. self:pop() .. " is not supported in the current locale")
+      local a = self:pop()
+      local b = locale.collating_elements[a]
+      if b == nil then
+        self:raise("collating symbol " .. a .. " is not supported in the current locale")
+      else
+        return self:push { "[.", a }
+      end
     else
       self:raise()
     end
