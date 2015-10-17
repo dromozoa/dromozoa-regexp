@@ -86,7 +86,14 @@ end
 function class:ERE_expression()
   local matcher = self.matcher
   if self:one_char_or_coll_elem_ERE_or_grouping() then
-    -- ERE_dupl_symbol
+    local node = self.stack:pop()
+    if self:ERE_dupl_symbol() then
+      local dupl = self.stack:pop()
+      dupl:append_child(node)
+      self.stack:push(dupl)
+    else
+      self.stack:push(node)
+    end
     return true
   elseif matcher:match("([%^%$])") then
     local node = self.tree:create_node()
@@ -119,6 +126,40 @@ function class:one_char_or_coll_elem_ERE_or_grouping()
 end
 
 function class:ERE_dupl_symbol()
+  local matcher = self.matcher
+  if matcher:match("([%*%+%?])") then
+    local node = self.tree:create_node()
+    node.tag = matcher[1]
+    self.stack:push(node)
+    return true
+  elseif matcher:match("%{") then
+    if matcher:match("(%d+)%}") then
+      local node = self.tree:create_node()
+      node.tag = "{m"
+      node.m = tonumber(matcher[1], 10)
+      self.stack:push(node)
+      return true
+    elseif matcher:match("(%d+),%}") then
+      local node = self.tree:create_node()
+      node.tag = "{m,"
+      node.m = tonumber(matcher[1], 10)
+      self.stack:push(node)
+      return true
+    elseif matcher:match("(%d+),(%d+)%}") then
+      local m = tonumber(matcher[1], 10)
+      local n = tonumber(matcher[2], 10)
+      if m <= n then
+        local node = self.tree:create_node()
+        node.tag = "{m,n"
+        node.m = m
+        node.n = n
+        self.stack:push(node)
+        return true
+      else
+        self:raise("invalid interval expression {" .. m .. "," .. n .. "}")
+      end
+    end
+  end
 end
 
 function class:bracket_expression()
