@@ -133,23 +133,19 @@ function class:ERE_dupl_symbol()
   local stack = self.stack
   if matcher:match("([%*%+%?])") then
     return stack:push(self:create_node(matcher[1]))
-  elseif matcher:match("%{(%d+)") then
-    local m = tonumber(matcher[1], 10)
-    local a = self:create_node("{")
-    if matcher:match("%,") then
-      b = self:create_node(",")
-      b:append_child(self:create_node("m", m))
-      if matcher:match("(%d+)") then
-        b:append_child(self:create_node("n", tonumber(matcher[1], 10)))
+  elseif matcher:match("%{") then
+    if matcher:match("(%d+)%}") then
+      return stack:push(self:create_node("{m", tonumber(matcher[1], 10)))
+    elseif matcher:match("(%d+),%}") then
+      return stack:push(self:create_node("{m,", tonumber(matcher[1], 10)))
+    elseif matcher:match("(%d+),(%d+)%}") then
+      local m = tonumber(matcher[1], 10)
+      local n = tonumber(matcher[2], 10)
+      if m <= n then
+        return stack:push(self:create_node("{m,n", m, n))
+      else
+        self:raise("invalid interval expression {" .. m .. "," .. n .. "}")
       end
-      a:append_child(b)
-    else
-      a:append_child(self:create_node("m", m))
-    end
-    if matcher:match("%}") then
-      return stack:push(a)
-    else
-      self:raise()
     end
   end
 end
