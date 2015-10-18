@@ -118,6 +118,16 @@ function class:one_char_or_coll_elem_ERE_or_grouping()
     return self:push(self:create_node("\\", matcher[1]))
   elseif matcher:match("%.") then
     return self:push(self:create_node("."))
+  elseif matcher:match("%(") then
+    if self:extended_reg_exp() then
+      if matcher:match("%)") then
+        return true
+      else
+        self:raise("unmatched parentheses")
+      end
+    else
+      self:raise()
+    end
   end
 end
 
