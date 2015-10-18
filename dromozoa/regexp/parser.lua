@@ -19,14 +19,11 @@ local matcher = require "dromozoa.commons.matcher"
 local push = require "dromozoa.commons.push"
 local sequence = require "dromozoa.commons.sequence"
 local tree = require "dromozoa.tree"
-local locale = require "dromozoa.regexp.locale"
-local unparse = require "dromozoa.regexp.unparse"
 
 local class = {}
 
 function class.new(regexp)
   return {
-    regexp = regexp;
     matcher = matcher(regexp);
     tree = tree();
     stack = sequence();
@@ -34,16 +31,14 @@ function class.new(regexp)
 end
 
 function class:parse()
+  local matcher = self.matcher
   local stack = self.stack
   if self:extended_reg_exp() then
-    if self.matcher.position == #self.regexp + 1 and #stack == 1 then
+    if matcher:eof() and #stack == 1 then
       return stack:pop()
-    else
-      self:raise()
     end
-  else
-    self:raise()
   end
+  self:raise()
 end
 
 function class:raise(message)
@@ -56,6 +51,7 @@ function class:raise(message)
 end
 
 function class:create_node(...)
+  local matcher = self.matcher
   local node = self.tree:create_node()
   push(node, 0, ...)
   return node
@@ -135,17 +131,11 @@ function class:ERE_dupl_symbol()
     return stack:push(self:create_node(matcher[1]))
   elseif matcher:match("%{") then
     if matcher:match("(%d+)%}") then
-      return stack:push(self:create_node("{m", tonumber(matcher[1], 10)))
+      return stack:push(self:create_node("{m", matcher[1]))
     elseif matcher:match("(%d+),%}") then
-      return stack:push(self:create_node("{m,", tonumber(matcher[1], 10)))
+      return stack:push(self:create_node("{m,", matcher[1]))
     elseif matcher:match("(%d+),(%d+)%}") then
-      local m = tonumber(matcher[1], 10)
-      local n = tonumber(matcher[2], 10)
-      if m <= n then
-        return stack:push(self:create_node("{m,n", m, n))
-      else
-        self:raise("invalid interval expression {" .. m .. "," .. n .. "}")
-      end
+      return stack:push(self:create_node("{m,n", matcher[1], matcher[2]))
     end
   end
 end
