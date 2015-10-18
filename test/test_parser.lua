@@ -15,24 +15,19 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local ipais = require "dromozoa.commons.ipairs"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 
-local p = parser([[a|^fo+|\..|x{2}|bar$]])
+local p = parser([[a{2,10}|^fo+|\..|x{2}|bar$]])
 p:parse()
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
     local out = sequence_writer()
-    out:write("<<table><tr><td>tag</td><td>", xml.escape(node.tag), "</td></tr>")
-    if node.m ~= nil then
-      out:write("<tr><td>m</td><td>", xml.escape(node.m), "</td></tr>")
-    end
-    if node.n ~= nil then
-      out:write("<tr><td>n</td><td>", xml.escape(node.n), "</td></tr>")
-    end
-    if node.value ~= nil then
-      out:write("<tr><td>value</td><td>", xml.escape(node.value), "</td></tr>")
+    out:write("<<table>")
+    for i, v in ipairs(node) do
+      out:write("<tr><td>", i, "</td><td>", xml.escape(v), "</td></tr>")
     end
     out:write("</table>>")
     return {
