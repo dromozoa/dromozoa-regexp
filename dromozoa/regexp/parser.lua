@@ -34,9 +34,10 @@ function class.new(regexp)
 end
 
 function class:parse()
+  local stack = self.stack
   if self:extended_reg_exp() then
-    if self.matcher.position == #self.regexp + 1 and #self.stack == 1 then
-      return self:pop()
+    if self.matcher.position == #self.regexp + 1 and #stack == 1 then
+      return stack:pop()
     else
       self:raise()
     end
@@ -59,65 +60,60 @@ function class:create_node(...)
   return node
 end
 
-function class:push(node)
-  self.stack:push(node)
-  return true
-end
-
-function class:pop()
-  return self.stack:pop()
-end
-
 function class:extended_reg_exp()
   local matcher = self.matcher
+  local stack = self.stack
   if self:ERE_branch() then
     local node = self:create_node("|")
-    node:append_child(self:pop())
+    node:append_child(stack:pop())
     while matcher:match("%|") do
       if self:ERE_branch() then
-        node:append_child(self:pop())
+        node:append_child(stack:pop())
       else
         self:raise()
       end
     end
-    return self:push(node)
+    return stack:push(node)
   end
 end
 
 function class:ERE_branch()
+  local stack = self.stack
   if self:ERE_expression() then
     local node = self:create_node("concat")
-    node:append_child(self:pop())
+    node:append_child(stack:pop())
     while self:ERE_expression() do
-      node:append_child(self:pop())
+      node:append_child(stack:pop())
     end
-    return self:push(node)
+    return stack:push(node)
   end
 end
 
 function class:ERE_expression()
   local matcher = self.matcher
+  local stack = self.stack
   if self:one_char_or_coll_elem_ERE_or_grouping() then
     if self:ERE_dupl_symbol() then
-      local a = self:pop()
-      local b = self:pop()
+      local a = stack:pop()
+      local b = stack:pop()
       a:append_child(b)
-      self:push(a)
+      stack:push(a)
     end
     return true
   elseif matcher:match("([%^%$])") then
-    return self:push(self:create_node(matcher[1]))
+    return stack:push(self:create_node(matcher[1]))
   end
 end
 
 function class:one_char_or_coll_elem_ERE_or_grouping()
   local matcher = self.matcher
+  local stack = self.stack
   if matcher:match("([^%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return self:push(self:create_node("char", matcher[1]))
+    return stack:push(self:create_node("char", matcher[1]))
   elseif matcher:match("\\([%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return self:push(self:create_node("\\", matcher[1]))
+    return stack:push(self:create_node("\\", matcher[1]))
   elseif matcher:match("%.") then
-    return self:push(self:create_node("."))
+    return stack:push(self:create_node("."))
   elseif matcher:match("%(") then
     if self:extended_reg_exp() then
       if matcher:match("%)") then
@@ -133,18 +129,19 @@ end
 
 function class:ERE_dupl_symbol()
   local matcher = self.matcher
+  local stack = self.stack
   if matcher:match("([%*%+%?])") then
-    return self:push(self:create_node(matcher[1]))
+    return stack:push(self:create_node(matcher[1]))
   elseif matcher:match("%{") then
     if matcher:match("(%d+)%}") then
-      return self:push(self:create_node("{m", tonumber(matcher[1], 10)))
+      return stack:push(self:create_node("{m", tonumber(matcher[1], 10)))
     elseif matcher:match("(%d+),%}") then
-      return self:push(self:create_node("{m,", tonumber(matcher[1], 10)))
+      return stack:push(self:create_node("{m,", tonumber(matcher[1], 10)))
     elseif matcher:match("(%d+),(%d+)%}") then
       local m = tonumber(matcher[1], 10)
       local n = tonumber(matcher[2], 10)
       if m <= n then
-        return self:push(self:create_node("{m,n", m, n))
+        return stack:push(self:create_node("{m,n", m, n))
       else
         self:raise("invalid interval expression {" .. m .. "," .. n .. "}")
       end
