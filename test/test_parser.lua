@@ -20,7 +20,7 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 
-local p = parser([[a{2,10}|(^fo+|\..)|x{2}|bar$]])
+local p = parser([[a{2,10}|(^fo+|\..)|x{4}|bar$]])
 p:parse()
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
