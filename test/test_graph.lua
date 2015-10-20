@@ -20,8 +20,13 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 local tree_to_graph = require "dromozoa.regexp.tree_to_graph"
+local unparser = require "dromozoa.regexp.unparser"
 
-local p = parser("^[a-zA-Z[:digit:]][abc][^[.d.]--]|foo{4,1}|\\(b(ar|az)$")
+local r1 = "^[a-zA-Z[:digit:]]*[abc]+[^[.d.]---]?|foo{1,4}|\\(b(ar|.z)$"
+local r2 = unparser(sequence_writer()):unparse(parser(r1):parse()):concat()
+assert(r2 == "^[a-zA-Z[:digit:]]*[abc]+[^d-[.-.][.-.]]?|foo{1,4}|\\(b(ar|.z)$")
+
+local p = parser(r1)
 local root = p:parse()
 local g = tree_to_graph():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
