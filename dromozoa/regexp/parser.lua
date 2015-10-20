@@ -30,23 +30,26 @@ function class.new(regexp)
   }
 end
 
-function class:parse()
-  local matcher = self.matcher
-  local stack = self.stack
-  if self:extended_reg_exp() then
-    if matcher:eof() and #stack == 1 then
-      return stack:pop()
-    end
-  end
-  self:raise()
-end
-
 function class:raise(message)
   local matcher = self.matcher
   if message == nil then
     error("parse error at position " .. matcher.position)
   else
     error(message .. " at position " .. matcher.position)
+  end
+end
+
+function class:parse()
+  local matcher = self.matcher
+  local stack = self.stack
+  if self:extended_reg_exp() then
+    if #stack == 1 then
+      return stack:pop(), matcher:eof()
+    else
+      self:raise()
+    end
+  else
+    self:raise()
   end
 end
 

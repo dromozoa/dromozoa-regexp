@@ -42,3 +42,13 @@ p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
     }
   end;
 })
+
+local p = parser("foo[")
+local result, message = pcall(p.parse, p)
+assert(not result)
+
+local p = parser("(f(o)o)")
+p.matcher.position = 2
+local node, eof = p:parse()
+assert(not eof)
+assert(p.matcher.position == 7)
