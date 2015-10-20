@@ -30,17 +30,15 @@ function class:discover_node(node)
     if not node:is_root() then
       out:write("(")
     end
-  elseif tag == "^" or tag == "$" then
+  elseif tag == "^" or tag == "$" or tag == "." then
     out:write(tag)
   elseif tag == "char" or tag == "\\" then
-    local value = node[2]
-    if value:match("^[%^%.%[%$%(%)%|%*%+%?%{%\\]$") then
-      out:write("\\", value)
+    local char = node[2]
+    if char:match("^[%^%.%[%$%(%)%|%*%+%?%{%\\]$") then
+      out:write("\\", char)
     else
-      out:write(value)
+      out:write(char)
     end
-  elseif tag == "." then
-    out:write(".")
   elseif tag == "[" then
     out:write("[")
     if node[2] then
@@ -51,24 +49,24 @@ function class:discover_node(node)
   elseif tag == "[:" then
     out:write("[:", node[2], ":]")
   elseif tag == "[." or tag == "[char" then
-    local value = node[2]
-    if value:match("^[%^%-%]]$") then
-      out:write("[.", value, ".]")
+    local char = node[2]
+    if char:match("^[%^%-%]]$") then
+      out:write("[.", char, ".]")
     else
-      out:write(value)
+      out:write(char)
     end
   end
 end
 
-function class:examine_edge(parent, node)
+function class:examine_edge(u, v)
   local out = self.out
-  local parent_tag = parent[1]
-  if parent_tag == "|" then
-    if not node:is_first_child() then
+  local tag = u[1]
+  if tag == "|" then
+    if not v:is_first_child() then
       out:write("|")
     end
-  elseif parent_tag == "[-" then
-    if node:is_last_child() then
+  elseif tag == "[-" then
+    if v:is_last_child() then
       out:write("-")
     end
   end
