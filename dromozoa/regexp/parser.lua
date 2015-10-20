@@ -133,11 +133,11 @@ function class:ERE_dupl_symbol()
     return stack:push(self:create_node(matcher[1]))
   elseif matcher:match("%{") then
     if matcher:match("(%d+)%}") then
-      return stack:push(self:create_node("{m", matcher[1]))
+      return stack:push(self:create_node("{m", tonumber(matcher[1], 10)))
     elseif matcher:match("(%d+),%}") then
-      return stack:push(self:create_node("{m,", matcher[1]))
+      return stack:push(self:create_node("{m,", tonumber(matcher[1], 10)))
     elseif matcher:match("(%d+),(%d+)%}") then
-      return stack:push(self:create_node("{m,n", matcher[1], matcher[2]))
+      return stack:push(self:create_node("{m,n", tonumber(matcher[1], 10), tonumber(matcher[2], 10)))
     else
       self:raise()
     end
@@ -148,14 +148,14 @@ function class:bracket_expression()
   local matcher = self.matcher
   local stack = self.stack
   if matcher:match("(%[%^?)") then
-    local node = self:create_node(matcher[1])
+    local node = self:create_node("[", matcher[1] == "[^")
     if self:expression_term() then
       node:append_child(stack:pop())
       while self:expression_term() do
         node:append_child(stack:pop())
       end
       if matcher:match("%-") then
-        node:append_child(self:create_node("[.", "-"))
+        node:append_child(self:create_node("[char", "-"))
       end
       if matcher:match("%]") then
         return stack:push(node)
@@ -190,7 +190,7 @@ function class:expression_term()
       local node = self:create_node("[-")
       node:append_child(stack:pop())
       if matcher:match("%-") then
-        node:append_child(self:create_node("[.", "-"))
+        node:append_child(self:create_node("[char", "-"))
       elseif self:end_range() then
         node:append_child(stack:pop())
       else

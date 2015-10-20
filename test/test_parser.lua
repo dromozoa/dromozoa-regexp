@@ -20,15 +20,20 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 
+local p = parser(
+    [=[\^\.\[\$\(\)\|\*\+\?\{\\]=]
+    .. [=[|.(a*b+c?d{2}e{3,}f{4,5})]=]
+    .. [=[|[a-z][^a-z][[=ae=][:alnum:][.^.][.-.][.].]]]=]
+    .. [=[|[ --][ -]]=])
 -- local p = parser([[a{2,10}|(^fo+|\..)|x{4}|(abc){3,}|bar$]])
-local p = parser([[foo|[a-]|[a--]|[?[.a.]!]|[[:alpha:][=ae=]-]|bar]])
+-- local p = parser([[foo|[^a-]|[a--]|[?[.a.]!]|[[:alpha:][=ae=]-]|bar]])
 p:parse()
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
     local out = sequence_writer()
     out:write("<<table>")
     for i, v in ipairs(node) do
-      out:write("<tr><td>", i, "</td><td>", xml.escape(v), "</td></tr>")
+      out:write("<tr><td>", i, "</td><td>", xml.escape(v):gsub("%]", "&#135;"), "</td></tr>")
     end
     out:write("</table>>")
     return {
