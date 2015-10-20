@@ -111,6 +111,8 @@ function class:one_char_or_coll_elem_ERE_or_grouping()
     return stack:push(self:create_node("\\", matcher[1]))
   elseif matcher:match("%.") then
     return stack:push(self:create_node("."))
+  elseif self:bracket_expression() then
+    return true
   elseif matcher:match("%(") then
     if self:extended_reg_exp() then
       if matcher:match("%)") then
@@ -141,12 +143,82 @@ function class:ERE_dupl_symbol()
 end
 
 function class:bracket_expression()
+  local matcher = self.matcher
+  local stack = self.stack
+  if matcher:match("(%[%^?)") then
+    local node = self:create_node(matcher[1])
+    if self:expression_term() then
+      node:append_child(stack:pop())
+    else
+      self:raise()
+    end
+    while self:expression_term() do
+      node:append_child(stack:pop())
+    end
+    if matcher:match("%-") then
+      node:append_child(self:create_node("[.", "-"))
+    end
+    if matcher:match("%]") then
+      return stack:push(node)
+    else
+      self:raise("unmatched brackets")
+    end
+  end
 end
 
 function class:expression_term()
+  local matcher = self.matcher
+  local stack = self.stack
+  if matcher:match("%[%=") then
+    if matcher:match("(..-)%=%]") then
+      return stack:push(self:create_node("[=", matcher[1]))
+    else
+      self:raise()
+    end
+  elseif matcher:match("%[%:") then
+    if matcher:match("(..-)%:%]") then
+      return stack:push(self:create_node("[:", matcher[1]))
+    else
+      self:raise()
+    end
+  elseif self:end_range() then
+    if matcher:lookahead "%-%]" then
+      return true
+    elseif matcher:match("%-%-") then
+      local node = self:create_node("[-")
+      node:append_child(stack:pop())
+      node:append_child(self:create_node("[.", "-"))
+      return stack:push(node)
+    elseif matcher:match("%-") then
+      if self:end_range() then
+        local b = stack:pop()
+        local a = stack:pop()
+        local node = self:create_node("[-")
+        node:append_child(a)
+        node:append_child(b)
+        return stack:push(node)
+      else
+        self:raise()
+      end
+    else
+      return true
+    end
+  end
 end
 
 function class:end_range()
+  local matcher = self.matcher
+  local stack = self.stack
+  if matcher:match("%[%.") then
+    if matcher:match("(..-)%.%]") then
+      return stack:push(self:create_node("[.", matcher[1]))
+    else
+      self:raise()
+    end
+  elseif matcher:match("([^%^%-%]])") then
+    return stack:push(self:create_node("[char", matcher[1]))
+  end
+
 end
 
 local metatable = {
