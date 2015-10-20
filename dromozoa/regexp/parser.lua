@@ -151,19 +151,19 @@ function class:bracket_expression()
     local node = self:create_node(matcher[1])
     if self:expression_term() then
       node:append_child(stack:pop())
+      while self:expression_term() do
+        node:append_child(stack:pop())
+      end
+      if matcher:match("%-") then
+        node:append_child(self:create_node("[.", "-"))
+      end
+      if matcher:match("%]") then
+        return stack:push(node)
+      else
+        self:raise("unmatched brackets")
+      end
     else
       self:raise()
-    end
-    while self:expression_term() do
-      node:append_child(stack:pop())
-    end
-    if matcher:match("%-") then
-      node:append_child(self:create_node("[.", "-"))
-    end
-    if matcher:match("%]") then
-      return stack:push(node)
-    else
-      self:raise("unmatched brackets")
     end
   end
 end
@@ -175,16 +175,16 @@ function class:expression_term()
     if matcher:match("(..-)%=%]") then
       return stack:push(self:create_node("[=", matcher[1]))
     else
-      self:raise()
+      self:raise("unclosed equivalence class")
     end
   elseif matcher:match("%[%:") then
     if matcher:match("(..-)%:%]") then
       return stack:push(self:create_node("[:", matcher[1]))
     else
-      self:raise()
+      self:raise("unclosed character class")
     end
   elseif self:end_range() then
-    if matcher:lookahead "%-%]" then
+    if matcher:lookahead("%-%]") then
       return true
     elseif matcher:match("%-") then
       local node = self:create_node("[-")
@@ -210,7 +210,7 @@ function class:end_range()
     if matcher:match("(..-)%.%]") then
       return stack:push(self:create_node("[.", matcher[1]))
     else
-      self:raise()
+      self:raise("unmatched collating symbol")
     end
   elseif matcher:match("([^%^%-%]])") then
     return stack:push(self:create_node("[char", matcher[1]))
