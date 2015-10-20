@@ -44,7 +44,7 @@ function class:parse()
   local stack = self.stack
   if self:extended_reg_exp() then
     if #stack == 1 then
-      return stack:pop(), matcher:eof()
+      return stack:pop()
     else
       self:raise()
     end

@@ -49,6 +49,6 @@ assert(not result)
 
 local p = parser("(f(o)o)")
 p.matcher.position = 2
-local node, eof = p:parse()
-assert(not eof)
+p:parse()
+assert(not p.matcher:eof())
 assert(p.matcher.position == 7)
