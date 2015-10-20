@@ -23,17 +23,17 @@ function class.new(out)
   }
 end
 
-function class:discover_node(node)
+function class:discover_node(u)
   local out = self.out
-  local tag = node[1]
+  local tag = u[1]
   if tag == "|" then
-    if not node:is_root() then
+    if not u:is_root() then
       out:write("(")
     end
   elseif tag == "^" or tag == "$" or tag == "." then
     out:write(tag)
   elseif tag == "char" or tag == "\\" then
-    local char = node[2]
+    local char = u[2]
     if char:match("^[%^%.%[%$%(%)%|%*%+%?%{%\\]$") then
       out:write("\\", char)
     else
@@ -41,15 +41,15 @@ function class:discover_node(node)
     end
   elseif tag == "[" then
     out:write("[")
-    if node[2] then
+    if u[2] then
       out:write("^")
     end
   elseif tag == "[=" then
-    out:write("[=", node[2], "=]")
+    out:write("[=", u[2], "=]")
   elseif tag == "[:" then
-    out:write("[:", node[2], ":]")
+    out:write("[:", u[2], ":]")
   elseif tag == "[." or tag == "[char" then
-    local char = node[2]
+    local char = u[2]
     if char:match("^[%^%-%]]$") then
       out:write("[.", char, ".]")
     else
@@ -72,21 +72,21 @@ function class:examine_edge(u, v)
   end
 end
 
-function class:finish_node(node)
+function class:finish_node(u)
   local out = self.out
-  local tag = node[1]
+  local tag = u[1]
   if tag == "|" then
-    if not node:is_root() then
+    if not u:is_root() then
       out:write(")")
     end
   elseif tag == "*" or tag == "+" or tag == "?" then
     out:write(tag)
   elseif tag == "{m" then
-    out:write("{", node[2], "}")
+    out:write("{", u[2], "}")
   elseif tag == "{m," then
-    out:write("{", node[2], ",}")
+    out:write("{", u[2], ",}")
   elseif tag == "{m,n" then
-    out:write("{", node[2], ",", node[3], "}")
+    out:write("{", u[2], ",", u[3], "}")
   elseif tag == "[" then
     out:write("]")
   end

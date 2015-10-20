@@ -15,26 +15,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local ipais = require "dromozoa.commons.ipairs"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
-local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
-local tree_to_graph = require "dromozoa.regexp.tree_to_graph"
+local unparser = require "dromozoa.regexp.unparser"
 
-local p = parser("^[a-zA-Z[:digit:]]*[abc]+[^[.d.]---]?|foo{1,4}|\\(b(ar|.z)$")
-local root = p:parse()
-local g = tree_to_graph():convert(root)
-p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
-  node_attributes = function (_, node)
-    local out = sequence_writer()
-    out:write("<<table>")
-    for i, v in ipairs(node) do
-      out:write("<tr><td>", i, "</td><td>", xml.escape(v):gsub("%]", "&#135;"), "</td></tr>")
-    end
-    out:write("</table>>")
-    return {
-      shape = "plaintext";
-      label = out:concat();
-    }
-  end;
-})
+local r1 = "^[a-zA-Z[:digit:]]*[abc]+[^[.d.]---]?|foo{1,4}|\\(b(ar|.z)$"
+local r2 = unparser(sequence_writer()):unparse(parser(r1):parse()):concat()
+assert(r2 == "^[a-zA-Z[:digit:]]*[abc]+[^d-[.-.][.-.]]?|foo{1,4}|\\(b(ar|.z)$")
