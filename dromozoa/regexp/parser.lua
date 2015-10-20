@@ -91,12 +91,12 @@ function class:ERE_expression()
   local stack = self.stack
   if self:one_char_or_coll_elem_ERE_or_grouping() then
     if self:ERE_dupl_symbol() then
-      local a = stack:pop()
-      local b = stack:pop()
-      a:append_child(b)
-      stack:push(a)
+      local node = stack:pop()
+      node:append_child(stack:pop())
+      return stack:push(node)
+    else
+      return true
     end
-    return true
   elseif matcher:match("([%^%$])") then
     return stack:push(self:create_node(matcher[1]))
   end
@@ -138,6 +138,8 @@ function class:ERE_dupl_symbol()
       return stack:push(self:create_node("{m,", matcher[1]))
     elseif matcher:match("(%d+),(%d+)%}") then
       return stack:push(self:create_node("{m,n", matcher[1], matcher[2]))
+    else
+      self:raise()
     end
   end
 end
@@ -184,22 +186,17 @@ function class:expression_term()
   elseif self:end_range() then
     if matcher:lookahead "%-%]" then
       return true
-    elseif matcher:match("%-%-") then
+    elseif matcher:match("%-") then
       local node = self:create_node("[-")
       node:append_child(stack:pop())
-      node:append_child(self:create_node("[.", "-"))
-      return stack:push(node)
-    elseif matcher:match("%-") then
-      if self:end_range() then
-        local b = stack:pop()
-        local a = stack:pop()
-        local node = self:create_node("[-")
-        node:append_child(a)
-        node:append_child(b)
-        return stack:push(node)
+      if matcher:match("%-") then
+        node:append_child(self:create_node("[.", "-"))
+      elseif self:end_range() then
+        node:append_child(stack:pop())
       else
         self:raise()
       end
+      return stack:push(node)
     else
       return true
     end
@@ -218,7 +215,6 @@ function class:end_range()
   elseif matcher:match("([^%^%-%]])") then
     return stack:push(self:create_node("[char", matcher[1]))
   end
-
 end
 
 local metatable = {
