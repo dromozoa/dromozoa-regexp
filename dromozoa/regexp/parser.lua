@@ -54,7 +54,6 @@ function class:parse()
 end
 
 function class:create_node(...)
-  local matcher = self.matcher
   local node = self.tree:create_node()
   push(node, 0, ...)
   return node
