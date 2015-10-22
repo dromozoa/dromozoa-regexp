@@ -23,21 +23,21 @@ local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa2"
 
-local function bitset_to_string(bitset)
-  local count = bitset:count()
+local function condition_to_string(condition)
+  local count = condition:count()
   if count == 0 then
     return "epsilon"
   elseif count == 256 then
     return "0-255"
-  elseif bitset:test(257) then
+  elseif condition:test(257) then
     return "^"
-  elseif bitset:test(256) then
+  elseif condition:test(256) then
     return "$"
   else
     local a = sequence()
     local b = sequence()
     for i = 0, 255 do
-      if bitset:test(i) then
+      if condition:test(i) then
         if b:top() == i - 1 then
           b[#b] = i
         else
@@ -64,24 +64,25 @@ local function bitset_to_string(bitset)
   end
 end
 
-local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
+-- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
+local p = parser("abc(def|ghi)+")
 local root = p:parse()
 local g = node_to_nfa():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
-  node_attributes = function (_, node)
+  node_attributes = function (self, node)
     local out = sequence_writer()
     out:write("<<table>")
     for i, v in ipairs(node) do
       out:write("<tr><td>", i, "</td><td>", xml.escape(v):gsub("%]", "&#135;"), "</td></tr>")
     end
-    if node.bitset then
-      out:write("<tr><td>bitset</td><td>", xml.escape(bitset_to_string(node.bitset)):gsub("%]", "&#135;"), "</td></tr>")
+    if node.condition then
+      out:write("<tr><td>condition</td><td>", xml.escape(condition_to_string(node.condition)):gsub("%]", "&#135;"), "</td></tr>")
     end
-    if node.m then
-      out:write("<tr><td>m</td><td>", node.m, "</td></tr>")
+    if node.uid then
+      out:write("<tr><td>uid</td><td>", node.uid, "</td></tr>")
     end
-    if node.n then
-      out:write("<tr><td>n</td><td>", node.n, "</td></tr>")
+    if node.vid then
+      out:write("<tr><td>vid</td><td>", node.vid, "</td></tr>")
     end
     out:write("</table>>")
     return {
@@ -89,4 +90,25 @@ p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
       label = out:concat();
     }
   end;
-})
+}):close()
+
+g:write_graphviz(assert(io.open("test-graph.dot", "w")), {
+  graph_attributes = function (self)
+    return {
+      rankdir = "LR";
+    }
+  end;
+  edge_attributes = function (self, e)
+    local out = sequence_writer()
+    out:write("<")
+    if e.condition then
+      out:write((xml.escape(condition_to_string(e.condition)):gsub("%]", "&#135;")))
+    else
+      out:write("nil")
+    end
+    out:write(">")
+    return {
+      label = out:concat();
+    }
+  end;
+}):close()
