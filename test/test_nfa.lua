@@ -22,7 +22,6 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa2"
-local setup_condition = require "dromozoa.regexp.setup_condition"
 
 local function condition_to_string(condition)
   local count = condition:count()
@@ -65,9 +64,9 @@ local function condition_to_string(condition)
   end
 end
 
--- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
+local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
 -- local p = parser("(def|ghi)abc")
-local p = parser("abc[z-a](def|ghi){1,3}jkl")
+-- local p = parser("abc[z-a](def|ghi){1,3}jkl")
 local root = p:parse()
 local s = node_to_nfa():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {

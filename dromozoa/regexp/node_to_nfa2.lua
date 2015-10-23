@@ -129,6 +129,12 @@ end
 
 function class:create_duplication(u, v, m, n)
   local graph = self.graph
+  local condition = v.condition
+  if condition ~= nil then
+    v.uid = graph:create_vertex().id
+    v.vid = graph:create_vertex().id
+    graph:create_edge(v.uid, v.vid).condition = condition
+  end
   local uid = graph:create_vertex().id
   u.uid = uid
   if n == nil then
