@@ -30,17 +30,6 @@ function class.new(regexp)
   }
 end
 
-function class:parse()
-  local matcher = self.matcher
-  local stack = self.stack
-  if self:extended_reg_exp() then
-    if matcher:eof() and #stack == 1 then
-      return stack:pop()
-    end
-  end
-  self:raise()
-end
-
 function class:raise(message)
   local matcher = self.matcher
   if message == nil then
@@ -50,8 +39,21 @@ function class:raise(message)
   end
 end
 
-function class:create_node(...)
+function class:parse()
   local matcher = self.matcher
+  local stack = self.stack
+  if self:extended_reg_exp() then
+    if #stack == 1 then
+      return stack:pop()
+    else
+      self:raise()
+    end
+  else
+    self:raise()
+  end
+end
+
+function class:create_node(...)
   local node = self.tree:create_node()
   push(node, 0, ...)
   return node

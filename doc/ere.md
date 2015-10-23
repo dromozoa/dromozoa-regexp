@@ -91,10 +91,10 @@ class_name
 
 ```
 extended_reg_exp
-  = [ "|", ERE_branch+ ]
+  = [ "|" ], ERE_branch+
 
 ERE_branch
-  = [ "concat", ERE_expression+ ]
+  = [ "concat" ], ERE_expression+
 
 ERE_expression
   = one_char_or_coll_elem_ERE_or_grouping
@@ -110,21 +110,21 @@ one_char_or_coll_elem_ERE_or_grouping
   | extended_reg_exp
 
 ERE_dupl_symbol
-  = [ "+", one_char_or_coll_elem_ERE_or_grouping ]
-  | [ "*", one_char_or_coll_elem_ERE_or_grouping ]
-  | [ "?", one_char_or_coll_elem_ERE_or_grouping ]
-  | [ "{m", one_char_or_coll_elem_ERE_or_grouping, m ]
-  | [ "{m,", one_char_or_coll_elem_ERE_or_grouping, m ]
-  | [ "{m,n", one_char_or_coll_elem_ERE_or_grouping, m, n ]
+  = [ "+" ], one_char_or_coll_elem_ERE_or_grouping
+  | [ "*" ], one_char_or_coll_elem_ERE_or_grouping
+  | [ "?" ], one_char_or_coll_elem_ERE_or_grouping
+  | [ "{m", m ], one_char_or_coll_elem_ERE_or_grouping
+  | [ "{m,", m ], one_char_or_coll_elem_ERE_or_grouping
+  | [ "{m,n", m, n ], one_char_or_coll_elem_ERE_or_grouping
 
 bracket_expression
-  = [ "[", expression_term+ ] # matching list
-  | [ "[^", expression_term+ ] # nonmatching list
+  = [ "[", false ], expression_term+ # matching list
+  | [ "[", true], expression_term+ # nonmatching list
 
 expression_term
   = [ "[=", string ] # equivalence class
   | [ "[:", string ] # character class
-  | [ "[-", end_range, end_range ]
+  | [ "[-" ], end_range, end_range
   | end_range
 
 end_range
