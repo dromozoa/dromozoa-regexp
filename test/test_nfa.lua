@@ -22,6 +22,7 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa2"
+local setup_condition = require "dromozoa.regexp.setup_condition"
 
 local function condition_to_string(condition)
   local count = condition:count()
@@ -65,9 +66,10 @@ local function condition_to_string(condition)
 end
 
 -- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
-local p = parser("abc(def|ghi)+")
+-- local p = parser("(def|ghi)abc")
+local p = parser("abc[z-a](def|ghi){1,3}jkl")
 local root = p:parse()
-local g = node_to_nfa():convert(root)
+local s = node_to_nfa():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (self, node)
     local out = sequence_writer()
@@ -92,23 +94,17 @@ p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   end;
 }):close()
 
-g:write_graphviz(assert(io.open("test-graph.dot", "w")), {
+s:graph():write_graphviz(assert(io.open("test-graph.dot", "w")), {
   graph_attributes = function (self)
     return {
       rankdir = "LR";
     }
   end;
   edge_attributes = function (self, e)
-    local out = sequence_writer()
-    out:write("<")
     if e.condition then
-      out:write((xml.escape(condition_to_string(e.condition)):gsub("%]", "&#135;")))
-    else
-      out:write("nil")
+      return {
+        label = "<" .. xml.escape(condition_to_string(e.condition)):gsub("%]", "&#135;") .. ">";
+      }
     end
-    out:write(">")
-    return {
-      label = out:concat();
-    }
   end;
 }):close()
