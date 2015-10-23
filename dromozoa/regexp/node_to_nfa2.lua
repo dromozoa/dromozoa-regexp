@@ -96,7 +96,7 @@ function class:finish_edge(u, v)
       graph:create_edge(u.vid, uid).condition = v.condition
       u.vid = uid
     else
-      graph:create_edge(u.vid, uid):collapse()
+      graph:create_edge(u.vid, uid)
       u.vid = v.vid
     end
   elseif tag == "*" then
