@@ -67,7 +67,8 @@ end
 -- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
 -- local p = parser("(def|ghi)abc")
 -- local p = parser("abc[z-a](def|ghi){1,3}jkl")
-local p = parser("[ --]+")
+-- local p = parser("[ --]+")
+local p = parser("(abc)+d+")
 local root = p:parse()
 local s = node_to_nfa():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
