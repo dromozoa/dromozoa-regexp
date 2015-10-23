@@ -130,38 +130,35 @@ end
 
 function class:create_duplication(u, v, m, n)
   local graph = self.graph
-  local condition = v.condition
-  local v_uid = v.uid
-  local v_vid = v.vid
-  if v_uid == nil then
-    v_uid = graph:create_vertex().id
-    v_vid = graph:create_vertex().id
-    graph:create_edge(v_uid, v_vid).condition = condition
-  end
   local uid = graph:create_vertex().id
+  local vid = v.uid
+  local wid = v.vid
+  if vid == nil then
+    vid = graph:create_vertex().id
+    wid = graph:create_vertex().id
+    graph:create_edge(vid, wid).condition = v.condition
+  end
   u.uid = uid
   if n == nil then
     for i = 1, m do
-      local a, map = graph:get_vertex(v_uid):duplicate()
+      local a, map = graph:get_vertex(vid):duplicate()
       local aid = a.id
-      local bid = map[v_vid]
+      local bid = map[wid]
       graph:create_edge(uid, aid)
       uid = bid
     end
-    graph:create_edge(uid, v_uid)
-    graph:create_edge(v_vid, v_uid)
-    u.vid = v_uid
+    graph:create_edge(uid, vid)
+    graph:create_edge(wid, vid)
+    uid = vid
+    u.vid = vid
   else
     for i = 1, n do
-      local aid
-      local bid
-      if i == n then
-        aid = v_uid
-        bid = v_vid
-      else
-        local a, map = graph:get_vertex(v_uid):duplicate()
+      local aid = vid
+      local bid = wid
+      if i < n then
+        local a, map = graph:get_vertex(vid):duplicate()
         aid = a.id
-        bid = map[v_vid]
+        bid = map[wid]
       end
       graph:create_edge(uid, aid)
       if i > m then
