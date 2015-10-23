@@ -30,12 +30,14 @@ end
 function class:examine_edge(u, v)
   if u[1] == "[-" then
     if v:is_first_child() then
-      local a = string.byte(v[2])
-      local b = string.byte(v:next_sibling()[2])
-      if a > b then
-        error("invalid range expression [" .. string.char(a, 45, b) .. "]")
+      local a = v[2]
+      local b = v:next_sibling()[2]
+      local i = string.byte(a)
+      local j = string.byte(b)
+      if i > j then
+        error("invalid range expression [" .. a .. "-" .. b .. "]")
       end
-      u.condition = bitset():set(a, b)
+      u.condition = bitset():set(i, j)
     end
     return false
   end
@@ -171,8 +173,11 @@ function class:create_duplication(u, v, m, n)
 end
 
 function class:convert(node)
+  local graph = self.graph
   node:dfs(self)
-  return self.graph:get_vertex(node.uid)
+  graph:get_vertex(node.uid).start = true
+  graph:get_vertex(node.vid).accept = true
+  return graph:get_vertex(node.uid)
 end
 
 local metatable = {
