@@ -170,7 +170,7 @@ function class:create_duplication(u, v, m, n)
   end
 end
 
-function class:convert(node, token)
+function class:apply(node, token)
   if token == nil then
     token = 1
   end

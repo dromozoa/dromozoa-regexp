@@ -71,7 +71,7 @@ end
 -- local p = parser("(abc)+d+e{1,3}")
 local p = parser("x(abc)*y")
 local root = p:parse()
-local s = node_to_nfa():convert(root)
+local s, a = node_to_nfa():apply(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (self, node)
     local out = sequence_writer()
