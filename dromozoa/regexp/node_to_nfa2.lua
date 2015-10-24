@@ -170,13 +170,16 @@ function class:create_duplication(u, v, m, n)
   end
 end
 
-function class:convert(node)
+function class:convert(node, token)
+  if token == nil then
+    token = 1
+  end
   local graph = self.graph
   node:dfs(self)
   local u = graph:get_vertex(node.uid)
   local v = graph:get_vertex(node.vid)
-  u.start = true
-  v.accept = true
+  u.start = token
+  v.accept = token
   return u, v
 end
 
