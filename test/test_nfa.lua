@@ -64,9 +64,12 @@ local function condition_to_string(condition)
   end
 end
 
-local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
+-- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
 -- local p = parser("(def|ghi)abc")
 -- local p = parser("abc[z-a](def|ghi){1,3}jkl")
+-- local p = parser("[ --]+")
+-- local p = parser("(abc)+d+e{1,3}")
+local p = parser("x(abc)*y")
 local root = p:parse()
 local s = node_to_nfa():convert(root)
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
@@ -98,6 +101,18 @@ s:graph():write_graphviz(assert(io.open("test-graph.dot", "w")), {
     return {
       rankdir = "LR";
     }
+  end;
+  node_attributes = function (self, u)
+    local attributes = {}
+    if u.start then
+      attributes.style = "filled"
+      attributes.fontcolor = "white"
+      attributes.fillcolor = "black"
+    end
+    if u.accept then
+      attributes.peripheries = 2
+    end
+    return attributes
   end;
   edge_attributes = function (self, e)
     if e.condition then

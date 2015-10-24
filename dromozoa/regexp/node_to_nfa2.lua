@@ -30,10 +30,11 @@ end
 function class:examine_edge(u, v)
   if u[1] == "[-" then
     if v:is_first_child() then
+      local w = v:next_sibling()
       local a = string.byte(v[2])
-      local b = string.byte(v:next_sibling()[2])
+      local b = string.byte(w[2])
       if a > b then
-        error("invalid range expression [" .. string.char(a, 45, b) .. "]")
+        error("invalid range expression [" .. v[2] .. "-" .. w[2] .. "]")
       end
       u.condition = bitset():set(a, b)
     end
@@ -89,14 +90,14 @@ function class:finish_edge(u, v)
     graph:create_edge(u.uid, v.uid)
     graph:create_edge(v.vid, u.vid)
   elseif tag == "concat" then
-    local condition = v.condition
-    if condition == nil then
-      graph:create_edge(u.vid, v.uid)
-      u.vid = v.vid
+    local uid = v.uid
+    if uid == nil then
+      uid = graph:create_vertex().id
+      graph:create_edge(u.vid, uid).condition = v.condition
+      u.vid = uid
     else
-      local vid = graph:create_vertex().id
-      graph:create_edge(u.vid, vid).condition = condition
-      u.vid = vid
+      graph:create_edge(u.vid, uid)
+      u.vid = v.vid
     end
   elseif tag == "*" then
     self:create_duplication(u, v, 0)
@@ -129,36 +130,35 @@ end
 
 function class:create_duplication(u, v, m, n)
   local graph = self.graph
-  local condition = v.condition
-  if condition ~= nil then
-    v.uid = graph:create_vertex().id
-    v.vid = graph:create_vertex().id
-    graph:create_edge(v.uid, v.vid).condition = condition
-  end
   local uid = graph:create_vertex().id
+  local vid = v.uid
+  local wid = v.vid
+  if vid == nil then
+    vid = graph:create_vertex().id
+    wid = graph:create_vertex().id
+    graph:create_edge(vid, wid).condition = v.condition
+  end
   u.uid = uid
   if n == nil then
     for i = 1, m do
-      local a, map = graph:get_vertex(v.uid):duplicate()
+      local a, map = graph:get_vertex(vid):duplicate()
       local aid = a.id
-      local bid = map[v.vid]
+      local bid = map[wid]
       graph:create_edge(uid, aid)
       uid = bid
     end
-    graph:create_edge(uid, v.uid)
-    graph:create_edge(v.vid, v.uid)
-    u.vid = v.uid
+    graph:create_edge(uid, vid)
+    graph:create_edge(wid, vid)
+    uid = vid
+    u.vid = vid
   else
     for i = 1, n do
-      local aid
-      local bid
-      if i == n then
-        aid = v.uid
-        bid = v.vid
-      else
-        local a, map = graph:get_vertex(v.uid):duplicate()
+      local aid = vid
+      local bid = wid
+      if i < n then
+        local a, map = graph:get_vertex(vid):duplicate()
         aid = a.id
-        bid = map[v.vid]
+        bid = map[wid]
       end
       graph:create_edge(uid, aid)
       if i > m then
@@ -171,8 +171,13 @@ function class:create_duplication(u, v, m, n)
 end
 
 function class:convert(node)
+  local graph = self.graph
   node:dfs(self)
-  return self.graph:get_vertex(node.uid)
+  local u = graph:get_vertex(node.uid)
+  local v = graph:get_vertex(node.vid)
+  u.start = true
+  v.accept = true
+  return u, v
 end
 
 local metatable = {
