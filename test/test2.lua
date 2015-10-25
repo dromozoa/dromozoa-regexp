@@ -22,6 +22,7 @@ local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.parser"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa2"
+local powerset_construction = require "dromozoa.regexp.powerset_construction2"
 
 local function condition_to_string(condition)
   local count = condition:count()
@@ -64,14 +65,18 @@ local function condition_to_string(condition)
   end
 end
 
--- local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
+local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$")
 -- local p = parser("(def|ghi)abc")
 -- local p = parser("abc[z-a](def|ghi){1,3}jkl")
 -- local p = parser("[ --]+")
 -- local p = parser("(abc)+d+e{1,3}")
-local p = parser("x(abc)*y")
+-- local p = parser("x(abc)*y")
 local root = p:parse()
-local s, a = node_to_nfa():apply(root)
+local to_nfa = node_to_nfa()
+to_nfa:apply(root)
+local powerset = powerset_construction(to_nfa.graph)
+powerset:apply()
+
 p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (self, node)
     local out = sequence_writer()
@@ -96,7 +101,7 @@ p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
   end;
 }):close()
 
-s:graph():write_graphviz(assert(io.open("test-graph.dot", "w")), {
+powerset.dfa:write_graphviz(assert(io.open("test-graph.dot", "w")), {
   graph_attributes = function (self)
     return {
       rankdir = "LR";
