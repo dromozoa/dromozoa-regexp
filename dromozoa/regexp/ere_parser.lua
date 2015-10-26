@@ -24,8 +24,8 @@ local class = {}
 
 function class.new(regexp)
   return {
+    that = tree();
     matcher = matcher(regexp);
-    tree = tree();
     stack = sequence();
   }
 end
@@ -37,6 +37,12 @@ function class:raise(message)
   else
     error(message .. " at position " .. matcher.position)
   end
+end
+
+function class:create_node(...)
+  local node = self.that:create_node()
+  push(node, 0, ...)
+  return node
 end
 
 function class:parse()
@@ -51,12 +57,6 @@ function class:parse()
   else
     self:raise()
   end
-end
-
-function class:create_node(...)
-  local node = self.tree:create_node()
-  push(node, 0, ...)
-  return node
 end
 
 function class:extended_reg_exp()

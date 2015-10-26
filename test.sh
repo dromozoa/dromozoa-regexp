@@ -57,5 +57,4 @@ esac
 "$lua" test/test_set_token.lua '.+'
 
 "$lua" test/test_parser.lua
-"$lua" test/test_unparser.lua
-"$lua" test/test_nfa.lua
+"$lua" test/test2.lua

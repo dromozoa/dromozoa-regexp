@@ -18,7 +18,7 @@
 local ipais = require "dromozoa.commons.ipairs"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
-local parser = require "dromozoa.regexp.parser"
+local parser = require "dromozoa.regexp.ere_parser"
 
 local p = parser(
     [=[\^\.\[\$\(\)\|\*\+\?\{\\]=]
@@ -27,8 +27,8 @@ local p = parser(
     .. [=[|[ --][ -]]=])
 -- local p = parser([[a{2,10}|(^fo+|\..)|x{4}|(abc){3,}|bar$]])
 -- local p = parser([[foo|[^a-]|[a--]|[?[.a.]!]|[[:alpha:][=ae=]-]|bar]])
-p:parse()
-p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
+local root = p:parse()
+root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
     local out = sequence_writer()
     out:write("<<table>")
