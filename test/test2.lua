@@ -77,7 +77,7 @@ to_nfa:apply(root)
 local powerset = powerset_construction(to_nfa.graph)
 powerset:apply()
 
-p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
+root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (self, node)
     local out = sequence_writer()
     out:write("<<table>")

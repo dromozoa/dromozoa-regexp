@@ -27,8 +27,8 @@ local p = parser(
     .. [=[|[ --][ -]]=])
 -- local p = parser([[a{2,10}|(^fo+|\..)|x{4}|(abc){3,}|bar$]])
 -- local p = parser([[foo|[^a-]|[a--]|[?[.a.]!]|[[:alpha:][=ae=]-]|bar]])
-p:parse()
-p.tree:write_graphviz(assert(io.open("test.dot", "w")), {
+local root = p:parse()
+root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
     local out = sequence_writer()
     out:write("<<table>")

@@ -25,7 +25,7 @@ local class = {}
 function class.new(regexp)
   return {
     matcher = matcher(regexp);
-    tree = tree();
+    that = tree();
     stack = sequence();
   }
 end
@@ -54,7 +54,7 @@ function class:parse()
 end
 
 function class:create_node(...)
-  local node = self.tree:create_node()
+  local node = self.that:create_node()
   push(node, 0, ...)
   return node
 end
