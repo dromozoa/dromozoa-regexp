@@ -115,6 +115,7 @@ function class:visit(useq)
     u.visited = true
     local transitions = self:create_transition(epsilon_closure)
     for vseq, condition in transitions:each() do
+      -- not clone
       dfa:create_edge(u, self:visit(vseq)).condition = condition
     end
   end
