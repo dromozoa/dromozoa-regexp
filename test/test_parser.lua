@@ -16,18 +16,19 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local ipais = require "dromozoa.commons.ipairs"
+local matcher = require "dromozoa.commons.matcher"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local parser = require "dromozoa.regexp.ere_parser"
 
-local p = parser(
+local p = parser(matcher(
     [=[\^\.\[\$\(\)\|\*\+\?\{\\]=]
     .. [=[|.(a*b+c?d{2}e{3,}f{4,5})]=]
     .. [=[|[a-z][^a-z][[=ae=][:alnum:][.^.][.-.][.].]]]=]
-    .. [=[|[ --][ -]]=])
+    .. [=[|[ --][ -]]=]))
 -- local p = parser([[a{2,10}|(^fo+|\..)|x{4}|(abc){3,}|bar$]])
 -- local p = parser([[foo|[^a-]|[a--]|[?[.a.]!]|[[:alpha:][=ae=]-]|bar]])
-local root = p:parse()
+local root = p:apply()
 root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (_, node)
     local out = sequence_writer()
@@ -43,12 +44,12 @@ root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   end;
 })
 
-local p = parser("foo[")
-local result, message = pcall(p.parse, p)
+local p = parser(matcher("foo["))
+local result, message = pcall(p.apply, p)
 assert(not result)
 
-local p = parser("(f(o)o)")
-p.this.position = 2
-p:parse()
-assert(not p.this:eof())
-assert(p.this.position == 7)
+local m = matcher("(f(o)o)", 2)
+local p = parser(m)
+local node = p:apply()
+assert(not m:eof())
+assert(m.position == 7)

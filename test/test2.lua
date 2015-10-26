@@ -15,6 +15,13 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local regexp = require "dromozoa.regexp"
+
+local a = regexp.ere("(abc)+d+e{1,3}")
+a.this:write_graphviz(assert(io.open("test.dot", "w"))):close()
+
+
+--[====[
 local bitset = require "dromozoa.commons.bitset"
 local ipairs = require "dromozoa.commons.ipairs"
 local sequence = require "dromozoa.commons.sequence"
@@ -127,3 +134,4 @@ d:minimize().this:write_graphviz(assert(io.open("test-graph2.dot", "w")), {
     end
   end;
 }):close()
+]====]

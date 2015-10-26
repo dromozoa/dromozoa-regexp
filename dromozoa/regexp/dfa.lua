@@ -15,16 +15,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local matcher = require "dromozoa.commons.matcher"
-local ast_to_nfa = require "dromozoa.regexp.ast_to_nfa"
-local dfa = require "dromozoa.regexp.dfa"
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local powerset_construction = require "dromozoa.regexp.powerset_construction"
-
 local class = {}
 
-function class.ere(this, token)
-  return dfa(powerset_construction(ast_to_nfa():apply(ere_parser(this):apply(), token)):apply())
+function class.new(this)
+  return {
+    this = this;
+  }
 end
 
 local metatable = {
@@ -32,7 +28,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, regexp)
-    return setmetatable(class.new(regexp), metatable)
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
   end;
 })

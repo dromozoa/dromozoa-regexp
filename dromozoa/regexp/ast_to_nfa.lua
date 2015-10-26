@@ -170,17 +170,15 @@ function class:create_duplication(u, v, m, n)
   end
 end
 
-function class:convert(node, token)
+function class:apply(node, token)
   if token == nil then
     token = 1
   end
   local that = self.that
   node:dfs(self)
-  local s = that:get_vertex(node.uid)
-  local a = that:get_vertex(node.vid)
-  s.start = token
-  a.accept = token
-  return s
+  that:get_vertex(node.uid).start = token
+  that:get_vertex(node.vid).accept = token
+  return that
 end
 
 local metatable = {

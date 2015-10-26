@@ -15,138 +15,132 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local clone = require "dromozoa.commons.clone"
 local bitset = require "dromozoa.commons.bitset"
+local empty = require "dromozoa.commons.empty"
 local hash_table = require "dromozoa.commons.hash_table"
+local keys = require "dromozoa.commons.keys"
+local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
-local bitset_to_node = require "dromozoa.regexp.bitset_to_node"
-local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 
-local function data_to_keys(data)
-  local keys = {}
-  for k in pairs(data) do
-    keys[#keys + 1] = k
-  end
-  table.sort(keys)
-  return keys
+local class = {}
+
+function class.new(this)
+  return {
+    this = this;
+    that = graph();
+    map = hash_table();
+  }
 end
 
-local function epsilon_closure_visitor(_result)
-  local self = {}
-
-  function self:discover_vertex(u)
-    _result[u.id] = true
-  end;
-
-  function self:examine_edge(e, u, v)
-    return e.condition[1] == "epsilon"
-  end;
-
-  return self
+function class:get_token(useq, key)
+  local this = self.this
+  local token
+  for uid in useq:each() do
+    local value = this:get_vertex(uid)[key]
+    if value ~= nil and (token == nil or token > value) then
+      token = value
+    end
+  end
+  return token
 end
 
-local function construction(_this)
-  local _that = graph()
-  local _map = hash_table()
-  local _color = {}
-
-  local self = {}
-
-  function self:get_property(keys, key)
-    local token
-    for i = 1, #keys do
-      local v = _this:get_vertex(keys[i])[key]
-      if v ~= nil then
-        if token == nil or token > v then
-          token = v
-        end
-      end
-    end
-    return token
-  end
-
-  function self:get_vertex(keys)
-    local u = _map:get(keys)
-    if not u then
-      u = _that:create_vertex()
-      u.accept = self:get_property(keys, "accept")
-      _map:insert(keys, u)
-    end
+function class:get_vertex(useq)
+  local that = self.that
+  local map = self.map
+  local uid = map:get(useq)
+  if uid == nil then
+    local u = that:create_vertex()
+    u.accept = self:get_token(useq, "accept")
+    map:insert(useq, u.id)
     return u
+  else
+    return that:get_vertex(uid)
   end
+end
 
-  function self:create_epsilon_closure(keys)
-    local data = {}
-    local visitor = epsilon_closure_visitor(data)
-    for i = 1, #keys do
-      _this:get_vertex(keys[i]):dfs(visitor)
-    end
-    return data_to_keys(data)
+function class:create_epsilon_closure(useq)
+  local this = self.this
+  local epsilon_closure = {}
+  local visitor = {
+    discover_vertex = function (self, u)
+      epsilon_closure[u.id] = true
+    end;
+    examine_edge = function (self, e)
+      return e.condition == nil
+    end;
+  }
+  for uid in useq:each() do
+    this:get_vertex(uid):dfs(visitor)
   end
+  return keys(epsilon_closure):sort()
+end
 
-  function self:create_transition(keys)
-    local dataset = {}
-    for i = 0, 257 do
-      dataset[i] = {}
-    end
-    for i = 1, #keys do
-      for v, e in _this:get_vertex(keys[i]):each_adjacent_vertex() do
-        for k in node_to_bitset(e.condition):each() do
-          dataset[k][v.id] = true
+function class:create_transition(useq)
+  local this = self.this
+  local dataset = {}
+  for i = 0, 257 do
+    dataset[i] = {}
+  end
+  for uid in useq:each() do
+    for v, e in this:get_vertex(uid):each_adjacent_vertex() do
+      local condition = e.condition
+      if condition ~= nil then
+        for i in condition:each() do
+          dataset[i][v.id] = true
         end
       end
     end
-    local map = hash_table()
-    for i = 0, 257 do
-      local data = dataset[i]
-      if next(data) then
-        local keys = data_to_keys(data)
-        local class = map:get(keys)
-        if not class then
-          class = bitset()
-          map:insert(keys, class)
-        end
-        class:set(i)
+  end
+  local map = hash_table()
+  for i = 0, 257 do
+    local vset = dataset[i]
+    if not empty(vset) then
+      local vseq = keys(vset):sort()
+      local condition = map:get(vseq)
+      if condition == nil then
+        condition = bitset()
+        map:insert(vseq, condition)
       end
+      condition:set(i)
     end
-    local transition_keys = {}
-    local transition_cond = {}
-    for k, v in map:each() do
-      transition_keys[#transition_keys + 1] = clone(k)
-      transition_cond[#transition_cond + 1] = bitset_to_node(v)
-    end
-    return transition_keys, transition_cond
   end
-
-  function self:visit(keys)
-    local epsilon_closure = self:create_epsilon_closure(keys)
-    local u = self:get_vertex(epsilon_closure)
-    if not _color[u.id] then
-      _color[u.id] = true
-      local transition_keys, transition_cond = self:create_transition(epsilon_closure)
-      for i = 1, #transition_keys do
-        _that:create_edge(u, self:visit(transition_keys[i])).condition = transition_cond[i]
-      end
-    end
-    return u
-  end
-
-  function self:construct()
-    local keys = {}
-    for u in _this:each_vertex("start") do
-      keys[#keys + 1] = u.id
-    end
-    if #keys > 0 then
-      table.sort(keys)
-      local s = self:visit(keys)
-      s.start = self:get_property(keys, "start")
-    end
-    return _that
-  end
-
-  return self
+  return map
 end
 
-return function (g)
-  return construction(g):construct()
+function class:visit(useq)
+  local that = self.that
+  local epsilon_closure = self:create_epsilon_closure(useq)
+  local u = self:get_vertex(epsilon_closure)
+  if not u.visited then
+    u.visited = true
+    local transitions = self:create_transition(epsilon_closure)
+    for vseq, condition in transitions:each() do
+      -- not clone condition
+      that:create_edge(u, self:visit(vseq)).condition = condition
+    end
+  end
+  return u
 end
+
+function class:apply()
+  local this = self.this
+  local useq = sequence()
+  for u in this:each_vertex("start") do
+    useq:push(u.id)
+  end
+  if not empty(useq) then
+    useq:sort()
+    self:visit(useq).start = self:get_token(useq, "start")
+  end
+  return self.that
+end
+
+local metatable = {
+  __index = class;
+}
+
+return setmetatable(class, {
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
+  end;
+})

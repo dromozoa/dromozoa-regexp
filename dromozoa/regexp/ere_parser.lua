@@ -22,9 +22,12 @@ local tree = require "dromozoa.tree"
 
 local class = {}
 
-function class.new(regexp)
+function class.new(this)
+  if type(this) == "string" then
+    this = matcher(this)
+  end
   return {
-    this = matcher(regexp);
+    this = this;
     that = tree();
     stack = sequence();
   }
@@ -43,20 +46,6 @@ function class:create_node(...)
   local node = self.that:create_node()
   push(node, 0, ...)
   return node
-end
-
-function class:parse()
-  local this = self.this
-  local stack = self.stack
-  if self:extended_reg_exp() then
-    if #stack == 1 then
-      return stack:pop()
-    else
-      self:raise()
-    end
-  else
-    self:raise()
-  end
 end
 
 function class:extended_reg_exp()
@@ -219,12 +208,26 @@ function class:end_range()
   end
 end
 
+function class:apply()
+  local this = self.this
+  local stack = self.stack
+  if self:extended_reg_exp() then
+    if #stack == 1 then
+      return stack:pop(), this
+    else
+      self:raise()
+    end
+  else
+    self:raise()
+  end
+end
+
 local metatable = {
   __index = class;
 }
 
 return setmetatable(class, {
-  __call = function (_, regexp)
-    return setmetatable(class.new(regexp), metatable)
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
   end;
 })
