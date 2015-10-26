@@ -73,9 +73,9 @@ local p = parser("^[a-zA-Z[:digit:]]*[abce]+[^[. .]---]?|f(oo){1,4}|\\(b(ar|.z)$
 -- local p = parser("x(abc)*y")
 local root = p:parse()
 local to_nfa = node_to_nfa()
-to_nfa:apply(root)
-local powerset = powerset_construction(to_nfa.graph)
-powerset:apply()
+local nfa_s = to_nfa:apply(root)
+local powerset = powerset_construction(nfa_s:graph())
+local dfa_s = powerset:apply()
 
 root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   node_attributes = function (self, node)
@@ -101,7 +101,7 @@ root:tree():write_graphviz(assert(io.open("test.dot", "w")), {
   end;
 }):close()
 
-powerset.dfa:write_graphviz(assert(io.open("test-graph.dot", "w")), {
+dfa_s:graph():write_graphviz(assert(io.open("test-graph.dot", "w")), {
   graph_attributes = function (self)
     return {
       rankdir = "LR";

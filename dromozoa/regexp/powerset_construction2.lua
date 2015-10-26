@@ -132,6 +132,7 @@ function class:apply()
     useq:sort()
     local s = self:visit(useq)
     s.start = self:get_token(useq, "start")
+    return s
   end
 end
 

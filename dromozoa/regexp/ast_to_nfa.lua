@@ -23,7 +23,7 @@ local class = {}
 
 function class.new()
   return {
-    graph = graph();
+    that = graph();
   }
 end
 
@@ -43,13 +43,13 @@ function class:examine_edge(u, v)
 end
 
 function class:discover_node(u)
-  local graph = self.graph
+  local that = self.that
   local tag = u[1]
   if tag == "|" then
-    u.uid = graph:create_vertex().id
-    u.vid = graph:create_vertex().id
+    u.uid = that:create_vertex().id
+    u.vid = that:create_vertex().id
   elseif tag == "concat" then
-    local uid = graph:create_vertex().id
+    local uid = that:create_vertex().id
     u.uid = uid
     u.vid = uid
   elseif tag == "^" then
@@ -84,19 +84,19 @@ function class:discover_node(u)
 end
 
 function class:finish_edge(u, v)
-  local graph = self.graph
+  local that = self.that
   local tag = u[1]
   if tag == "|" then
-    graph:create_edge(u.uid, v.uid)
-    graph:create_edge(v.vid, u.vid)
+    that:create_edge(u.uid, v.uid)
+    that:create_edge(v.vid, u.vid)
   elseif tag == "concat" then
     local uid = v.uid
     if uid == nil then
-      uid = graph:create_vertex().id
-      graph:create_edge(u.vid, uid).condition = v.condition
+      uid = that:create_vertex().id
+      that:create_edge(u.vid, uid).condition = v.condition
       u.vid = uid
     else
-      graph:create_edge(u.vid, uid)
+      that:create_edge(u.vid, uid)
       u.vid = v.vid
     end
   elseif tag == "*" then
@@ -129,26 +129,26 @@ function class:finish_node(u)
 end
 
 function class:create_duplication(u, v, m, n)
-  local graph = self.graph
-  local uid = graph:create_vertex().id
+  local that = self.that
+  local uid = that:create_vertex().id
   local vid = v.uid
   local wid = v.vid
   if vid == nil then
-    vid = graph:create_vertex().id
-    wid = graph:create_vertex().id
-    graph:create_edge(vid, wid).condition = v.condition
+    vid = that:create_vertex().id
+    wid = that:create_vertex().id
+    that:create_edge(vid, wid).condition = v.condition
   end
   u.uid = uid
   if n == nil then
     for i = 1, m do
-      local a, map = graph:get_vertex(vid):duplicate()
+      local a, map = that:get_vertex(vid):duplicate()
       local aid = a.id
       local bid = map[wid]
-      graph:create_edge(uid, aid)
+      that:create_edge(uid, aid)
       uid = bid
     end
-    graph:create_edge(uid, vid)
-    graph:create_edge(wid, vid)
+    that:create_edge(uid, vid)
+    that:create_edge(wid, vid)
     uid = vid
     u.vid = vid
   else
@@ -156,13 +156,13 @@ function class:create_duplication(u, v, m, n)
       local aid = vid
       local bid = wid
       if i < n then
-        local a, map = graph:get_vertex(vid):duplicate()
+        local a, map = that:get_vertex(vid):duplicate()
         aid = a.id
         bid = map[wid]
       end
-      graph:create_edge(uid, aid)
+      that:create_edge(uid, aid)
       if i > m then
-        graph:create_edge(uid, bid)
+        that:create_edge(uid, bid)
       end
       uid = bid
     end
@@ -174,13 +174,13 @@ function class:apply(node, token)
   if token == nil then
     token = 1
   end
-  local graph = self.graph
+  local that = self.that
   node:dfs(self)
-  local u = graph:get_vertex(node.uid)
-  local v = graph:get_vertex(node.vid)
-  u.start = token
-  v.accept = token
-  return u, v
+  local s = that:get_vertex(node.uid)
+  local a = that:get_vertex(node.vid)
+  s.start = token
+  a.accept = token
+  return s
 end
 
 local metatable = {
