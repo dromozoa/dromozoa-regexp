@@ -20,7 +20,7 @@ local ipairs = require "dromozoa.commons.ipairs"
 local sequence = require "dromozoa.commons.sequence"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
-local parser = require "dromozoa.regexp.parser"
+local parser = require "dromozoa.regexp.ere_parser"
 local node_to_nfa = require "dromozoa.regexp.node_to_nfa2"
 local powerset_construction = require "dromozoa.regexp.powerset_construction2"
 

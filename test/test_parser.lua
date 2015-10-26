@@ -18,7 +18,7 @@
 local ipais = require "dromozoa.commons.ipairs"
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
-local parser = require "dromozoa.regexp.parser"
+local parser = require "dromozoa.regexp.ere_parser"
 
 local p = parser(
     [=[\^\.\[\$\(\)\|\*\+\?\{\\]=]
