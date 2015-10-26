@@ -24,18 +24,18 @@ local class = {}
 
 function class.new(regexp)
   return {
+    this = matcher(regexp);
     that = tree();
-    matcher = matcher(regexp);
     stack = sequence();
   }
 end
 
 function class:raise(message)
-  local matcher = self.matcher
+  local this = self.this
   if message == nil then
-    error("parse error at position " .. matcher.position)
+    error("parse error at position " .. this.position)
   else
-    error(message .. " at position " .. matcher.position)
+    error(message .. " at position " .. this.position)
   end
 end
 
@@ -46,7 +46,7 @@ function class:create_node(...)
 end
 
 function class:parse()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
   if self:extended_reg_exp() then
     if #stack == 1 then
@@ -60,12 +60,12 @@ function class:parse()
 end
 
 function class:extended_reg_exp()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
   if self:ERE_branch() then
     local node = self:create_node("|")
     node:append_child(stack:pop())
-    while matcher:match("%|") do
+    while this:match("%|") do
       if self:ERE_branch() then
         node:append_child(stack:pop())
       else
@@ -89,7 +89,7 @@ function class:ERE_branch()
 end
 
 function class:ERE_expression()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
   if self:one_char_or_coll_elem_ERE_or_grouping() then
     if self:ERE_dupl_symbol() then
@@ -99,25 +99,25 @@ function class:ERE_expression()
     else
       return true
     end
-  elseif matcher:match("([%^%$])") then
-    return stack:push(self:create_node(matcher[1]))
+  elseif this:match("([%^%$])") then
+    return stack:push(self:create_node(this[1]))
   end
 end
 
 function class:one_char_or_coll_elem_ERE_or_grouping()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
-  if matcher:match("([^%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return stack:push(self:create_node("char", matcher[1]))
-  elseif matcher:match("\\([%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return stack:push(self:create_node("\\", matcher[1]))
-  elseif matcher:match("%.") then
+  if this:match("([^%^%.%[%$%(%)%|%*%+%?%{%\\])") then
+    return stack:push(self:create_node("char", this[1]))
+  elseif this:match("\\([%^%.%[%$%(%)%|%*%+%?%{%\\])") then
+    return stack:push(self:create_node("\\", this[1]))
+  elseif this:match("%.") then
     return stack:push(self:create_node("."))
   elseif self:bracket_expression() then
     return true
-  elseif matcher:match("%(") then
+  elseif this:match("%(") then
     if self:extended_reg_exp() then
-      if matcher:match("%)") then
+      if this:match("%)") then
         return true
       else
         self:raise("unmatched parentheses")
@@ -129,17 +129,17 @@ function class:one_char_or_coll_elem_ERE_or_grouping()
 end
 
 function class:ERE_dupl_symbol()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
-  if matcher:match("([%*%+%?])") then
-    return stack:push(self:create_node(matcher[1]))
-  elseif matcher:match("%{") then
-    if matcher:match("(%d+)%}") then
-      return stack:push(self:create_node("{m", tonumber(matcher[1], 10)))
-    elseif matcher:match("(%d+),%}") then
-      return stack:push(self:create_node("{m,", tonumber(matcher[1], 10)))
-    elseif matcher:match("(%d+),(%d+)%}") then
-      return stack:push(self:create_node("{m,n", tonumber(matcher[1], 10), tonumber(matcher[2], 10)))
+  if this:match("([%*%+%?])") then
+    return stack:push(self:create_node(this[1]))
+  elseif this:match("%{") then
+    if this:match("(%d+)%}") then
+      return stack:push(self:create_node("{m", tonumber(this[1], 10)))
+    elseif this:match("(%d+),%}") then
+      return stack:push(self:create_node("{m,", tonumber(this[1], 10)))
+    elseif this:match("(%d+),(%d+)%}") then
+      return stack:push(self:create_node("{m,n", tonumber(this[1], 10), tonumber(this[2], 10)))
     else
       self:raise()
     end
@@ -147,19 +147,19 @@ function class:ERE_dupl_symbol()
 end
 
 function class:bracket_expression()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
-  if matcher:match("(%[%^?)") then
-    local node = self:create_node("[", matcher[1] == "[^")
+  if this:match("(%[%^?)") then
+    local node = self:create_node("[", this[1] == "[^")
     if self:expression_term() then
       node:append_child(stack:pop())
       while self:expression_term() do
         node:append_child(stack:pop())
       end
-      if matcher:match("%-") then
+      if this:match("%-") then
         node:append_child(self:create_node("[char", "-"))
       end
-      if matcher:match("%]") then
+      if this:match("%]") then
         return stack:push(node)
       else
         self:raise("unmatched brackets")
@@ -171,27 +171,27 @@ function class:bracket_expression()
 end
 
 function class:expression_term()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
-  if matcher:match("%[%=") then
-    if matcher:match("(..-)%=%]") then
-      return stack:push(self:create_node("[=", matcher[1]))
+  if this:match("%[%=") then
+    if this:match("(..-)%=%]") then
+      return stack:push(self:create_node("[=", this[1]))
     else
       self:raise("unclosed equivalence class")
     end
-  elseif matcher:match("%[%:") then
-    if matcher:match("(..-)%:%]") then
-      return stack:push(self:create_node("[:", matcher[1]))
+  elseif this:match("%[%:") then
+    if this:match("(..-)%:%]") then
+      return stack:push(self:create_node("[:", this[1]))
     else
       self:raise("unclosed character class")
     end
   elseif self:end_range() then
-    if matcher:lookahead("%-%]") then
+    if this:lookahead("%-%]") then
       return true
-    elseif matcher:match("%-") then
+    elseif this:match("%-") then
       local node = self:create_node("[-")
       node:append_child(stack:pop())
-      if matcher:match("%-") then
+      if this:match("%-") then
         node:append_child(self:create_node("[char", "-"))
       elseif self:end_range() then
         node:append_child(stack:pop())
@@ -206,16 +206,16 @@ function class:expression_term()
 end
 
 function class:end_range()
-  local matcher = self.matcher
+  local this = self.this
   local stack = self.stack
-  if matcher:match("%[%.") then
-    if matcher:match("(..-)%.%]") then
-      return stack:push(self:create_node("[.", matcher[1]))
+  if this:match("%[%.") then
+    if this:match("(..-)%.%]") then
+      return stack:push(self:create_node("[.", this[1]))
     else
       self:raise("unmatched collating symbol")
     end
-  elseif matcher:match("([^%^%-%]])") then
-    return stack:push(self:create_node("[char", matcher[1]))
+  elseif this:match("([^%^%-%]])") then
+    return stack:push(self:create_node("[char", this[1]))
   end
 end
 

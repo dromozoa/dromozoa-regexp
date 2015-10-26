@@ -48,7 +48,7 @@ local result, message = pcall(p.parse, p)
 assert(not result)
 
 local p = parser("(f(o)o)")
-p.matcher.position = 2
+p.this.position = 2
 p:parse()
-assert(not p.matcher:eof())
-assert(p.matcher.position == 7)
+assert(not p.this:eof())
+assert(p.this.position == 7)
