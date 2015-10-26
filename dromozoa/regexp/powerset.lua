@@ -24,19 +24,19 @@ local graph = require "dromozoa.graph"
 
 local class = {}
 
-function class.new(nfa)
+function class.new(this)
   return {
-    nfa = nfa;
-    dfa = graph();
+    this = this;
+    that = graph();
     map = hash_table();
   }
 end
 
 function class:get_token(useq, key)
-  local nfa = self.nfa
+  local this = self.this
   local token
   for uid in useq:each() do
-    local value = nfa:get_vertex(uid)[key]
+    local value = this:get_vertex(uid)[key]
     if value ~= nil and (token == nil or token > value) then
       token = value
     end
@@ -45,21 +45,21 @@ function class:get_token(useq, key)
 end
 
 function class:get_vertex(useq)
-  local dfa = self.dfa
+  local that = self.that
   local map = self.map
   local uid = map:get(useq)
   if uid == nil then
-    local u = dfa:create_vertex()
+    local u = that:create_vertex()
     u.accept = self:get_token(useq, "accept")
     map:insert(useq, u.id)
     return u
   else
-    return dfa:get_vertex(uid)
+    return that:get_vertex(uid)
   end
 end
 
 function class:create_epsilon_closure(useq)
-  local nfa = self.nfa
+  local this = self.this
   local epsilon_closure = {}
   local visitor = {
     discover_vertex = function (self, u)
@@ -70,19 +70,19 @@ function class:create_epsilon_closure(useq)
     end;
   }
   for uid in useq:each() do
-    nfa:get_vertex(uid):dfs(visitor)
+    this:get_vertex(uid):dfs(visitor)
   end
   return keys(epsilon_closure):sort()
 end
 
 function class:create_transition(useq)
-  local nfa = self.nfa
+  local this = self.this
   local dataset = {}
   for i = 0, 257 do
     dataset[i] = {}
   end
   for uid in useq:each() do
-    for v, e in nfa:get_vertex(uid):each_adjacent_vertex() do
+    for v, e in this:get_vertex(uid):each_adjacent_vertex() do
       local condition = e.condition
       if condition ~= nil then
         for i in condition:each() do
@@ -108,7 +108,7 @@ function class:create_transition(useq)
 end
 
 function class:visit(useq)
-  local dfa = self.dfa
+  local that = self.that
   local epsilon_closure = self:create_epsilon_closure(useq)
   local u = self:get_vertex(epsilon_closure)
   if not u.visited then
@@ -116,16 +116,16 @@ function class:visit(useq)
     local transitions = self:create_transition(epsilon_closure)
     for vseq, condition in transitions:each() do
       -- not clone
-      dfa:create_edge(u, self:visit(vseq)).condition = condition
+      that:create_edge(u, self:visit(vseq)).condition = condition
     end
   end
   return u
 end
 
-function class:apply()
-  local nfa = self.nfa
+function class:construct()
+  local this = self.this
   local useq = sequence()
-  for u in nfa:each_vertex("start") do
+  for u in this:each_vertex("start") do
     useq:push(u.id)
   end
   if not empty(useq) then
@@ -141,7 +141,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, nfa)
-    return setmetatable(class.new(nfa), metatable)
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
   end;
 })
