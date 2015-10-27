@@ -18,7 +18,7 @@
 local sequence_writer = require "dromozoa.commons.sequence_writer"
 local xml = require "dromozoa.commons.xml"
 local graph = require "dromozoa.graph"
-local powerset_construction = require "dromozoa.regexp.powerset_construction"
+local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 
 local function escape_range_char(byte)
   local char = string.char(byte)
@@ -54,11 +54,19 @@ function class.new(this)
   }
 end
 
+function class:powerset_construction(token)
+  self.this = powerset_construction(self.this, token):apply()
+  return self
+end
+
+function class:reverse()
+  self.this = reverse(self.this)
+  return self
+end
+
 function class:minimize()
   -- Brzozowski's algorithm
-  local that = powerset_construction(reverse(self.this)):apply()
-  self.this = powerset_construction(reverse(that)):apply()
-  return self
+  return self:reverse():powerset_construction():reverse():powerset_construction()
 end
 
 function class:write_graphviz(out)

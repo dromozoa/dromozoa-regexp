@@ -20,8 +20,10 @@ local regexp = require "dromozoa.regexp"
 local a = regexp.ere("^(abc)+[de]+[e-z]{1,3}$")
 -- local a = regexp.ere("(abc)*")
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-a:minimize()
+a:powerset_construction()
 a:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+a:minimize()
+a:write_graphviz(assert(io.open("test3.dot", "w"))):close()
 
 
 --[====[
