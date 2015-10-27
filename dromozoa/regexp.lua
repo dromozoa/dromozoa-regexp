@@ -24,7 +24,9 @@ local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local class = {}
 
 function class.ere(this, token)
-  return dfa(powerset_construction(ast_to_nfa():apply(ere_parser(this):apply(), token)):apply())
+  local ast = ere_parser(this):apply()
+  local nfa = ast_to_nfa():apply(ast)
+  return dfa(powerset_construction(nfa, token):apply())
 end
 
 local metatable = {
