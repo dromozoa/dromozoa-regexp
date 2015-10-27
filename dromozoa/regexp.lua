@@ -17,7 +17,7 @@
 
 local matcher = require "dromozoa.commons.matcher"
 local ast_to_nfa = require "dromozoa.regexp.ast_to_nfa"
-local dfa = require "dromozoa.regexp.dfa"
+local automaton = require "dromozoa.regexp.automaton"
 local ere_parser = require "dromozoa.regexp.ere_parser"
 local powerset_construction = require "dromozoa.regexp.powerset_construction"
 
@@ -26,7 +26,7 @@ local class = {}
 function class.ere(this, token)
   local ast = ere_parser(this):apply()
   local nfa = ast_to_nfa():apply(ast)
-  return dfa(powerset_construction(nfa, token):apply())
+  return automaton(powerset_construction(nfa, token):apply())
 end
 
 local metatable = {
