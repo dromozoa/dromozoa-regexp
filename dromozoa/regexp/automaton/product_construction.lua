@@ -18,7 +18,7 @@
 local bitset = require "dromozoa.commons.bitset"
 local hash_table = require "dromozoa.commons.hash_table"
 local graph = require "dromozoa.graph"
-local tokens = require "dromozoa.regexp.tokens"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local dummy = {
   id = 0;

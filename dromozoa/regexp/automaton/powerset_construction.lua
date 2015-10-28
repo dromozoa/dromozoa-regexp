@@ -21,7 +21,7 @@ local hash_table = require "dromozoa.commons.hash_table"
 local keys = require "dromozoa.commons.keys"
 local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
-local tokens = require "dromozoa.regexp.tokens"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local class = {}
 

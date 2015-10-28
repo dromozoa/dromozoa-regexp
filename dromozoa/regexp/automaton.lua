@@ -15,9 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local tokens = require "dromozoa.regexp.tokens"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 local reverse = require "dromozoa.regexp.automaton.reverse"
 local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
