@@ -49,6 +49,11 @@ function class:intersection(that)
   return self
 end
 
+function class:difference(that)
+  self.this = product_construction():apply(self.this, that.this, tokens.difference)
+  return self
+end
+
 function class:write_graphviz(out)
   return write_graphviz(self.this, out)
 end
