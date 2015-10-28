@@ -15,7 +15,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local tokens = require "dromozoa.regexp.tokens"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
+local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local reverse = require "dromozoa.regexp.automaton.reverse"
 local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
@@ -40,6 +42,11 @@ end
 function class:minimize()
   -- Brzozowski's algorithm
   return self:reverse():powerset_construction():reverse():powerset_construction()
+end
+
+function class:intersection(that)
+  self.this = product_construction():apply(self.this, that.this, tokens.intersection)
+  return self
 end
 
 function class:write_graphviz(out)

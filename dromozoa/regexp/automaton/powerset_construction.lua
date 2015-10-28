@@ -21,6 +21,7 @@ local hash_table = require "dromozoa.commons.hash_table"
 local keys = require "dromozoa.commons.keys"
 local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
+local tokens = require "dromozoa.regexp.tokens"
 
 local class = {}
 
@@ -36,10 +37,7 @@ function class:get_token(useq, key)
   local this = self.this
   local token
   for uid in useq:each() do
-    local value = this:get_vertex(uid)[key]
-    if value ~= nil and (token == nil or token > value) then
-      token = value
-    end
+    token = tokens.union(token, this:get_vertex(uid)[key])
   end
   return token
 end
