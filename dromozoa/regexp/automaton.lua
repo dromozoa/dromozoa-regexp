@@ -17,8 +17,8 @@
 
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
-local tokens = require "dromozoa.regexp.automaton.tokens"
 local reverse = require "dromozoa.regexp.automaton.reverse"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
 local class = {}
@@ -44,14 +44,17 @@ function class:minimize()
   return self:reverse():powerset_construction():reverse():powerset_construction()
 end
 
-function class:intersection(that)
-  self.this = product_construction():apply(self.this, that.this, tokens.intersection)
+function class:product_construction(that, fn)
+  self.this = product_construction():apply(self.this, that.this, fn)
   return self
 end
 
-function class:difference(that)
-  self.this = product_construction():apply(self.this, that.this, tokens.difference)
-  return self
+function class:set_intersection(that)
+  return self:product_construction(that, tokens.intersection)
+end
+
+function class:set_difference(that)
+  return self:product_construction(that, tokens.difference)
 end
 
 function class:write_graphviz(out)

@@ -201,7 +201,7 @@ function class:end_range()
     if this:match("(..-)%.%]") then
       return stack:push(self:create_node("[.", this[1]))
     else
-      self:raise("unmatched collating symbol")
+      self:raise("unclosed collating symbol")
     end
   elseif this:match("([^%^%-%]])") then
     return stack:push(self:create_node("[char", this[1]))
