@@ -33,6 +33,12 @@ function class.new(this)
   }
 end
 
+function class:create_node(...)
+  local node = self.that:create_node()
+  push(node, 0, ...)
+  return node
+end
+
 function class:raise(message)
   local this = self.this
   if message == nil then
@@ -40,12 +46,6 @@ function class:raise(message)
   else
     error(message .. " at position " .. this.position)
   end
-end
-
-function class:create_node(...)
-  local node = self.that:create_node()
-  push(node, 0, ...)
-  return node
 end
 
 function class:extended_reg_exp()

@@ -170,14 +170,14 @@ function class:create_duplication(u, v, m, n)
   end
 end
 
-function class:apply(node, token)
+function class:apply(this, token)
   if token == nil then
     token = 1
   end
   local that = self.that
-  node:dfs(self)
-  that:get_vertex(node.uid).start = token
-  that:get_vertex(node.vid).accept = token
+  this:dfs(self)
+  that:get_vertex(this.uid).start = token
+  that:get_vertex(this.vid).accept = token
   return that
 end
 
