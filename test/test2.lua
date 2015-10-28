@@ -23,5 +23,5 @@ local b = ere("abc+")
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-a:set_difference(b):powerset_construction():minimize()
+a:set_union(b)
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()

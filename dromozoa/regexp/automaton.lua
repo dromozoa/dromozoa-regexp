@@ -29,7 +29,7 @@ function class.new(this)
   }
 end
 
-function class:powerset_construction()
+function class:to_dfa()
   self.this = powerset_construction(self.this):apply()
   return self
 end
@@ -41,7 +41,7 @@ end
 
 function class:minimize()
   -- Brzozowski's algorithm
-  return self:reverse():powerset_construction():reverse():powerset_construction()
+  return self:reverse():to_dfa():reverse():to_dfa()
 end
 
 function class:product_construction(that, fn)
