@@ -27,8 +27,8 @@ function class.new(this)
   }
 end
 
-function class:powerset_construction(token)
-  self.this = powerset_construction(self.this, token):apply()
+function class:powerset_construction()
+  self.this = powerset_construction(self.this):apply()
   return self
 end
 
