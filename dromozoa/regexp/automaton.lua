@@ -46,11 +46,15 @@ end
 
 function class:product_construction(that, fn)
   self.this = product_construction():apply(self.this, that.this, fn)
-  return self
+  return self:minimize()
 end
 
 function class:set_intersection(that)
   return self:product_construction(that, tokens.intersection)
+end
+
+function class:set_union(that)
+  return self:product_construction(that, tokens.union)
 end
 
 function class:set_difference(that)

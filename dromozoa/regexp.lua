@@ -22,7 +22,7 @@ local to_nfa = require "dromozoa.regexp.to_nfa"
 local class = {}
 
 function class.ere(this, token)
-  return automaton(to_nfa():apply(ere_parser(this):apply(), token))
+  return automaton(to_nfa():apply(ere_parser(this):apply(), token)):minimize()
 end
 
 local metatable = {
