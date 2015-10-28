@@ -15,25 +15,18 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local matcher = require "dromozoa.commons.matcher"
-local ast_to_nfa = require "dromozoa.regexp.ast_to_nfa"
 local automaton = require "dromozoa.regexp.automaton"
 local ere_parser = require "dromozoa.regexp.ere_parser"
+local to_nfa = require "dromozoa.regexp.to_nfa"
 
 local class = {}
 
-function class.ere(this)
-  local ast = ere_parser(this):apply()
-  local nfa = ast_to_nfa():apply(ast)
-  return automaton(nfa)
+function class.ere(this, token)
+  return automaton(to_nfa():apply(ere_parser(this):apply(), token))
 end
 
 local metatable = {
   __index = class;
 }
 
-return setmetatable(class, {
-  __call = function (_, regexp)
-    return setmetatable(class.new(regexp), metatable)
-  end;
-})
+return class
