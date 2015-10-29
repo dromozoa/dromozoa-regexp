@@ -17,8 +17,8 @@
 
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
-local reverse = require "dromozoa.regexp.automaton.reverse"
 local tokens = require "dromozoa.regexp.automaton.tokens"
+local operations = require "dromozoa.regexp.automaton.operations"
 local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
 local class = {}
@@ -35,13 +35,24 @@ function class:to_dfa()
 end
 
 function class:reverse()
-  self.this = reverse(self.this)
+  self.this = operations.reverse(self.this)
   return self
 end
 
 function class:minimize()
   -- Brzozowski's algorithm
   return self:reverse():to_dfa():reverse():to_dfa()
+end
+
+function class:branch(that)
+  self.this = operations.branch(self.this, that.this)
+  -- not minimize
+  return self:to_dfa()
+end
+
+function class:concat(that)
+  self.this = operations.concat(self.this, that.this)
+  return self:minimize()
 end
 
 function class:product_construction(that, fn)

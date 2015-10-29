@@ -18,10 +18,12 @@
 local regexp = require "dromozoa.regexp"
 local ere = regexp.ere
 
-local a = ere("ab[cd]")
-local b = ere("abc+")
+local a = ere("ab[cd]", 1)
+local b = ere("abc+", 2)
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-a:set_union(b)
+-- a:set_union(b)
+-- a:concat(b)
+a:branch(b)
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()

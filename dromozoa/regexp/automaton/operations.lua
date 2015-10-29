@@ -16,8 +16,11 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local graph = require "dromozoa.graph"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 
-return function (this)
+local class = {}
+
+function class.reverse(this)
   local that = graph()
   local map = {}
   for a in this:each_vertex() do
@@ -33,3 +36,33 @@ return function (this)
   end
   return that
 end
+
+function class.branch(this, that)
+  local u = this:create_vertex()
+  this:merge(that)
+  local token
+  for v in this:each_vertex("start") do
+    token = tokens.union(token, v.start)
+    v.start = nil
+    this:create_edge(u, v)
+  end
+  u.start = token
+  return this
+end
+
+function class.concat(this, that)
+  local u = this:create_vertex()
+  for v in this:each_vertex("accept") do
+    v.accept = nil
+    this:create_edge(v, u)
+  end
+  local map = this:merge(that)
+  for v in that:each_vertex("start") do
+    local vid = map[v.id]
+    this:get_vertex(vid).start = nil
+    this:create_edge(u, vid)
+  end
+  return this
+end
+
+return class
