@@ -24,7 +24,7 @@ return function (this)
   if state ~= 1 then
     error("only one start state allowed")
   end
-  start = state
+  local start = state
 
   for u in this:each_vertex() do
     if u.start == nil then
