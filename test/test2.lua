@@ -15,11 +15,11 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local json = require "dromozoa.commons.json"
 local regexp = require "dromozoa.regexp"
-local ere = regexp.ere
 
-local a = ere("ab[cd]", 1)
-local b = ere("abc+", 2)
+local a = regexp.ere("ab[cd]", 1)
+local b = regexp.ere("abc+", 2)
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
@@ -27,3 +27,10 @@ b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 -- a:concat(b)
 a:branch(b)
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+
+local a = regexp.ere("a*|(b+$|c*)")
+a:write_graphviz(assert(io.open("test4.dot", "w"))):close()
+local data = a:compile()
+print(regexp.match(data, "bbbb"))
+
+

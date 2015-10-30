@@ -17,9 +17,12 @@
 
 local automaton = require "dromozoa.regexp.automaton"
 local ere_parser = require "dromozoa.regexp.ere_parser"
+local match = require "dromozoa.regexp.match"
 local to_nfa = require "dromozoa.regexp.to_nfa"
 
-local class = {}
+local class = {
+  match = match;
+}
 
 function class.ere(this, token)
   return automaton(to_nfa():apply(ere_parser(this):apply(), token)):minimize()

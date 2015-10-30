@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local compile = require "dromozoa.regexp.compile"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
@@ -74,6 +75,10 @@ end
 
 function class:write_graphviz(out)
   return write_graphviz(self.this, out)
+end
+
+function class:compile()
+  return compile(self.this)
 end
 
 local metatable = {
