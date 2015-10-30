@@ -122,6 +122,7 @@ end
 
 function class:apply()
   local this = self.this
+  local that = self.that
   local useq = sequence()
   for u in this:each_vertex("start") do
     useq:push(u.id)
@@ -130,7 +131,8 @@ function class:apply()
     useq:sort()
     self:visit(useq).start = self:get_token(useq, "start")
   end
-  return self.that
+  that:clear_vertex_properties("visited")
+  return that
 end
 
 local metatable = {
