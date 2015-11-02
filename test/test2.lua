@@ -33,4 +33,10 @@ a:write_graphviz(assert(io.open("test4.dot", "w"))):close()
 local data = a:compile()
 print(regexp.match(data, "bbbb"))
 
+local a = regexp.ere("^^^^a(a|b^b|c$c|d^$d|e^e$e)a$$$$")
+a:write_graphviz(assert(io.open("test5.dot", "w"))):close()
+a:remove_nonmatching_assertions()
+a:write_graphviz(assert(io.open("test6.dot", "w"))):close()
+a:minimize()
+a:write_graphviz(assert(io.open("test7.dot", "w"))):close()
 

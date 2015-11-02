@@ -109,8 +109,8 @@ function class:visit(useq)
   local that = self.that
   local epsilon_closure = self:create_epsilon_closure(useq)
   local u = self:get_vertex(epsilon_closure)
-  if not u.visited then
-    u.visited = true
+  if not u.color then
+    u.color = true
     local transitions = self:create_transition(epsilon_closure)
     for vseq, condition in transitions:each() do
       -- not clone condition
@@ -131,7 +131,7 @@ function class:apply()
     useq:sort()
     self:visit(useq).start = self:get_token(useq, "start")
   end
-  that:clear_vertex_properties("visited")
+  that:clear_vertex_properties("color")
   return that
 end
 

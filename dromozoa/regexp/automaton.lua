@@ -16,10 +16,11 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local compile = require "dromozoa.regexp.compile"
+local assertions = require "dromozoa.regexp.automaton.assertions"
+local operations = require "dromozoa.regexp.automaton.operations"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
-local operations = require "dromozoa.regexp.automaton.operations"
 local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
 local class = {}
@@ -54,6 +55,11 @@ end
 function class:concat(that)
   self.this = operations.concat(self.this, that.this)
   return self:minimize()
+end
+
+function class:remove_nonmatching_assertions()
+  self.this = assertions.remove_nonmatching_assertions(self.this)
+  return self
 end
 
 function class:product_construction(that, fn)
