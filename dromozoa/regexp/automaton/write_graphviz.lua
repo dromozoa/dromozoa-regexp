@@ -54,11 +54,11 @@ return function (this, out)
     edge_attributes = function (self, e)
       local condition = e.condition
       if condition ~= nil then
-        if condition:test(257) then
+        if condition:test(256) then
           return {
             label = "<^>";
           }
-        elseif condition:test(256) then
+        elseif condition:test(257) then
           return {
             label = "<$>";
           }

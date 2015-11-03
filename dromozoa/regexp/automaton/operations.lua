@@ -30,6 +30,8 @@ function class.reverse(this)
     b.accept = a.start
   end
   for a in this:each_edge() do
+    assert(map[a.uid])
+    assert(map[a.vid])
     local b = that:create_edge(map[a.vid], map[a.uid])
     -- not clone
     b.condition = a.condition

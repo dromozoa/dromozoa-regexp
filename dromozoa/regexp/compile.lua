@@ -55,7 +55,7 @@ return function (this)
     for v, e in u:each_adjacent_vertex() do
       local ns = v.state
       local condition = e.condition
-      if condition:test(256) then
+      if condition:test(257) then
         end_assertions[cs] = ns
       else
         for k, v in condition:each() do

@@ -53,9 +53,9 @@ function class:discover_node(u)
     u.uid = uid
     u.vid = uid
   elseif tag == "^" then
-    u.condition = bitset():set(257)
-  elseif tag == "$" then
     u.condition = bitset():set(256)
+  elseif tag == "$" then
+    u.condition = bitset():set(257)
   elseif tag == "char" or tag == "\\" then
     u.condition = bitset():set(string.byte(u[2]))
   elseif tag == "." then

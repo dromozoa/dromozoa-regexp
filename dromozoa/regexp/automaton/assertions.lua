@@ -15,37 +15,80 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local bitset = require "dromozoa.commons.bitset"
+local clone = require "dromozoa.commons.clone"
+local tokens = require "dromozoa.regexp.automaton.tokens"
+
 local class = {}
 
-function class.remove_nonmatching_assertions(this)
+local function color_assertions(this, key, start)
   local visitor = {
     examine_edge = function (self, e)
       local condition = e.condition
-      if condition:test(257) then
-        e.color = "^"
-      elseif condition:test(256) then
-        e.color = "$"
+      if condition == nil or condition:test(256) or condition:test(257) then
+        e.color = true
       else
         return false
       end
     end;
   }
-  for u in this:each_vertex("start") do
-    u:dfs(visitor)
+  for u in this:each_vertex(key) do
+    u:dfs(visitor, start)
   end
-  for v in this:each_vertex("accept") do
-    v:dfs(visitor, "v")
-  end
-  for e in this:each_edge() do
+end
+
+function class.remove_nonmatching_assertions(this)
+  for e in this:each_edge("condition") do
     local condition = e.condition
-    if (condition:test(257) or condition:test(256)) and e.color == nil then
+    if condition:test(256) then
+      e.assertion = "^"
+    elseif condition:test(257) then
+      e.assertion = "$"
+    end
+  end
+  color_assertions(this, "start", "u")
+  color_assertions(this, "accept", "v")
+  for e in this:each_edge("assertion") do
+    if not e.color then
       e:remove()
     end
   end
-  this:clear_edge_properties("color")
+
+  local that = clone(this)
+
+  for e in this:each_edge("assertion") do
+    if e.assertion == "^" then
+      e:remove()
+    elseif e.v.accept == nil then
+      e:collapse()
+    end
+  end
+  for e in that:each_edge("assertion") do
+    if e.assertion == "^" then
+      e.u.accept = e.v.accept
+      e:collapse()
+    elseif e.v.accept == nil then
+      e:collapse()
+    end
+  end
+
+  local token
+  local u = this:create_vertex()
+  for v in this:each_vertex("start") do
+    token = tokens.union(token, v.start)
+    v.start = nil
+    this:create_edge(u, v)
+  end
+  u.start = token
+
+  local map = this:merge(that)
+  for v in that:each_vertex("start") do
+    local vid = map[v.id]
+    this:get_vertex(vid).start = nil
+    this:create_edge(u, vid).condition = bitset():set(256)
+  end
+
   return this
 end
-
-
 
 return class
