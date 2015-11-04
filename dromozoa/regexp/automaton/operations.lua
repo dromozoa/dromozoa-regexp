@@ -15,10 +15,58 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local bitset = require "dromozoa.commons.bitset"
+local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
 local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local class = {}
+
+function class.get_start(this)
+  local count = this:count_vertex("start")
+  if count ~= 1 then
+    error("only one start state allowed")
+  end
+  return this:each_vertex("start")()
+end
+
+function class.collect_starts(this)
+  local count = this:count_vertex("start")
+  if count == 0 then
+    return nil
+  elseif count == 1 then
+    return this:each_vertex("start")()
+  else
+    local u = this:create_vertex()
+    local token
+    for v in this:each_vertex("start") do
+      token = tokens.union(token, u.start)
+      u.start = nil
+      this:create_edge(u, v)
+    end
+    u.start = token
+    return u
+  end
+end
+
+function class.collect_accepts(this)
+  local count = this:count_vertex("accept")
+  if count == 0 then
+    return nil
+  elseif count == 1 then
+    return this:each_vertex("accept")()
+  else
+    local v = this:create_vertex()
+    local token
+    for u in this:each_vertex("accept") do
+      token = tokens.union(token, u.accept)
+      u.accept = nil
+      this:create_edge(u, v)
+    end
+    v.accept = token
+    return v
+  end
+end
 
 function class.reverse(this)
   local that = graph()
@@ -30,40 +78,33 @@ function class.reverse(this)
     b.accept = a.start
   end
   for a in this:each_edge() do
-    assert(map[a.uid])
-    assert(map[a.vid])
-    local b = that:create_edge(map[a.vid], map[a.uid])
-    -- not clone
-    b.condition = a.condition
+    local condition = a.condition
+    if condition ~= nil then
+      if condition:test(256) then
+        condition = bitset():set(257)
+      elseif condition:test(257) then
+        condition = bitset():set(256)
+      end
+    end
+    that:create_edge(map[a.vid], map[a.uid]).condition = condition
   end
+  class.collect_starts(that)
   return that
 end
 
 function class.branch(this, that)
-  local u = this:create_vertex()
   this:merge(that)
-  local token
-  for v in this:each_vertex("start") do
-    token = tokens.union(token, v.start)
-    v.start = nil
-    this:create_edge(u, v)
-  end
-  u.start = token
+  class.collect_starts(this)
   return this
 end
 
 function class.concat(this, that)
-  local u = this:create_vertex()
-  for v in this:each_vertex("accept") do
-    v.accept = nil
-    this:create_edge(v, u)
-  end
+  local u = class.collect_accepts(this)
+  u.accept = nil
   local map = this:merge(that)
-  for v in that:each_vertex("start") do
-    local vid = map[v.id]
-    this:get_vertex(vid).start = nil
-    this:create_edge(u, vid)
-  end
+  local v = this:get_vertex(map[class.get_start(that).id])
+  v.start = nil
+  this:create_edge(u, v)
   return this
 end
 

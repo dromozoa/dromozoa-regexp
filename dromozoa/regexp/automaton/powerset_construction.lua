@@ -113,7 +113,6 @@ function class:visit(useq)
     u.color = true
     local transitions = self:create_transition(epsilon_closure)
     for vseq, condition in transitions:each() do
-      -- not clone condition
       that:create_edge(u, self:visit(vseq)).condition = condition
     end
   end

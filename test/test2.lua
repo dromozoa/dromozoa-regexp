@@ -18,14 +18,14 @@
 local json = require "dromozoa.commons.json"
 local regexp = require "dromozoa.regexp"
 
-local a = regexp.ere("ab[cd]", 1)
+local a = regexp.ere("ab[cd]|ab+", 1)
 local b = regexp.ere("abc+", 2)
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 -- a:set_union(b)
--- a:concat(b)
 a:branch(b)
+-- a:concat(b)
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()
 
 local a = regexp.ere("a*|(b+$|c*)")
@@ -43,3 +43,9 @@ a:write_graphviz(assert(io.open("test6.dot", "w"))):close()
 -- a:reverse()
 a:minimize()
 a:write_graphviz(assert(io.open("test7.dot", "w"))):close()
+
+local a = regexp.ere("^abc$")
+a:write_graphviz(assert(io.open("test8.dot", "w"))):close()
+a:reverse()
+a:write_graphviz(assert(io.open("test9.dot", "w"))):close()
+

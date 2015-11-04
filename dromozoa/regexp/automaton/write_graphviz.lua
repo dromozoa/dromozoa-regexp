@@ -39,15 +39,18 @@ return function (this, out)
       local accept = u.accept
       if start ~= nil or accept ~= nil then
         local attributes = {}
+        local label = "<" .. u.id
         if start ~= nil then
           attributes.style = "filled"
           attributes.fontcolor = "white"
           attributes.fillcolor = "black"
+          label = label .. " / " .. start
         end
         if accept ~= nil then
           attributes.peripheries = 2
-          attributes.label = "<" .. u.id .. " / " .. accept .. ">"
+          label = label .. " / " .. accept
         end
+        attributes.label = label .. ">"
         return attributes
       end
     end;
