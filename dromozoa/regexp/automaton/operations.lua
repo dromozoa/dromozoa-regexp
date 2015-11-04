@@ -40,8 +40,8 @@ function class.collect_starts(this)
     local u = this:create_vertex()
     local token
     for v in this:each_vertex("start") do
-      token = tokens.union(token, u.start)
-      u.start = nil
+      token = tokens.union(token, v.start)
+      v.start = nil
       this:create_edge(u, v)
     end
     u.start = token

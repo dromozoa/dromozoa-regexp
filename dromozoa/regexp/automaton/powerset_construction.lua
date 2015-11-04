@@ -21,6 +21,7 @@ local hash_table = require "dromozoa.commons.hash_table"
 local keys = require "dromozoa.commons.keys"
 local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
+local operations = require "dromozoa.regexp.automaton.operations"
 local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local class = {}
@@ -120,16 +121,9 @@ function class:visit(useq)
 end
 
 function class:apply()
-  local this = self.this
   local that = self.that
-  local useq = sequence()
-  for u in this:each_vertex("start") do
-    useq:push(u.id)
-  end
-  if not empty(useq) then
-    useq:sort()
-    self:visit(useq).start = self:get_token(useq, "start")
-  end
+  local useq = sequence():push(operations.get_start(self.this).id)
+  self:visit(useq).start = self:get_token(useq, "start")
   that:clear_vertex_properties("color")
   return that
 end
