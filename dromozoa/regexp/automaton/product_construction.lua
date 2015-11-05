@@ -57,7 +57,7 @@ end
 
 local class = {}
 
-function class.new()
+function class.new(model)
   return {
     that = graph();
     map = hash_table();
@@ -107,7 +107,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function ()
+    return setmetatable(class.new(), metatable)
   end;
 })

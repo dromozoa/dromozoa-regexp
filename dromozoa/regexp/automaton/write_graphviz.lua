@@ -68,14 +68,20 @@ return function (this, out)
         else
           local out = sequence_writer()
           out:write("[")
+          local count = 0
           for range in condition:ranges():each() do
+            count = count + 1
+            if count > 1 then
+              out:write(",")
+            end
             local a, b = range[1], range[2]
             if a == b then
-              out:write(escape_range_char(a))
+              -- out:write(escape_range_char(a))
+              out:write(a)
             elseif a == b - 1 then
-              out:write(escape_range_char(a), escape_range_char(b))
+              out:write(a, b)
             else
-              out:write(escape_range_char(a), "-", escape_range_char(b))
+              out:write(a, "-", b)
             end
           end
           out:write("]")

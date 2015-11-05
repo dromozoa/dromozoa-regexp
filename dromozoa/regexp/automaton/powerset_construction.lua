@@ -21,14 +21,14 @@ local hash_table = require "dromozoa.commons.hash_table"
 local keys = require "dromozoa.commons.keys"
 local sequence = require "dromozoa.commons.sequence"
 local graph = require "dromozoa.graph"
-local operations = require "dromozoa.regexp.automaton.operations"
 local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local class = {}
 
-function class.new(this)
+function class.new(model)
   return {
-    this = this;
+    model = model;
+    this = model.graph;
     that = graph();
     map = hash_table();
   }
@@ -122,8 +122,9 @@ end
 
 function class:apply()
   local that = self.that
-  local useq = sequence():push(operations.get_start(self.this).id)
-  self:visit(useq).start = self:get_token(useq, "start")
+  local u = self.model:start()
+  local useq = sequence():push(u.id)
+  self:visit(useq).start = u.start
   that:clear_vertex_properties("color")
   return that
 end
@@ -133,7 +134,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function (_, model)
+    return setmetatable(class.new(model), metatable)
   end;
 })
