@@ -16,6 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local ere_parser = require "dromozoa.regexp.ere_parser"
+local ere_unparser = require "dromozoa.regexp.ere_unparser"
 local to_nfa = require "dromozoa.regexp.to_nfa"
 local automaton = require "dromozoa.regexp.automaton"
 
@@ -28,13 +29,17 @@ end
 -- local b = a:minimize()
 -- b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 
-local a = construct("ab[b-z]+"):minimize()
+local a = construct("ab[cdefg]+x|def|ghi"):minimize()
 local b = construct("a[b-z]c", 2):minimize()
 local c = a:difference(b):minimize()
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 c:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+
+local node, d = a:to_node()
+print(ere_unparser():apply(node))
+d:write_graphviz(assert(io.open("test4.dot", "w"))):close()
 
 --[[
 local a = construct("ab[b-z]+")
