@@ -17,7 +17,6 @@
 
 local bitset = require "dromozoa.commons.bitset"
 local hash_table = require "dromozoa.commons.hash_table"
-local graph = require "dromozoa.graph"
 local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local dummy = {
@@ -57,9 +56,9 @@ end
 
 local class = {}
 
-function class.new(model)
+function class.new(that)
   return {
-    that = graph();
+    that = that;
     map = hash_table();
   }
 end
@@ -107,7 +106,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function ()
-    return setmetatable(class.new(), metatable)
+  __call = function (_, that)
+    return setmetatable(class.new(that), metatable)
   end;
 })

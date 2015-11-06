@@ -15,76 +15,131 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local compile = require "dromozoa.regexp.compile"
-local assertions = require "dromozoa.regexp.automaton.assertions"
-local operations = require "dromozoa.regexp.automaton.operations"
+local bitset = require "dromozoa.commons.bitset"
+local clone = require "dromozoa.commons.clone"
+local graph = require "dromozoa.graph"
+local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
-local write_graphviz = require "dromozoa.regexp.automaton.write_graphviz"
 
-local class = {}
-
-function class.new(this)
-  return {
-    this = this;
-  }
+local function collect(self, key)
+  local count = self:count_vertex(key)
+  if count == 0 then
+    return nil
+  elseif count == 1 then
+    return self:each_vertex(key)()
+  else
+    local u = self:create_vertex()
+    local token
+    for v in self:each_vertex(key) do
+      token = tokens.union(token, v[key])
+      v[key] = nil
+      if key == "start" then
+        self:create_edge(u, v)
+      else
+        self:create_edge(v, u)
+      end
+    end
+    u[key] = token
+    return u
+  end
 end
 
-function class:to_dfa()
-  self.this = powerset_construction(self.this):apply()
-  return self
+local class = clone(graph)
+
+local metatable = {
+  __index = class;
+}
+
+function class:start()
+  if self:count_vertex("start") ~= 1 then
+    error("only one start state allowed")
+  end
+  return self:each_vertex("start")()
+end
+
+function class:can_minimize()
+  local token
+  for u in self:each_vertex("accept") do
+    if token == nil then
+      token = u.accept
+    elseif token ~= u.accept then
+      return false
+    end
+  end
+  return true
+end
+
+function class:collect_starts()
+  return collect(self, "start")
+end
+
+function class:collect_accepts()
+  return collect(self, "accept")
 end
 
 function class:reverse()
-  self.this = operations.reverse(self.this)
-  return self
-end
-
-function class:minimize()
-  -- Brzozowski's algorithm
-  return self:reverse():to_dfa():reverse():to_dfa()
+  local that = class()
+  local map = {}
+  for a in self:each_vertex() do
+    local b = that:create_vertex()
+    map[a.id] = b.id
+    b.start = a.accept
+    b.accept = a.start
+  end
+  for a in self:each_edge() do
+    local condition = a.condition
+    if condition ~= nil then
+      if condition:test(256) then
+        condition = bitset():set(257)
+      elseif condition:test(257) then
+        condition = bitset():set(256)
+      end
+    end
+    that:create_edge(map[a.vid], map[a.uid]).condition = condition
+  end
+  that:collect_starts()
+  return that
 end
 
 function class:branch(that)
-  self.this = operations.branch(self.this, that.this)
-  -- not minimize
-  return self:to_dfa()
-end
-
-function class:concat(that)
-  self.this = operations.concat(self.this, that.this)
-  return self:minimize()
-end
-
-function class:remove_nonmatching_assertions()
-  self.this = assertions.remove_nonmatching_assertions(self.this)
+  self:merge(that)
+  self:collect_starts()
   return self
 end
 
-function class:product_construction(that, fn)
-  self.this = product_construction():apply(self.this, that.this, fn)
-  return self:minimize()
+function class:concat(that)
+  local u = self:collect_accepts()
+  u.accept = nil
+  local map = self:merge(that)
+  local v = self:get_vertex(map[that:start().id])
+  v.start = nil
+  graph:create_edge(u, v)
+end
+
+function class:to_dfa()
+  return powerset_construction(self, class()):apply()
+end
+
+function class:minimize()
+  return self:reverse():to_dfa():reverse():to_dfa()
 end
 
 function class:set_intersection(that)
-  return self:product_construction(that, tokens.intersection)
+  return product_construction(class()):apply(self, that, tokens.intersection)
 end
 
 function class:set_union(that)
-  return self:product_construction(that, tokens.union)
+  return product_construction(class()):apply(self, that, tokens.union)
 end
 
 function class:set_difference(that)
-  return self:product_construction(that, tokens.difference)
+  return product_construction(class()):apply(self, that, tokens.difference)
 end
 
 function class:write_graphviz(out)
-  return write_graphviz(self.this, out)
-end
-
-function class:compile()
-  return compile(self.this)
+  return graph.write_graphviz(self, out, graphviz_visitor())
 end
 
 local metatable = {
@@ -92,7 +147,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function ()
+    return setmetatable(class.new(), metatable)
   end;
 })

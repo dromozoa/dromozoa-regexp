@@ -17,7 +17,39 @@
 
 local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
+local operations = require "dromozoa.regexp.automaton.operations"
 local tokens = require "dromozoa.regexp.automaton.tokens"
+
+local function normalize(this)
+  for e in this:each_edge("condition") do
+    local condition = e.condition
+    if condition:test(256) then
+      e.assertion = "^"
+    elseif condition:test(257) then
+      e.assertion = "$"
+    end
+  end
+  local visitor = {
+    examine_edge = function (self, e)
+      if e.condition == nil or e.assertion ~= nil then
+        e.color = true
+      else
+        return false
+      end
+    end;
+  }
+  operations.get_start(this):dfs(visitor)
+  for u in this:each_vertex("accept") do
+    u:dfs(visitor, "v")
+  end
+  for e in this:each_edge("condition") do
+    if e.assertion ~= nil and e.color == nil then
+      e:remove()
+    end
+  end
+  this:clear_edge_properties("assertion")
+  this:clear_edge_properties("color")
+end
 
 local class = {}
 

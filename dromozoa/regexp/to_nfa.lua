@@ -16,14 +16,14 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local bitset = require "dromozoa.commons.bitset"
-local graph = require "dromozoa.graph"
+local automaton = require "dromozoa.regexp.automaton"
 local locale = require "dromozoa.regexp.locale"
 
 local class = {}
 
 function class.new()
   return {
-    that = graph();
+    that = automaton();
   }
 end
 
