@@ -17,7 +17,7 @@
 
 local translate_range = require "dromozoa.commons.translate_range"
 
-return function(data, s, i, j)
+return function (data, s, i, j)
   local min, max = translate_range(#s, i, j)
 
   local accepts = data.accepts
@@ -27,20 +27,20 @@ return function(data, s, i, j)
   local sa = data.start
   for i = min + 3, max, 4 do
     local a, b, c, d = string.byte(s, i - 3, i)
-    local sd = transitions[sa * 256 + a - 255]
-    if sd == 0 then
+    local sd = transitions[sa * 256 + a]
+    if not sd then
       return accepts[sa], i - 4
     end
-    local sc = transitions[sd * 256 + b - 255]
-    if sc == 0 then
+    local sc = transitions[sd * 256 + b]
+    if not sc then
       return accepts[sd], i - 3
     end
-    local sb = transitions[sc * 256 + c - 255]
-    if sb == 0 then
+    local sb = transitions[sc * 256 + c]
+    if not sb then
       return accepts[sc], i - 2
     end
-    sa = transitions[sb * 256 + d - 255]
-    if sa == 0 then
+    sa = transitions[sb * 256 + d]
+    if not sa then
       return accepts[sb], i - 1
     end
   end
@@ -50,46 +50,46 @@ return function(data, s, i, j)
   if m < i then
     local a, b, c = string.byte(s, m, max)
     local sb
-    if c ~= nil then
-      local sd = transitions[sa * 256 - 255 + a]
-      if sd == 0 then
+    if c then
+      local sd = transitions[sa * 256 + a]
+      if not sd then
         return accepts[sa], i - 4
       end
-      local sc = transitions[sd * 256 - 255 + b]
-      if sc == 0 then
+      local sc = transitions[sd * 256 + b]
+      if not sc then
         return accepts[sd], i - 3
       end
-      sb = transitions[sc * 256 - 255 + c]
-      if sb == 0 then
+      sb = transitions[sc * 256 + c]
+      if not sb then
         return accepts[sc], i - 2
       end
-    elseif b ~= nil then
-      local sc = transitions[sa * 256 - 255 + a]
-      if sc == 0 then
+    elseif b then
+      local sc = transitions[sa * 256 + a]
+      if not sc then
         return accepts[sa], i - 3
       end
-      sb = transitions[sc * 256 - 255 + b]
-      if sb == 0 then
+      sb = transitions[sc * 256 + b]
+      if not sb then
         return accepts[sc], i - 2
       end
     else
-      sb = transitions[sa * 256 - 255 + a]
-      if sb == 0 then
+      sb = transitions[sa * 256 + a]
+      if not sb then
         return accepts[sa], i - 2
       end
     end
     sa = end_assertions[sb]
-    if sa == 0 then
-      return accepts[sb], i - 1
-    else
+    if sa then
       return accepts[sa], i - 1
+    else
+      return accepts[sb], i - 1
     end
   else
     local sb = end_assertions[sa]
-    if sb == 0 then
-      return accepts[sa], i - 1
-    else
+    if sb then
       return accepts[sb], i - 1
+    else
+      return accepts[sa], i - 1
     end
   end
 end

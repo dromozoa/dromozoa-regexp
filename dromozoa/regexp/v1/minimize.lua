@@ -21,20 +21,17 @@ local powerset_construction = require "dromozoa.regexp.powerset_construction"
 local function reverse(this)
   local that = graph()
   local map = {}
-
   for a in this:each_vertex() do
     local b = that:create_vertex()
     map[a.id] = b.id
     b.start = a.accept
     b.accept = a.start
   end
-
   for a in this:each_edge() do
     local b = that:create_edge(map[a.vid], map[a.uid])
     -- not clone
     b.condition = a.condition
   end
-
   return that
 end
 

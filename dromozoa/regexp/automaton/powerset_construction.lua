@@ -20,14 +20,14 @@ local empty = require "dromozoa.commons.empty"
 local hash_table = require "dromozoa.commons.hash_table"
 local keys = require "dromozoa.commons.keys"
 local sequence = require "dromozoa.commons.sequence"
-local graph = require "dromozoa.graph"
+local tokens = require "dromozoa.regexp.automaton.tokens"
 
 local class = {}
 
-function class.new(this)
+function class.new(this, that)
   return {
     this = this;
-    that = graph();
+    that = that;
     map = hash_table();
   }
 end
@@ -36,10 +36,7 @@ function class:get_token(useq, key)
   local this = self.this
   local token
   for uid in useq:each() do
-    local value = this:get_vertex(uid)[key]
-    if value ~= nil and (token == nil or token > value) then
-      token = value
-    end
+    token = tokens.union(token, this:get_vertex(uid)[key])
   end
   return token
 end
@@ -111,29 +108,23 @@ function class:visit(useq)
   local that = self.that
   local epsilon_closure = self:create_epsilon_closure(useq)
   local u = self:get_vertex(epsilon_closure)
-  if not u.visited then
-    u.visited = true
+  if not u.color then
+    u.color = true
     local transitions = self:create_transition(epsilon_closure)
     for vseq, condition in transitions:each() do
-      -- not clone
       that:create_edge(u, self:visit(vseq)).condition = condition
     end
   end
   return u
 end
 
-function class:construct()
-  local this = self.this
-  local useq = sequence()
-  for u in this:each_vertex("start") do
-    useq:push(u.id)
-  end
-  if not empty(useq) then
-    useq:sort()
-    local s = self:visit(useq)
-    s.start = self:get_token(useq, "start")
-    return s
-  end
+function class:apply()
+  local that = self.that
+  local u = self.this:start()
+  local useq = sequence():push(u.id)
+  self:visit(useq).start = u.start
+  that:clear_vertex_properties("color")
+  return that
 end
 
 local metatable = {
@@ -141,7 +132,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function (_, this, that)
+    return setmetatable(class.new(this, that), metatable)
   end;
 })

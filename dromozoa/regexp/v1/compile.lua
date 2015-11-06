@@ -15,50 +15,52 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function (this)
-  local state = 0
-  for u in this:each_vertex("start") do
-    state = state + 1
-    u.state = state
-  end
-  if state ~= 1 then
-    error("only one start state allowed")
-  end
-  local start = state
+local node_to_bitset = require "dromozoa.regexp.node_to_bitset"
 
-  for u in this:each_vertex() do
-    if u.start == nil then
-      state = state + 1
-      u.state = state
-    end
+return function (g)
+  local map = {}
+  local n = 0
+  for u in g:each_vertex() do
+    n = n + 1
+    map[u.id] = n
   end
+
+  local start
+  for u in g:each_vertex("start") do
+    assert(not start)
+    start = map[u.id]
+  end
+  assert(start)
 
   local accepts = {}
-  for i = 1, state do
-    accepts[i] = 0
+  for i = 1, n do
+    accepts[i] = false
   end
-  for u in this:each_vertex("accept") do
-    accepts[u.state] = u.accept
+  for u in g:each_vertex("accept") do
+    accepts[map[u.id]] = u.accept
   end
 
   local transitions = {}
   local end_assertions = {}
-  for u in this:each_vertex() do
-    local cs = u.state
-    local offset = cs * 256 - 255
+  for i = 1, 255 do
+    transitions[i] = false
+  end
+  for u in g:each_vertex() do
+    local cs = map[u.id]
+    local offset = cs * 256
 
     for i = offset, offset + 255 do
-      transitions[i] = 0
+      transitions[i] = false
     end
-    end_assertions[cs] = 0
+    end_assertions[cs] = false
 
     for v, e in u:each_adjacent_vertex() do
-      local ns = v.state
-      local condition = e.condition
-      if condition:test(257) then
+      local ns = map[v.id]
+      local class = node_to_bitset(e.condition)
+      if class:test(256) then
         end_assertions[cs] = ns
       else
-        for k, v in condition:each() do
+        for k, v in class:each() do
           transitions[offset + k] = ns
         end
       end

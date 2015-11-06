@@ -16,14 +16,14 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local bitset = require "dromozoa.commons.bitset"
-local graph = require "dromozoa.graph"
+local automaton = require "dromozoa.regexp.automaton"
 local locale = require "dromozoa.regexp.locale"
 
 local class = {}
 
 function class.new()
   return {
-    that = graph();
+    that = automaton();
   }
 end
 
@@ -53,9 +53,9 @@ function class:discover_node(u)
     u.uid = uid
     u.vid = uid
   elseif tag == "^" then
-    u.condition = bitset():set(257)
-  elseif tag == "$" then
     u.condition = bitset():set(256)
+  elseif tag == "$" then
+    u.condition = bitset():set(257)
   elseif tag == "char" or tag == "\\" then
     u.condition = bitset():set(string.byte(u[2]))
   elseif tag == "." then
@@ -170,17 +170,15 @@ function class:create_duplication(u, v, m, n)
   end
 end
 
-function class:convert(node, token)
+function class:apply(this, token)
   if token == nil then
     token = 1
   end
   local that = self.that
-  node:dfs(self)
-  local s = that:get_vertex(node.uid)
-  local a = that:get_vertex(node.vid)
-  s.start = token
-  a.accept = token
-  return s
+  this:dfs(self)
+  that:get_vertex(this.uid).start = token
+  that:get_vertex(this.vid).accept = token
+  return that
 end
 
 local metatable = {

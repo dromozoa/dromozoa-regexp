@@ -15,21 +15,36 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local automaton = require "dromozoa.regexp.automaton"
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local match = require "dromozoa.regexp.match"
-local to_nfa = require "dromozoa.regexp.to_nfa"
+local class = {}
 
-local class = {
-  match = match;
-}
-
-function class.ere(this, token)
-  return automaton(to_nfa():apply(ere_parser(this):apply(), token)):minimize()
+function class.intersection(a, b)
+  if a ~= nil and b ~= nil then
+    if a < b then
+      return a
+    else
+      return b
+    end
+  end
 end
 
-local metatable = {
-  __index = class;
-}
+function class.union(a, b)
+  if a ~= nil then
+    if b ~= nil then
+      if a < b then
+        return a
+      else
+        return b
+      end
+    end
+    return a
+  end
+  return b
+end
+
+function class.difference(a, b)
+  if a ~= nil and b == nil then
+    return a
+  end
+end
 
 return class
