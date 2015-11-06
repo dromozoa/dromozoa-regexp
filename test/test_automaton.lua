@@ -30,7 +30,7 @@ end
 
 local a = construct("ab[b-z]+"):minimize()
 local b = construct("a[b-z]c", 2):minimize()
-local c = a:set_difference(b):minimize()
+local c = a:difference(b):minimize()
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()

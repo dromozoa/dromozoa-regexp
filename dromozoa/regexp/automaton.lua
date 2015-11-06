@@ -126,15 +126,15 @@ function class:minimize()
   return self:reverse():to_dfa():reverse():to_dfa()
 end
 
-function class:set_intersection(that)
+function class:intersection(that)
   return product_construction(class()):apply(self, that, tokens.intersection)
 end
 
-function class:set_union(that)
+function class:union(that)
   return product_construction(class()):apply(self, that, tokens.union)
 end
 
-function class:set_difference(that)
+function class:difference(that)
   return product_construction(class()):apply(self, that, tokens.difference)
 end
 
