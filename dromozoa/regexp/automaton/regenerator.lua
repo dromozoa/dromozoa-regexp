@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
@@ -66,20 +67,30 @@ function class:eliminate(this, u)
     end
   end
   local node = self:create_node("concat")
-  node:append_child(b.node)
-  if c ~= nil then
+  if b.node ~= nil then
+    node:append_child(b.node)
+  end
+  if c ~= nil and c.node ~= nil then
     local node = node:append_child(self:create_node("*"))
     node:append_child(c.node)
     c:remove()
   end
-  node:append_child(d.node)
+  if d.node ~= nil then
+    node:append_child(d.node)
+  end
   if a == nil then
     this:create_edge(b.u, d.v).node = node
   else
-    local branch = self:create_node("|")
-    branch:append_child(a.node)
-    branch:append_child(node)
-    a.node = branch
+    if a.node == nil then
+      local maybe = self:create_node("?")
+      maybe:append_child(node)
+      a.node = maybe
+    else
+      local branch = self:create_node("|")
+      branch:append_child(a.node)
+      branch:append_child(node)
+      a.node = branch
+    end
   end
   local v = b.v
   b:remove()
@@ -89,6 +100,18 @@ function class:eliminate(this, u)
 end
 
 function class:apply(this)
+  local u = this:create_vertex()
+  local v = this:start()
+  u.start = v.start
+  v.start = nil
+  this:create_edge(u, v)
+
+  local u = this:collect_accepts()
+  local v = this:create_vertex()
+  v.accept = u.accept
+  u.accept = nil
+  this:create_edge(u, v)
+
   for e in this:each_edge("condition") do
     local condition = e.condition
     if condition:test(256) then
@@ -98,10 +121,7 @@ function class:apply(this)
     else
       local count = condition:count()
       if count == 1 then
-        for byte in condition:each() do
-          e.node = self:create_node("char", string.char(byte))
-          break
-        end
+        e.node = self:create_node("char", string.char((apply(condition:each()))))
       elseif count == 256 then
         e.node = self:create_node(".")
       else

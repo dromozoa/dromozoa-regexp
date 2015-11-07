@@ -70,6 +70,8 @@ function class:finish_edge(u, v)
     u.regexp:push(v.regexp)
   elseif tag == "*" then
     u.regexp = v.regexp .. "*"
+  elseif tag == "?" then
+    u.regexp = v.regexp .. "?"
   end
   print("finish_edge", tag, u.regexp, v.regexp)
 end
@@ -79,7 +81,7 @@ function class:finish_node(u)
   if tag == "|" then
     u.regexp = "(" .. u.regexp:concat("|") .. ")"
   elseif tag == "concat" then
-    u.regexp = u.regexp:concat()
+    u.regexp = "(" .. u.regexp:concat() .. ")"
   elseif tag == "[" then
     if u[2] then
       u.regexp = "[^" .. u.regexp:concat() .. "]"

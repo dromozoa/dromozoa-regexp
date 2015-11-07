@@ -29,15 +29,17 @@ end
 -- local b = a:minimize()
 -- b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 
-local a = construct("ab[cdefg]+x|def|ghi"):minimize()
-local b = construct("a[b-z]c", 2):minimize()
-local c = a:difference(b):minimize()
+-- construct("b*"):write_graphviz(assert(io.open("test5.dot", "w"))):close()
+
+local a = construct(".{8}"):minimize()
+local b = construct("(\\\\[[:xdigit:]])+", 2):minimize()
+local c = a:intersection(b):minimize()
 
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 c:write_graphviz(assert(io.open("test3.dot", "w"))):close()
 
-local node, d = a:to_node()
+local node, d = c:to_node()
 print(ere_unparser():apply(node))
 d:write_graphviz(assert(io.open("test4.dot", "w"))):close()
 
