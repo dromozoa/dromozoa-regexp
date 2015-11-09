@@ -15,46 +15,27 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local sequence_writer = require "dromozoa.commons.sequence_writer"
-local graphviz = require "dromozoa.regexp.graphviz"
+local clone = require "dromozoa.commons.clone"
+local push = require "dromozoa.commons.push"
+local tree = require "dromozoa.tree"
+local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
+local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
 
-local class = {}
+local class = clone(tree)
 
-function class.new()
-  return {}
+function class:create_node(...)
+  local node = tree.create_node(self)
+  push(node, 0, ...)
+  return node
 end
 
-function class:graph_attributes()
-  return {
-    rankdir = "LR";
-  }
+function class:setup_condition()
+  setup_condition(self):apply()
+  return self
 end
 
-function class:node_attributes(u)
-  local start = u.start
-  local accept = u.accept
-  if start ~= nil or accept ~= nil then
-    local attributes = {}
-    local out = sequence_writer():write("<", u.id)
-    if start ~= nil then
-      attributes.style = "filled"
-      attributes.fillcolor = "black"
-      attributes.fontcolor = "white"
-      out:write("/", start)
-    end
-    if accept ~= nil then
-      attributes.peripheries = 2
-      out:write("/", accept)
-    end
-    attributes.label = out:write(">"):concat()
-    return attributes
-  end
-end
-
-function class:edge_attributes(e)
-  return {
-    label = "<" .. graphviz.quote_condition(e.condition) .. ">";
-  }
+function class:write_graphviz(out)
+  return tree.write_graphviz(self, out, graphviz_visitor())
 end
 
 local metatable = {

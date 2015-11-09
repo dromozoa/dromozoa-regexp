@@ -18,7 +18,7 @@
 local matcher = require "dromozoa.commons.matcher"
 local push = require "dromozoa.commons.push"
 local sequence = require "dromozoa.commons.sequence"
-local tree = require "dromozoa.tree"
+local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
 local class = {}
 
@@ -28,7 +28,7 @@ function class.new(this)
   end
   return {
     this = this;
-    that = tree();
+    that = syntax_tree();
     stack = sequence();
   }
 end

@@ -16,6 +16,7 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local sequence_writer = require "dromozoa.commons.sequence_writer"
+local xml = require "dromozoa.commons.xml"
 local graphviz = require "dromozoa.regexp.graphviz"
 
 local class = {}
@@ -24,36 +25,15 @@ function class.new()
   return {}
 end
 
-function class:graph_attributes()
-  return {
-    rankdir = "LR";
-  }
-end
-
 function class:node_attributes(u)
-  local start = u.start
-  local accept = u.accept
-  if start ~= nil or accept ~= nil then
-    local attributes = {}
-    local out = sequence_writer():write("<", u.id)
-    if start ~= nil then
-      attributes.style = "filled"
-      attributes.fillcolor = "black"
-      attributes.fontcolor = "white"
-      out:write("/", start)
-    end
-    if accept ~= nil then
-      attributes.peripheries = 2
-      out:write("/", accept)
-    end
-    attributes.label = out:write(">"):concat()
-    return attributes
+  local out = sequence_writer():write("<<table border=\"0\" cellborder=\"1\" cellspacing=\"0\">")
+  for i, v in ipairs(u) do
+    out:write("<tr><td>", i, "</td><td>", xml.escape(u[i], "%W"), "</td></tr>")
   end
-end
-
-function class:edge_attributes(e)
+  out:write("<tr><td>condition</td><td>", graphviz.quote_condition(u.condition), "</td></tr>")
   return {
-    label = "<" .. graphviz.quote_condition(e.condition) .. ">";
+    shape = "plaintext";
+    label = out:write("</table>>"):concat();
   }
 end
 
