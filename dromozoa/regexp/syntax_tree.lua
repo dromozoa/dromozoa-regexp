@@ -19,6 +19,7 @@ local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
+local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
 
 local class = clone(tree)
@@ -31,6 +32,11 @@ end
 
 function class:setup_condition()
   setup_condition(self):apply()
+  return self
+end
+
+function class:normalize()
+  normalize(self):apply()
   return self
 end
 

@@ -15,23 +15,31 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local ere_unparser = require "dromozoa.regexp.ere_unparser"
+local class = {}
 
-local function parse(regexp)
-  return ere_parser(regexp):apply()
+function class.new(this)
+  return {
+    this = this;
+  }
 end
 
--- local a = construct("^ab\\^[b-z]+")
--- a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
--- local b = a:minimize()
--- b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+function class:discover_node(u)
+  local tag = u[1]
+  if tag == "\\" then
+    u[1] = "char"
+  end
+end
 
--- construct("b*"):write_graphviz(assert(io.open("test5.dot", "w"))):close()
+function class:apply()
+  self.this:dfs(self)
+end
 
-local a = parse("abc|d*|\\|e+|[[:alpha:]0-9]")
-a:tree():write_graphviz(assert(io.open("test1.dot", "w"))):close()
-a:tree():normalize()
-a:tree():write_graphviz(assert(io.open("test2.dot", "w"))):close()
-a:tree():setup_condition()
-a:tree():write_graphviz(assert(io.open("test3.dot", "w"))):close()
+local metatable = {
+  __index = class;
+}
+
+return setmetatable(class, {
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
+  end;
+})
