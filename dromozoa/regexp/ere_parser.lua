@@ -216,7 +216,7 @@ function class:apply(token)
     if #stack == 1 then
       local node = stack:pop()
       node.start = token
-      return node, this
+      return self.that, this
     else
       self:raise()
     end

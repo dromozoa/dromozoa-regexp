@@ -31,10 +31,7 @@ function class:apply()
     for v in this:each_node() do
       local u = v:parent()
       if u ~= nil then
-        if v:count_children() == 1 then
-          v:collapse():delete()
-          done = false
-        elseif u[1] == v[1] then
+        if u[1] == v[1] or v:count_children() == 1 then
           v:collapse():delete()
           done = false
         end
