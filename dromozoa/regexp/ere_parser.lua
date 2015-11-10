@@ -34,9 +34,7 @@ function class.new(this)
 end
 
 function class:create_node(...)
-  local node = self.that:create_node()
-  push(node, 0, ...)
-  return node
+  return self.that:create_node(...)
 end
 
 function class:raise(message)
@@ -208,12 +206,17 @@ function class:end_range()
   end
 end
 
-function class:apply()
+function class:apply(token)
+  if token == nil then
+    token = 1
+  end
   local this = self.this
   local stack = self.stack
   if self:extended_reg_exp() then
     if #stack == 1 then
-      return stack:pop(), this
+      local node = stack:pop()
+      node.start = token
+      return node, this
     else
       self:raise()
     end

@@ -27,6 +27,7 @@ end
 
 function class:node_attributes(u)
   local out = sequence_writer():write("<<table border=\"0\" cellborder=\"1\" cellspacing=\"0\">")
+  out:write("<tr><td>id</td><td>", u.id, "</td></tr>")
   for i, v in ipairs(u) do
     out:write("<tr><td>", i, "</td><td>", xml.escape(u[i], "%W"), "</td></tr>")
   end

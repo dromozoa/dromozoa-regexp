@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
@@ -23,6 +24,13 @@ local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
 
 local class = clone(tree)
+
+function class:start()
+  if self:count_vertex("start") ~= 1 then
+    error("only one start node allowed")
+  end
+  return apply(self:each_node("start"))
+end
 
 function class:create_node(...)
   local node = tree.create_node(self)

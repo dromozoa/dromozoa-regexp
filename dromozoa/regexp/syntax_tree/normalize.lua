@@ -23,15 +23,24 @@ function class.new(this)
   }
 end
 
-function class:discover_node(u)
-  local tag = u[1]
-  if tag == "\\" then
-    u[1] = "char"
-  end
-end
-
 function class:apply()
-  self.this:dfs(self)
+  local this = self.this
+  local done
+  repeat
+    done = true
+    for v in this:each_node() do
+      local u = v:parent()
+      if u ~= nil then
+        if v:count_children() == 1 then
+          v:collapse():delete()
+          done = false
+        elseif u[1] == v[1] then
+          v:collapse():delete()
+          done = false
+        end
+      end
+    end
+  until done
 end
 
 local metatable = {
