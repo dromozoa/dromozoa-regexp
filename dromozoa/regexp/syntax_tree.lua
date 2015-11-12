@@ -20,6 +20,7 @@ local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
+local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local optimize = require "dromozoa.regexp.syntax_tree.optimize"
 local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
 
@@ -43,9 +44,18 @@ function class:setup_condition()
   return self
 end
 
+function class:normalize()
+  normalize(self):apply()
+  return self
+end
+
 function class:optimize()
   optimize(self):apply()
   return self
+end
+
+function class:to_nfa(that)
+  return to_nfa(self, that):apply()
 end
 
 function class:write_graphviz(out)

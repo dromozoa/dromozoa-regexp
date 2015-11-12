@@ -30,9 +30,10 @@ end
 -- construct("b*"):write_graphviz(assert(io.open("test5.dot", "w"))):close()
 
 -- local a = parse("abc|d*|\\|e+|[[:alpha:]0-9]")
-local a = parse("a|((((^b|c)|d)))")
+-- local a = parse("xxx(abc){1,4}")
+local a = parse("abc(def(g(h((i)))))")
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-a:optimize()
+a:normalize()
 a:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-a:setup_condition()
+a:optimize()
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()

@@ -23,23 +23,51 @@ function class.new(this)
   }
 end
 
-function class:apply()
+function class:normalize_duplication(u, v, m, n)
   local this = self.this
-  this:dfs({
-    finish_edge = function (_, u, v)
-      local tag = v[1]
-      if (tag == "|" or tag == "concat") and v:count_children() == 1 then
-        v:collapse():delete()
-      end
+  u[1] = "concat"
+  u[2] = nil
+  u[3] = nil
+  for i = 1, m do
+    v:insert_sibling(v:duplicate())
+  end
+  if n == nil then
+    v:insert_sibling(this:create_node("*")):append_child(v:duplicate())
+  else
+    for i = m + 1, n do
+      v:insert_sibling(this:create_node("?")):append_child(v:duplicate())
+    end
+  end
+  v:dfs({
+    finish_node = function (_, u)
+      u:remove():delete()
     end;
   })
-  this:dfs({
-    finish_edge = function (_, u, v)
-      if u[1] == "concat" and v[1] == "concat" then
-        v:collapse():delete()
-      end
-    end;
-  })
+end
+
+function class:finish_edge(u, v)
+  local this = self.this
+  local tag = u[1]
+  if tag == "+" then
+    self:normalize_duplication(u, v, 1)
+  elseif tag == "{m" then
+    local m = u[2]
+    self:normalize_duplication(u, v, m, m)
+  elseif tag == "{m," then
+    local m = u[2]
+    self:normalize_duplication(u, v, m)
+  elseif tag == "{m,n" then
+    local m = u[2]
+    local n = u[3]
+    if m > n then
+      error("invalid interval expression {" .. m .. "," .. n .. "}")
+    end
+    self:normalize_duplication(u, v, m, n)
+  end
+end
+
+function class:apply()
+  self.this:dfs(self)
 end
 
 local metatable = {
