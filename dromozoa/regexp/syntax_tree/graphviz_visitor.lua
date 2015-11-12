@@ -31,7 +31,14 @@ function class:node_attributes(u)
   for i, v in ipairs(u) do
     out:write("<tr><td>", i, "</td><td>", xml.escape(u[i], "%W"), "</td></tr>")
   end
-  out:write("<tr><td>condition</td><td>", graphviz.quote_condition(u.condition), "</td></tr>")
+  local condition = u.condition
+  if condition ~= nil then
+    out:write("<tr><td>condition</td><td>", graphviz.quote_condition(condition), "</td></tr>")
+  end
+  local regexp = u.regexp
+  if type(regexp) == "string" then
+    out:write("<tr><td>regexp</td><td>", regexp, "</td></tr>")
+  end
   return {
     shape = "plaintext";
     label = out:write("</table>>"):concat();

@@ -82,7 +82,6 @@ function class:finish_node(u)
   elseif tag == "[-" then
     u.regexp = u.regexp.concat("-")
   end
-  print("finish_node", tag, u.regexp)
 end
 
 function class:apply(this)

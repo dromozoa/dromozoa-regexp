@@ -22,9 +22,15 @@ local tree = require "dromozoa.tree"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
 local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local optimize = require "dromozoa.regexp.syntax_tree.optimize"
+local parse = require "dromozoa.regexp.syntax_tree.parse"
 local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
+local unparse = require "dromozoa.regexp.syntax_tree.unparse"
 
 local class = clone(tree)
+
+function class.parse(this, token)
+  return parse(this, class()):apply(token)
+end
 
 function class:start()
   if self:count_node("start") ~= 1 then
@@ -56,6 +62,10 @@ end
 
 function class:to_nfa(that)
   return to_nfa(self, that):apply()
+end
+
+function class:unparse()
+  return unparse(self):apply()
 end
 
 function class:write_graphviz(out)

@@ -15,16 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local ere_unparser = require "dromozoa.regexp.ere_unparser"
-
-local function parse(regexp)
-  return ere_parser(regexp):apply()
-end
-
-local function unparse(ast)
-  return ere_unparser(ast):apply()
-end
+local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
 -- local a = construct("^ab\\^[b-z]+")
 -- a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
@@ -35,8 +26,9 @@ end
 
 -- local a = parse("abc|d*|\\|e+|[[:alpha:]0-9]")
 -- local a = parse("xxx(abc){1,4}")
-local a = parse("abc(def(g(h((i)))))")
-print(unparse(a))
+local a = syntax_tree.parse("abc(def(g(h((i)))))")
+print(a:unparse())
+a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 --[[
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 a:normalize()

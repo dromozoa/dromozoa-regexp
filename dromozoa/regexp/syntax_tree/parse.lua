@@ -18,17 +18,16 @@
 local matcher = require "dromozoa.commons.matcher"
 local push = require "dromozoa.commons.push"
 local sequence = require "dromozoa.commons.sequence"
-local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
 local class = {}
 
-function class.new(this)
+function class.new(this, that)
   if type(this) == "string" then
     this = matcher(this)
   end
   return {
     this = this;
-    that = syntax_tree();
+    that = that;
     stack = sequence();
   }
 end
@@ -230,7 +229,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function (_, this, that)
+    return setmetatable(class.new(this, that), metatable)
   end;
 })
