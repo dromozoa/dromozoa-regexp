@@ -22,6 +22,10 @@ local function parse(regexp)
   return ere_parser(regexp):apply()
 end
 
+local function unparse(ast)
+  return ere_unparser(ast):apply()
+end
+
 -- local a = construct("^ab\\^[b-z]+")
 -- a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 -- local b = a:minimize()
@@ -32,8 +36,11 @@ end
 -- local a = parse("abc|d*|\\|e+|[[:alpha:]0-9]")
 -- local a = parse("xxx(abc){1,4}")
 local a = parse("abc(def(g(h((i)))))")
+print(unparse(a))
+--[[
 a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 a:normalize()
 a:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 a:optimize()
 a:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+]]

@@ -27,7 +27,7 @@ local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
 local class = clone(tree)
 
 function class:start()
-  if self:count_vertex("start") ~= 1 then
+  if self:count_node("start") ~= 1 then
     error("only one start node allowed")
   end
   return apply(self:each_node("start"))

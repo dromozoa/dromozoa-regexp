@@ -31,7 +31,7 @@ function class:discover_node(u)
     u.uid = that:create_vertex().id
     u.vid = that:create_vertex().id
   elseif tag == "concat" then
-    local uid = that:create_vertex()
+    local uid = that:create_vertex().id
     u.uid = uid
     u.vid = uid
   end
@@ -52,23 +52,10 @@ function class:finish_edge(u, v)
     end
     u.vid = uid
   elseif tag == "*" then
+    local uid = that:create_vertex().id
     self:create_duplication(u, v, 0)
-  elseif tag == "+" then
-    self:create_duplication(u, v, 1)
   elseif tag == "?" then
     self:create_duplication(u, v, 0, 1)
-  elseif tag == "{m" then
-    local m = u[2]
-    self:create_duplication(u, v, m, m)
-  elseif tag == "{m," then
-    self:create_duplication(u, v, u[2])
-  elseif tag == "{m,n" then
-    local m = u[2]
-    local n = u[3]
-    if m > n then
-      error("invalid interval expression {" .. m .. "," .. n .. "}")
-    end
-    self:create_duplication(u, v, m, n)
   end
 end
 

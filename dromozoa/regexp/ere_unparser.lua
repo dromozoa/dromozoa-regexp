@@ -17,88 +17,81 @@
 
 local sequence = require "dromozoa.commons.sequence"
 
-local function escape_range_char(value)
-  if value:match("^[%^%-%]]$") then
-    return "[." .. value .. ".]"
-  else
-    return value
-  end
-end
-
 local class = {}
 
 local metatable = {
   __index = class;
 }
 
-function class.new()
-  return {}
-end
-
-function class:examine_edge(u, v)
-  if u[1] == "[-" then
-    if v:is_first_child() then
-      local w = v:next_sibling()
-      u.regexp = escape_range_char(v[2]) .. "-" .. escape_range_char(w[2])
-    end
-    return false
-  end
+function class.new(this)
+  return {
+    this = this;
+  }
 end
 
 function class:discover_node(u)
   local tag = u[1]
-  if tag == "|" or tag =="concat" or tag =="[" then
+  if tag == "|" or tag =="concat" or tag =="[" or tag == "[-" then
     u.regexp = sequence()
   elseif tag == "^" or tag == "$" or tag == "." then
     u.regexp = tag
-  elseif tag == "char" or tag == "\\" then
-    local value = u[2]
-    if value:match("^[%^%.%[%$%(%)%|%*%+%?%{%\\]$") then
-      u.regexp = "\\" .. value
-    else
-      u.regexp = value
-    end
-  elseif tag == "[char" or tag == "[." then
-    u.regexp = escape_range_char(u[2])
+  elseif tag == "char" or tag == "[char" then
+    u.regexp = u[2]
+  elseif tag == "\\" then
+    u.regexp = "\\" .. char
+  elseif tag == "[=" then
+    u.regexp = "[=" .. u[2] .. "=]"
+  elseif tag == "[:" then
+    u.regexp = "[:" .. u[2] .. ":]"
+  elseif tag == "[." then
+    u.regexp = "[." .. u[2] .. ".]"
   end
-  print("discover_node", tag, u.regexp)
 end
 
 function class:finish_edge(u, v)
   local tag = u[1]
-  if tag == "|" or tag == "concat" or tag == "[" then
+  if tag == "|" or tag == "concat" or tag == "[" or tag == "[-" then
     u.regexp:push(v.regexp)
-  elseif tag == "*" then
-    u.regexp = v.regexp .. "*"
-  elseif tag == "?" then
-    u.regexp = v.regexp .. "?"
+  elseif tag == "+" or tag == "*" or tag == "?" then
+    u.regexp = v.regexp .. tag
+  elseif tag == "{m" then
+    u.regexp = v.regexp .. "{" .. u[2] .. "}"
+  elseif tag == "{m," then
+    u.regexp = v.regexp .. "{" .. u[2] .. ",}"
+  elseif tag == "{m,n" then
+    u.regexp = v.regexp .. "{" .. u[2] .. "," .. u[3] .. "}"
   end
-  print("finish_edge", tag, u.regexp, v.regexp)
 end
 
 function class:finish_node(u)
   local tag = u[1]
   if tag == "|" then
-    u.regexp = "(" .. u.regexp:concat("|") .. ")"
+    if u:is_root() then
+      u.regexp = u.regexp:concat("|")
+    else
+      u.regexp = "(" .. u.regexp:concat("|") .. ")"
+    end
   elseif tag == "concat" then
-    u.regexp = "(" .. u.regexp:concat() .. ")"
+    u.regexp = u.regexp:concat()
   elseif tag == "[" then
     if u[2] then
       u.regexp = "[^" .. u.regexp:concat() .. "]"
     else
       u.regexp = "[" .. u.regexp:concat() .. "]"
     end
+  elseif tag == "[-" then
+    u.regexp = u.regexp.concat("-")
   end
   print("finish_node", tag, u.regexp)
 end
 
 function class:apply(this)
-  this:dfs(self)
-  return this.regexp
+  self.this:dfs(self)
+  return self.this:start().regexp
 end
 
 return setmetatable(class, {
-  __call = function ()
-    return setmetatable(class.new(), metatable)
+  __call = function (_, this)
+    return setmetatable(class.new(this), metatable)
   end;
 })
