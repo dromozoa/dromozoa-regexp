@@ -15,24 +15,11 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local syntax_tree = require "dromozoa.regexp.syntax_tree"
+local regexp = require "dromozoa.regexp"
 
--- local a = construct("^ab\\^[b-z]+")
--- a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
--- local b = a:minimize()
--- b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+local function test_parse(this)
+  local ast = regexp.ere(this)
+  assert(ast:unparse() == this)
+end
 
--- construct("b*"):write_graphviz(assert(io.open("test5.dot", "w"))):close()
-
--- local a = parse("abc|d*|\\|e+|[[:alpha:]0-9]")
--- local a = parse("xxx(abc){1,4}")
-local a = syntax_tree.parse("abc(def(g(h((i)))))")
-print(a:unparse())
-a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
---[[
-a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-a:normalize()
-a:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-a:optimize()
-a:write_graphviz(assert(io.open("test3.dot", "w"))):close()
-]]
+test_parse("abc")

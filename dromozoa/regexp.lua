@@ -16,17 +16,18 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local automaton = require "dromozoa.regexp.automaton"
-local ere_parser = require "dromozoa.regexp.ere_parser"
-local match = require "dromozoa.regexp.match"
-local to_nfa = require "dromozoa.regexp.to_nfa"
+local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
 local class = {
-  match = match;
+  automaton = automaton;
+  syntax_tree = syntax_tree;
 }
 
 function class.ere(this, token)
-  return automaton(to_nfa():apply(ere_parser(this):apply(), token)):minimize()
+  return syntax_tree.parse(this, token)
 end
+
+getmetatable(syntax_tree).super = class
 
 local metatable = {
   __index = class;
