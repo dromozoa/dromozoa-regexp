@@ -32,10 +32,6 @@ function class.ere(this, token)
   return ere_parser(this, class()):apply(token)
 end
 
-function class:to_ere()
-  return ere_unparser(self):apply()
-end
-
 function class:start()
   if self:count_node("start") ~= 1 then
     error("only one start node allowed")
@@ -49,13 +45,21 @@ function class:create_node(...)
   return node
 end
 
-function class:setup_condition()
-  setup_condition(self):apply()
-  return self
+function class:to_ere()
+  return ere_unparser(self):apply()
+end
+
+function class:write_graphviz(out)
+  return tree.write_graphviz(self, out, graphviz_visitor())
 end
 
 function class:normalize()
   normalize(self):apply()
+  return self
+end
+
+function class:setup_condition()
+  setup_condition(self):apply()
   return self
 end
 
@@ -66,10 +70,6 @@ end
 
 function class:to_nfa(that)
   return to_nfa(self, that):apply()
-end
-
-function class:write_graphviz(out)
-  return tree.write_graphviz(self, out, graphviz_visitor())
 end
 
 local metatable = {

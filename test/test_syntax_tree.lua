@@ -19,8 +19,10 @@ local regexp = require "dromozoa.regexp"
 
 local function test_parse(this)
   local ast = regexp.syntax_tree.ere(this)
-  assert(ast:to_ere() == this)
-  ast:write_graphviz(assert(io.open("test.dot", "w"))):close()
+  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+  local result = ast:to_ere()
+  ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  assert(result == this)
 end
 
 test_parse("foo")
@@ -38,3 +40,29 @@ test_parse("[*-]")
 test_parse("[*--]")
 test_parse("a(bc(def))")
 test_parse("((((foo))))")
+
+local function test_normalize(this, that)
+  local ast = regexp.syntax_tree.ere(this)
+  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+  ast = ast:normalize()
+  ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  local result = ast:to_ere()
+  ast:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+  if that == nil then
+    assert(result == this)
+  else
+    assert(result == that)
+    test_normalize(that)
+  end
+end
+
+test_normalize("foo")
+test_normalize("foo+", "fooo*")
+test_normalize("(foo)+", "(foo)(foo)*")
+test_normalize("a+|b*|c?|d{2}|e{2,}|f{2,4}", "aa*|b*|c?|dd|eee*|fff?f?")
+test_normalize("foo(bar){0}", "foo.{0}")
+test_normalize("foo(bar){0}baz", "foo.{0}baz")
+test_normalize("foo|(bar){0}", "foo|.{0}")
+test_normalize("foo|(bar){0}|baz", "foo|.{0}|baz")
+test_normalize("a{0}", ".{0}")
+test_normalize("a{0}|b{0}", ".{0}|.{0}")

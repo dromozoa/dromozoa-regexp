@@ -45,6 +45,8 @@ function class:discover_node(u)
     u.regexp = "[:" .. u[2] .. ":]"
   elseif tag == "[." then
     u.regexp = "[." .. u[2] .. ".]"
+  elseif tag == "epsilon" then
+    u.regexp = ".{0}"
   end
 end
 

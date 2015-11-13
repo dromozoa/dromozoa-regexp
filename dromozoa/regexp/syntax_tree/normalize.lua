@@ -25,7 +25,11 @@ end
 
 function class:normalize_duplication(u, v, m, n)
   local this = self.this
-  u[1] = "concat"
+  if n == 0 then
+    u[1] = "epsilon"
+  else
+    u[1] = "concat"
+  end
   u[2] = nil
   u[3] = nil
   for i = 1, m do
@@ -46,7 +50,6 @@ function class:normalize_duplication(u, v, m, n)
 end
 
 function class:finish_edge(u, v)
-  local this = self.this
   local tag = u[1]
   if tag == "+" then
     self:normalize_duplication(u, v, 1)

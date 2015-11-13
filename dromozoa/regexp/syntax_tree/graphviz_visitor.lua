@@ -36,7 +36,7 @@ function class:node_attributes(u)
     out:write("<tr><td>condition</td><td>", graphviz.quote_condition(condition), "</td></tr>")
   end
   local regexp = u.regexp
-  if type(regexp) == "string" then
+  if regexp ~= nil then
     out:write("<tr><td>regexp</td><td>", regexp, "</td></tr>")
   end
   return {
