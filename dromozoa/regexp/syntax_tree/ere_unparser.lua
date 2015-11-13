@@ -38,7 +38,7 @@ function class:discover_node(u)
   elseif tag == "char" or tag == "[char" then
     u.regexp = u[2]
   elseif tag == "\\" then
-    u.regexp = "\\" .. char
+    u.regexp = "\\" .. u[2]
   elseif tag == "[=" then
     u.regexp = "[=" .. u[2] .. "=]"
   elseif tag == "[:" then

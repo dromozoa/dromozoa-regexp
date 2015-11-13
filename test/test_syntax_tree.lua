@@ -72,7 +72,6 @@ test_normalize("a{0}", ".{0}")
 test_normalize("a{0}|b{0}", ".{0}|.{0}")
 
 local function test_condition(this, ...)
-  local ast = regexp.syntax_tree.ere(this)
   local that = bitset()
   for v in sequence():push(...):each() do
     if type(v) == "string" then
@@ -81,6 +80,7 @@ local function test_condition(this, ...)
       that:set_union(v)
     end
   end
+  local ast = regexp.syntax_tree.ere(this)
   ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
   ast:node_to_condition()
   ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
@@ -119,3 +119,36 @@ test_nfa("a{2,4}")
 test_nfa("(foo)*")
 test_nfa("(foo)?")
 test_nfa("a+|b*|c?|d{2}|e{2,}|f{2,4}")
+
+local function test_condition(this, that)
+  local ast = regexp.syntax_tree.ere(this)
+  ast:node_to_condition()
+  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+  local u = apply(apply(ast:start():each_child()):each_child())
+  local v = ast:condition_to_node(u.condition)
+  u:insert_sibling(v)
+  u:dfs({
+    finish_node = function (_, u)
+      u:remove():delete()
+    end;
+  })
+  ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  local result = ast:to_ere()
+  if that == nil then
+    assert(result == this)
+  else
+    assert(result == that)
+    test_condition(that)
+  end
+end
+
+test_condition(".", ".")
+test_condition("a", "a")
+test_condition("^", "^")
+test_condition("\\^", "\\^")
+test_condition("[a-z]")
+test_condition("[^a-z]")
+test_condition("[[:alnum:]]", "[0-9A-Za-z]")
+test_condition("[[:alpha:]_]", "[A-Z_a-z]")
+test_condition("[*-]", "[*[.-.]]")
+test_condition("[*--]", "[*-[.-.]]")

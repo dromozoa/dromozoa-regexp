@@ -38,7 +38,7 @@ function class:node_attributes(u)
   for i, v in ipairs(u) do
     out:write("<tr><td>", i, "</td><td>", xml.escape(v, "%W"), "</td></tr>")
   end
-  out:write("<tr><td>condition</td><td>", graphviz.quote_condition(condition), "</td></tr>")
+  out:write("<tr><td>condition</td><td>", graphviz.quote_condition(u.condition), "</td></tr>")
   write_property(out, u, "regexp")
   write_property(out, u, "uid")
   write_property(out, u, "vid")

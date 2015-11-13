@@ -19,6 +19,7 @@ local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
+local condition_to_node = require "dromozoa.regexp.syntax_tree.condition_to_node"
 local ere_parser = require "dromozoa.regexp.syntax_tree.ere_parser"
 local ere_unparser = require "dromozoa.regexp.syntax_tree.ere_unparser"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
@@ -61,6 +62,10 @@ end
 function class:node_to_condition()
   node_to_condition(self):apply()
   return self
+end
+
+function class:condition_to_node(condition)
+  return condition_to_node(self):apply(condition)
 end
 
 function class:to_nfa(token)
