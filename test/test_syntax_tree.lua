@@ -99,8 +99,8 @@ test_condition("[^a-z]", bitset():set(0, string.byte("a") - 1):set(string.byte("
 
 local function test_nfa(this)
   local ast = regexp.syntax_tree.ere(this):normalize():node_to_condition()
-  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
   local nfa = ast:to_nfa()
+  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
   nfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
 end
 
@@ -117,3 +117,4 @@ test_nfa("a{2,}")
 test_nfa("a{2,4}")
 test_nfa("(foo)*")
 test_nfa("(foo)?")
+test_nfa("a+|b*|c?|d{2}|e{2,}|f{2,4}")
