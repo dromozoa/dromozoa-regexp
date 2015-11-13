@@ -21,8 +21,8 @@ local graph = require "dromozoa.graph"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
-local regenerator = require "dromozoa.regexp.automaton.regenerator"
 local tokens = require "dromozoa.regexp.automaton.tokens"
+local to_ast = require "dromozoa.regexp.automaton.to_ast"
 
 local function collect(self, key)
   local count = self:count_vertex(key)
@@ -139,8 +139,8 @@ function class:difference(that)
   return product_construction(class()):apply(self, that, tokens.difference)
 end
 
-function class:to_node()
-  return regenerator():apply(clone(self))
+function class:to_ast()
+  return to_ast(clone(self), class.super.syntax_tree()):apply()
 end
 
 function class:write_graphviz(out)

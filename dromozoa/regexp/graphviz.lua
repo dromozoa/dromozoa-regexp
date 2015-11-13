@@ -49,7 +49,7 @@ function class.quote_condition(condition)
         out:push(quote_char(a) .. "-" .. quote_char(b))
       end
     end
-    return out:concat()
+    return out:concat(",")
   end
 end
 

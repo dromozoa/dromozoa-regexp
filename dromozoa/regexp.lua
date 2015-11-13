@@ -23,6 +23,7 @@ local class = {
   syntax_tree = syntax_tree;
 }
 
+automaton.super = class
 syntax_tree.super = class
 
 return class

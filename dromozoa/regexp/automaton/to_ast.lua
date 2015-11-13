@@ -18,7 +18,6 @@
 local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
-local tree = require "dromozoa.tree"
 
 local class = {}
 
@@ -26,9 +25,10 @@ local metatable = {
   __index = class;
 }
 
-function class.new()
+function class.new(this, that)
   return {
-    that = tree();
+    this = this;
+    that = that;
   }
 end
 
@@ -99,7 +99,8 @@ function class:eliminate(this, u)
   return true
 end
 
-function class:apply(this)
+function class:apply()
+  local this = self.this
   local u = this:create_vertex()
   local v = this:start()
   u.start = v.start
@@ -163,11 +164,14 @@ function class:apply(this)
   end
   -- assert(edge.u.start ~= nil)
   -- assert(edge.v.start ~= nil)
-  return edge.node, this
+
+  edge.node.start = 1
+
+  return self.that, this
 end
 
 return setmetatable(class, {
-  __call = function ()
-    return setmetatable(class.new(), metatable)
+  __call = function (_, this, that)
+    return setmetatable(class.new(this, that), metatable)
   end;
 })
