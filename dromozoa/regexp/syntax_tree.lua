@@ -23,8 +23,8 @@ local ere_parser = require "dromozoa.regexp.syntax_tree.ere_parser"
 local ere_unparser = require "dromozoa.regexp.syntax_tree.ere_unparser"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
 local normalize = require "dromozoa.regexp.syntax_tree.normalize"
-local optimize = require "dromozoa.regexp.syntax_tree.optimize"
-local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
+local node_to_condition = require "dromozoa.regexp.syntax_tree.node_to_condition"
+local to_nfa = require "dromozoa.regexp.syntax_tree.to_nfa"
 
 local class = clone(tree)
 
@@ -58,18 +58,13 @@ function class:normalize()
   return self
 end
 
-function class:setup_condition()
-  setup_condition(self):apply()
+function class:node_to_condition()
+  node_to_condition(self):apply()
   return self
 end
 
-function class:optimize()
-  optimize(self):apply()
-  return self
-end
-
-function class:to_nfa(that)
-  return to_nfa(self, that):apply()
+function class:to_nfa(token)
+  return to_nfa(self, self.super.automaton()):apply(token)
 end
 
 local metatable = {

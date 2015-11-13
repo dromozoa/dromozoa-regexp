@@ -23,10 +23,6 @@ local class = {
   syntax_tree = syntax_tree;
 }
 
-getmetatable(syntax_tree).super = class
-
-local metatable = {
-  __index = class;
-}
+syntax_tree.super = class
 
 return class

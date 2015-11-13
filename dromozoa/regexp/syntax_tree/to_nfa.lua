@@ -24,9 +24,13 @@ function class.new(this, that)
   }
 end
 
+function class:examine_edge(u, v)
+  return u.condition == nil
+end
+
 function class:discover_node(u)
   local that = self.that
-  local tag = node[1]
+  local tag = u[1]
   if tag == "|" then
     u.uid = that:create_vertex().id
     u.vid = that:create_vertex().id
@@ -39,6 +43,7 @@ end
 
 function class:finish_edge(u, v)
   local that = self.that
+  local tag = u[1]
   if tag == "|" then
     that:create_edge(u.uid, v.uid)
     that:create_edge(v.vid, u.vid)
@@ -47,15 +52,33 @@ function class:finish_edge(u, v)
     if uid == nil then
       uid = that:create_vertex().id
       that:create_edge(u.vid, uid).condition = v.condition
+      u.vid = uid
     else
       that:create_edge(u.vid, uid)
+      u.vid = v.vid
     end
-    u.vid = uid
   elseif tag == "*" then
-    local uid = that:create_vertex().id
-    self:create_duplication(u, v, 0)
+    local uid = v.uid
+    local vid = v.vid
+    if uid == nil then
+      uid = that:create_vertex().id
+      vid = that:create_vertex().id
+      that:create_edge(uid, vid).condition = v.condition
+    end
+    that:create_edge(vid, uid)
+    u.uid = uid
+    u.vid = uid
   elseif tag == "?" then
-    self:create_duplication(u, v, 0, 1)
+    local uid = v.uid
+    local vid = v.vid
+    if uid == nil then
+      uid = that:create_vertex().id
+      vid = that:create_vertex().id
+      that:create_edge(uid, vid).condition = v.condition
+    end
+    that:create_edge(uid, vid)
+    u.uid = uid
+    u.vid = vid
   end
 end
 
