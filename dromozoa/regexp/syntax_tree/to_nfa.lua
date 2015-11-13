@@ -44,11 +44,8 @@ end
 function class:finish_edge(u, v)
   local that = self.that
   local tag = u[1]
-  if tag == "|" then
-    that:create_edge(u.uid, v.uid)
-    that:create_edge(v.vid, u.vid)
-  elseif tag == "concat" then
-    local uid = v.uid
+  local uid = v.uid
+  if tag == "concat" then
     if uid == nil then
       uid = that:create_vertex().id
       that:create_edge(u.vid, uid).condition = v.condition
@@ -57,28 +54,25 @@ function class:finish_edge(u, v)
       that:create_edge(u.vid, uid)
       u.vid = v.vid
     end
-  elseif tag == "*" then
-    local uid = v.uid
+  else
     local vid = v.vid
     if uid == nil then
       uid = that:create_vertex().id
       vid = that:create_vertex().id
       that:create_edge(uid, vid).condition = v.condition
     end
-    that:create_edge(vid, uid)
-    u.uid = uid
-    u.vid = uid
-  elseif tag == "?" then
-    local uid = v.uid
-    local vid = v.vid
-    if uid == nil then
-      uid = that:create_vertex().id
-      vid = that:create_vertex().id
-      that:create_edge(uid, vid).condition = v.condition
+    if tag == "|" then
+      that:create_edge(u.uid, uid)
+      that:create_edge(vid, u.vid)
+    elseif tag == "*" then
+      that:create_edge(vid, uid)
+      u.uid = uid
+      u.vid = uid
+    elseif tag == "?" then
+      that:create_edge(uid, vid)
+      u.uid = uid
+      u.vid = vid
     end
-    that:create_edge(uid, vid)
-    u.uid = uid
-    u.vid = vid
   end
 end
 
