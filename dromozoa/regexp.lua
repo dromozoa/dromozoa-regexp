@@ -23,10 +23,6 @@ local class = {
   syntax_tree = syntax_tree;
 }
 
-function class.ere(this, token)
-  return syntax_tree.parse(this, token)
-end
-
 getmetatable(syntax_tree).super = class
 
 local metatable = {

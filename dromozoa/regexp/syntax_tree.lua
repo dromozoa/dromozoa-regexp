@@ -19,17 +19,21 @@ local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
+local ere_parser = require "dromozoa.regexp.syntax_tree.ere_parser"
+local ere_unparser = require "dromozoa.regexp.syntax_tree.ere_unparser"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
 local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local optimize = require "dromozoa.regexp.syntax_tree.optimize"
-local parse = require "dromozoa.regexp.syntax_tree.parse"
 local setup_condition = require "dromozoa.regexp.syntax_tree.setup_condition"
-local unparse = require "dromozoa.regexp.syntax_tree.unparse"
 
 local class = clone(tree)
 
-function class.parse(this, token)
-  return parse(this, class()):apply(token)
+function class.ere(this, token)
+  return ere_parser(this, class()):apply(token)
+end
+
+function class:to_ere()
+  return ere_unparser(self):apply()
 end
 
 function class:start()
@@ -62,10 +66,6 @@ end
 
 function class:to_nfa(that)
   return to_nfa(self, that):apply()
-end
-
-function class:unparse()
-  return unparse(self):apply()
 end
 
 function class:write_graphviz(out)

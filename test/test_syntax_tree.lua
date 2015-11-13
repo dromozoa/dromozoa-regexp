@@ -18,8 +18,23 @@
 local regexp = require "dromozoa.regexp"
 
 local function test_parse(this)
-  local ast = regexp.ere(this)
-  assert(ast:unparse() == this)
+  local ast = regexp.syntax_tree.ere(this)
+  assert(ast:to_ere() == this)
+  ast:write_graphviz(assert(io.open("test.dot", "w"))):close()
 end
 
-test_parse("abc")
+test_parse("foo")
+test_parse("foo|bar|baz")
+test_parse("^foo|bar$|^baz$")
+test_parse("foo+")
+test_parse("(foo)+")
+test_parse("a+|b*|c?|d{2}|e{2,}|f{2,4}")
+test_parse("[a-z]")
+test_parse("[a-z][0-9A-Za-z]")
+test_parse("[[=equivalence_class=]]")
+test_parse("[[:character_class:]]")
+test_parse("[[.collating_symbol.]]")
+test_parse("[*-]")
+test_parse("[*--]")
+test_parse("a(bc(def))")
+test_parse("((((foo))))")

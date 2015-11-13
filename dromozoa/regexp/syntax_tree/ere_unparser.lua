@@ -80,7 +80,7 @@ function class:finish_node(u)
       u.regexp = "[" .. u.regexp:concat() .. "]"
     end
   elseif tag == "[-" then
-    u.regexp = u.regexp.concat("-")
+    u.regexp = u.regexp:concat("-")
   end
 end
 
