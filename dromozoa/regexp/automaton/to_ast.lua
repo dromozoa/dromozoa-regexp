@@ -39,7 +39,84 @@ function class:create_node(...)
 end
 
 function class:eliminate(this, u)
-  local a, b, c, d
+  local flag
+  local node3
+  print(">>", u.id)
+  for v, e in u:each_adjacent_vertex() do
+    if u.id == v.id then
+      flag = true
+      node3 = e.node
+      e:remove()
+      break
+    end
+  end
+  if u:count_degree() > 0 and u:count_degree("v") > 0 then
+    for v4, e4 in u:each_adjacent_vertex() do
+      for v2, e2 in u:each_adjacent_vertex("v") do
+        local e1
+        for v, e in v2:each_adjacent_vertex() do
+          if v.id == v4.id then
+            e1 = e
+            break
+          end
+        end
+
+        print(">>>>", v2.id, v4.id)
+        local node = self:create_node("concat")
+        if e2.node ~= nil then
+          -- print("2", e2.node)
+          node:append_child(e2.node)
+        end
+        if node3 ~= nil then
+          -- print("3", node3)
+          node:append_child(self:create_node("*")):append_child(node3)
+        end
+        if e4.node ~= nil then
+          -- print("4", e4.node)
+          node:append_child(e4.node)
+        end
+        if node:count_children() == 0 then
+          node[1] = "epsilon"
+        end
+
+        if e1 == nil then
+          local branch = self:create_node("|")
+          branch:append_child(node)
+          this:create_edge(v2, v4).node = branch
+        else
+          if e1.node == nil then
+            local maybe = self:create_node("?")
+            local branch = self:create_node("|")
+            branch:append_child(node)
+            maybe:append_child(branch)
+            e1.node = maybe
+          else
+            local branch = self:create_node("|")
+            branch:append_child(e1.node)
+            branch:append_child(node)
+            e1.node = branch
+          end
+        end
+      end
+    end
+
+    for _, e2 in u:each_adjacent_vertex() do
+      e2:remove()
+    end
+    for _, e4 in u:each_adjacent_vertex("v") do
+      e4:remove()
+    end
+
+    u:remove()
+    return true
+  else
+    if flag then
+      this:create_edge(u, u).node = node3
+    end
+    return false
+  end
+
+--[====[
   for v, e in u:each_adjacent_vertex() do
     if u.id == v.id then
       c = e
@@ -61,10 +138,18 @@ function class:eliminate(this, u)
   if b == nil or d == nil then
     return
   end
+  print(b.uid, b.vid, d.uid, d.vid)
   for v, e in b.u:each_adjacent_vertex() do
     if v.id == d.vid then
+      assert(a == nil)
       a = e
     end
+  end
+  if a ~= nil then
+    print("a", a.uid, a.vid)
+  end
+  if c ~= nil then
+    print("c", c.uid, c.vid)
   end
   local node = self:create_node("concat")
   if b.node ~= nil then
@@ -79,7 +164,9 @@ function class:eliminate(this, u)
     node:append_child(d.node)
   end
   if a == nil then
-    this:create_edge(b.u, d.v).node = node
+    print("create", b.uid, d.vid)
+    local e = this:create_edge(b.u, d.v)
+    e.node = node
   else
     if a.node == nil then
       local maybe = self:create_node("?")
@@ -92,61 +179,35 @@ function class:eliminate(this, u)
       a.node = branch
     end
   end
-  local v = b.v
   b:remove()
   d:remove()
-  v:remove()
+  print("remove", u.id)
+  u:remove()
   return true
+]====]
 end
 
 function class:apply()
   local this = self.this
+  local that = self.that
   local u = this:create_vertex()
   local v = this:start()
   u.start = v.start
   v.start = nil
   this:create_edge(u, v)
+  print("start", u.id)
 
   local u = this:collect_accepts()
   local v = this:create_vertex()
   v.accept = u.accept
   u.accept = nil
   this:create_edge(u, v)
+  print("accept", v.id)
+
+  this:write_graphviz(assert(io.open("test.dot", "w"))):close()
 
   for e in this:each_edge("condition") do
-    local condition = e.condition
-    if condition:test(256) then
-      e.node = self:create_node("^")
-    elseif condition:test(257) then
-      e.node = self:create_node("$")
-    else
-      local count = condition:count()
-      if count == 1 then
-        e.node = self:create_node("char", string.char((apply(condition:each()))))
-      elseif count == 256 then
-        e.node = self:create_node(".")
-      else
-        local node = self:create_node("[", false)
-        if count > 127 then
-          condition = clone(condition):flip(0, 255)
-          node[2] = true
-        end
-        for range in condition:ranges():each() do
-          local a, b = range[1], range[2]
-          if a == b then
-            node:append_child(self:create_node("[char", string.char(a)))
-          elseif a == b - 1 then
-            node:append_child(self:create_node("[char", string.char(a)))
-            node:append_child(self:create_node("[char", string.char(b)))
-          else
-            local node = node:append_child(self:create_node("[-"))
-            node:append_child(self:create_node("[char", string.char(a)))
-            node:append_child(self:create_node("[char", string.char(b)))
-          end
-        end
-        e.node = node
-      end
-    end
+    e.node = that:condition_to_node(e.condition)
   end
   local done
   repeat

@@ -33,16 +33,19 @@ test_dfa("(foo){2,4}")
 test_dfa("foo(bar){2,4}baz")
 test_dfa("a{0}")
 test_dfa("aa|aba|abbba|abbbba")
+test_dfa("(abc)*")
 
 local function test_ast(this)
   local dfa = regexp.syntax_tree.ere(this):normalize():node_to_condition():to_nfa():to_dfa():minimize()
   dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-  local ast = dfa:to_ast()
+  local ast, nfa = dfa:to_ast()
   ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  nfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
   local ere = ast:to_ere()
   print(ere)
 end
 
+test_ast("(abc)*")
 test_ast("foo|bar|baz")
 
 -- local a = construct("^ab\\^[b-z]+")
