@@ -127,11 +127,7 @@ local function test_condition(this, that)
   local u = apply(apply(ast:start():each_child()):each_child())
   local v = ast:condition_to_node(u.condition)
   u:insert_sibling(v)
-  u:dfs({
-    finish_node = function (_, u)
-      u:remove():delete()
-    end;
-  })
+  u:remove():delete(true)
   ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
   local result = ast:to_ere()
   if that == nil then

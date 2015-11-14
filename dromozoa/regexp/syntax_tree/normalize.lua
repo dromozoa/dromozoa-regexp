@@ -42,11 +42,7 @@ function class:normalize_duplication(u, v, m, n)
       v:insert_sibling(this:create_node("?")):append_child(v:duplicate())
     end
   end
-  v:dfs({
-    finish_node = function (_, u)
-      u:remove():delete()
-    end;
-  })
+  v:delete(true)
 end
 
 function class:finish_edge(u, v)
