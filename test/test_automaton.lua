@@ -35,7 +35,7 @@ test_dfa("a{0}")
 test_dfa("aa|aba|abbba|abbbba")
 test_dfa("(abc)*")
 
-local function test_ast(this)
+local function test_ast(this, n)
   local dfa = regexp.syntax_tree.ere(this):normalize():node_to_condition():to_nfa():to_dfa():minimize()
   dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
   local ast, nfa = dfa:to_ast()
@@ -43,47 +43,10 @@ local function test_ast(this)
   nfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
   local ere = ast:to_ere()
   print(ere)
+  if n < 4 then
+    test_ast(ere, n + 1)
+  end
 end
 
-test_ast("(abc)*")
-test_ast("foo|bar|baz")
-
--- local a = construct("^ab\\^[b-z]+")
--- a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
--- local b = a:minimize()
--- b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-
--- construct("b*"):write_graphviz(assert(io.open("test5.dot", "w"))):close()
-
---[====[
-local a = construct(".{8}"):minimize()
-local b = construct("(\\\\[[:xdigit:]])+", 2):minimize()
-local c = a:intersection(b):minimize()
-
-a:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-b:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-c:write_graphviz(assert(io.open("test3.dot", "w"))):close()
-
-local node, d = c:to_node()
-print(ere_unparser():apply(node))
-d:write_graphviz(assert(io.open("test4.dot", "w"))):close()
-
-local a = construct("ab[b-z]+")
-a:powerset_construction()
-write_graphviz(a.graph, assert(io.open("test-a.dot", "w"))):close()
-local b = construct("a[b-z]c", 2)
-b:powerset_construction()
-write_graphviz(b.graph, assert(io.open("test-b.dot", "w"))):close()
-
-a:product_construction(b, tokens.intersection)
-write_graphviz(a.graph, assert(io.open("test1.dot", "w"))):close()
-a:reverse()
-write_graphviz(a.graph, assert(io.open("test2.dot", "w"))):close()
-a:powerset_construction()
-write_graphviz(a.graph, assert(io.open("test3.dot", "w"))):close()
-a:reverse()
-write_graphviz(a.graph, assert(io.open("test4.dot", "w"))):close()
-a:powerset_construction()
-write_graphviz(a.graph, assert(io.open("test5.dot", "w"))):close()
-
-]====]
+test_ast("(abc)*", 0)
+test_ast("foo|bar|baz", 0)
