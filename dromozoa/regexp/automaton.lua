@@ -19,6 +19,7 @@ local apply = require "dromozoa.commons.apply"
 local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
+local compile = require "dromozoa.regexp.automaton.compile"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
 local normalize = require "dromozoa.regexp.automaton.normalize"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
@@ -72,6 +73,15 @@ function class:can_minimize()
     end
   end
   return true
+end
+
+function class:has_start_assertions()
+  for u in self:each_edge("condition") do
+    if u.condition:test(256) then
+      return true
+    end
+  end
+  return false
 end
 
 function class:collect_starts()
@@ -172,6 +182,10 @@ end
 
 function class:difference(that)
   return product_construction(class()):apply(self, that, tokens.difference)
+end
+
+function class:compile()
+  return compile(self):apply()
 end
 
 function class:to_ast()
