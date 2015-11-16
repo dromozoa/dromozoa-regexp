@@ -39,8 +39,7 @@ function class:finish_edge(u, v)
     if vtag == "|" then
       if v:count_children() == 1 then
         local w = apply(v:each_child())
-        local wtag = w[1]
-        if wtag == "concat" then
+        if w[1] == "concat" then
           w:collapse():delete()
           v:collapse():delete()
         end
@@ -80,11 +79,13 @@ end
 
 function class:apply()
   local this = self.this
-  local v = this:start()
+
   local u = this:create_node("|")
+  local v = this:start()
   u.start = v.start
   v.start = nil
   u:append_child(v)
+
   this:dfs(self)
 end
 
