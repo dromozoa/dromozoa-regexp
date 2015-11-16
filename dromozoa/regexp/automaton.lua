@@ -105,6 +105,14 @@ function class:reverse()
   return that
 end
 
+function class:to_dfa()
+  return powerset_construction(self, class()):apply()
+end
+
+function class:minimize()
+  return self:reverse():to_dfa():reverse():to_dfa()
+end
+
 function class:branch(that)
   self:merge(that)
   self:collect_starts()
@@ -118,14 +126,6 @@ function class:concat(that)
   local v = self:get_vertex(map[that:start().id])
   v.start = nil
   self:create_edge(u, v)
-end
-
-function class:to_dfa()
-  return powerset_construction(self, class()):apply()
-end
-
-function class:minimize()
-  return self:reverse():to_dfa():reverse():to_dfa()
 end
 
 function class:intersection(that)

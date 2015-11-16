@@ -71,17 +71,29 @@ local function to_dfa(this, token)
   return dfa:minimize()
 end
 
+local function to_ere(dfa)
+  return dfa:to_ast():denormalize():to_ere(true)
+end
+
 local dfa = to_dfa("abc|def", 1)
 assert(dfa:can_minimize())
 dfa:branch(to_dfa("ghi", 2))
 dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 assert(not dfa:can_minimize())
-assert(dfa:to_ast():denormalize():to_ere() == "abc|def|ghi")
+assert(to_ere(dfa) == "abc|def|ghi")
 
 local dfa = to_dfa("abc|def", 1)
 assert(dfa:can_minimize())
 dfa:concat(to_dfa("ghi", 2))
 dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 assert(dfa:can_minimize())
-assert(dfa:to_ast():denormalize():to_ere() == "(abc|def)ghi")
+assert(to_ere(dfa) == "(abc|def)ghi")
 
+local dfa = to_dfa("[a-z]+"):intersection(to_dfa(".{4}")):minimize()
+assert(to_ere(dfa) == "[a-z][a-z][a-z][a-z]")
+
+local dfa = to_dfa("abc"):union(to_dfa("def")):union(to_dfa("ghi")):minimize()
+assert(to_ere(dfa) == "abc|def|ghi")
+
+local dfa = to_dfa(".{3}"):difference(to_dfa("abc")):minimize()
+assert(to_ere(dfa) == "[^a]..|a[^b].|ab[^c]")
