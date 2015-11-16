@@ -26,22 +26,26 @@ function class.new(this)
 end
 
 function class:finish_edge(u, v)
-  local tag = u[1]
-  if tag == "|" then
-    if v[1] == "|" then
+  local utag = u[1]
+  local vtag = v[1]
+  if utag == "|" then
+    if vtag == "|" then
       v:collapse():delete()
-    elseif v[1] == "epsilon" then
+    elseif vtag == "epsilon" then
       u.maybe = true
       v:remove():delete()
     end
-  elseif tag == "concat" then
-    if v[1] == "|" and v:count_children() == 1 then
-      local w = apply(v:each_child())
-      if w[1] == "concat" then
-        w:collapse():delete()
-        v:collapse():delete()
+  elseif utag == "concat" then
+    if vtag == "|" then
+      if v:count_children() == 1 then
+        local w = apply(v:each_child())
+        local wtag = w[1]
+        if wtag == "concat" then
+          w:collapse():delete()
+          v:collapse():delete()
+        end
       end
-    elseif v[1] == "epsilon" then
+    elseif vtag == "epsilon" then
       v:remove():delete()
     end
   end
@@ -49,31 +53,25 @@ end
 
 function class:finish_node(u)
   local this = self.this
-  local tag = u[1]
-  if tag == "|" then
+  local utag = u[1]
+  if utag == "|" then
     if u.maybe then
       u.maybe = nil
-      u[1] = "?"
-
       local count = u:count_children()
       if count == 0 then
         u[1] = "epsilon"
-        return
-      elseif count == 1 then
-        local v = apply(u:each_child())
-        if v[1] ~= "concat" then
-          u:append_child(v:remove())
-          return
+      else
+        u[1] = "?"
+        if count > 1 or apply(u:each_child())[1] == "concat" then
+          local v = this:create_node("|")
+          for w in u:each_child() do
+            v:append_child(w:remove())
+          end
+          u:append_child(v)
         end
       end
-
-      local v = this:create_node("|")
-      for w in u:each_child() do
-        v:append_child(w:remove())
-      end
-      u:append_child(v)
     end
-  elseif tag == "concat" then
+  elseif utag == "concat" then
     if u:count_children() == 0 then
       u[1] = "epsilon"
     end
