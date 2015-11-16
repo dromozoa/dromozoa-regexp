@@ -47,7 +47,7 @@ local function test_ast(this, that)
     assert(result == this)
   else
     assert(result == that)
-    test_ast(result)
+    test_ast(that)
   end
 end
 

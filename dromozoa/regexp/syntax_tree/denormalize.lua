@@ -41,6 +41,8 @@ function class:finish_edge(u, v)
         w:collapse():delete()
         v:collapse():delete()
       end
+    elseif v[1] == "epsilon" then
+      v:remove():delete()
     end
   end
 end
@@ -53,7 +55,11 @@ function class:finish_node(u)
       u.maybe = nil
       u[1] = "?"
 
-      if u:count_children() == 1 then
+      local count = u:count_children()
+      if count == 0 then
+        u[1] = "epsilon"
+        return
+      elseif count == 1 then
         local v = apply(u:each_child())
         if v[1] ~= "concat" then
           u:append_child(v:remove())
@@ -66,6 +72,10 @@ function class:finish_node(u)
         v:append_child(w:remove())
       end
       u:append_child(v)
+    end
+  elseif tag == "concat" then
+    if u:count_children() == 0 then
+      u[1] = "epsilon"
     end
   end
 end

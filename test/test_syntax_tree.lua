@@ -148,3 +148,32 @@ test_condition("[[:alnum:]]", "[0-9A-Za-z]")
 test_condition("[[:alpha:]_]", "[A-Z_a-z]")
 test_condition("[*-]", "[*[.-.]]")
 test_condition("[*--]", "[*-[.-.]]")
+
+local function test_denormalize(this, that)
+  local ast = regexp.syntax_tree.ere(this):normalize()
+  ast:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+  ast:denormalize()
+  ast:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  local result = ast:to_ere()
+  if that == nil then
+    assert(result == this)
+  else
+    assert(result == that)
+    test_denormalize(that)
+  end
+end
+
+test_denormalize("foo", "foo")
+test_denormalize("foo(bar){0}", "foo")
+test_denormalize("foo(bar){0}baz", "foobaz")
+test_denormalize("foo|(bar){0}", "(foo)?")
+test_denormalize("foo|(bar){0}|baz", "(foo|baz)?")
+test_denormalize("a{0}", ".{0}")
+test_denormalize("a{0}|b{0}", ".{0}")
+test_denormalize("a*", "a*")
+test_denormalize("a{1,}", "aa*")
+test_denormalize("a{2,}", "aaa*")
+test_denormalize("a{2,4}", "aaa?a?")
+test_denormalize("(foo)*", "(foo)*")
+test_denormalize("(foo)?", "(foo)?")
+test_denormalize("a+|b*|c?|d{2}|e{2,}|f{2,4}", "aa*|b*|c?|dd|eee*|fff?f?")
