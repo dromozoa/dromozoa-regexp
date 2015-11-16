@@ -17,7 +17,7 @@
 
 local regexp = require "dromozoa.regexp"
 
-local function test_normalize(this)
+local function test_normalize(this, that)
   local ast = regexp.syntax_tree.ere(this)
   ast:normalize()
   ast:node_to_condition()
@@ -27,7 +27,12 @@ local function test_normalize(this)
   nfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
   local dfa = nfa:to_dfa()
   dfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
-  return dfa
+  dfa = dfa:minimize()
+  dfa:write_graphviz(assert(io.open("test4.dot", "w"))):close()
+  local result = dfa:to_ast():denormalize():to_ere(true)
+  assert(result == that)
 end
 
-test_normalize("^abc|d^ef|gh$i|jkl$|mno$$|^pqr$|^^stu$$|^$^$|$^$^")
+test_normalize("^abc|d^ef|gh$i|jkl$|mno$$|^pqr$|^^stu$$|^$^$|$^$^", "(^j|j)kl$|^($|mno$)|^abc|^pqr$|^stu$|mno$")
+test_normalize("(^j|j)kl$|^($|mno$)|^abc|^pqr$|^stu$|mno$", "^($|jkl$|mno$)|^abc|^pqr$|^stu$|jkl$|mno$")
+test_normalize("^($|jkl$|mno$)|^abc|^pqr$|^stu$|jkl$|mno$", "(^j|j)kl$|^($|mno$)|^abc|^pqr$|^stu$|mno$")
