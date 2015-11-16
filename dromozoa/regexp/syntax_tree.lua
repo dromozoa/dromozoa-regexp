@@ -20,6 +20,7 @@ local clone = require "dromozoa.commons.clone"
 local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
 local condition_to_node = require "dromozoa.regexp.syntax_tree.condition_to_node"
+local denormalize = require "dromozoa.regexp.syntax_tree.denormalize"
 local ere_parser = require "dromozoa.regexp.syntax_tree.ere_parser"
 local ere_unparser = require "dromozoa.regexp.syntax_tree.ere_unparser"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
@@ -46,8 +47,8 @@ function class:create_node(...)
   return node
 end
 
-function class:to_ere()
-  return ere_unparser(self):apply()
+function class:to_ere(sort)
+  return ere_unparser(self, sort):apply()
 end
 
 function class:write_graphviz(out)
@@ -56,6 +57,11 @@ end
 
 function class:normalize()
   normalize(self):apply()
+  return self
+end
+
+function class:denormalize()
+  denormalize(self):apply()
   return self
 end
 

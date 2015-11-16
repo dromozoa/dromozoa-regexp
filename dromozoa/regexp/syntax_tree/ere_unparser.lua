@@ -23,9 +23,10 @@ local metatable = {
   __index = class;
 }
 
-function class.new(this)
+function class.new(this, sort)
   return {
     this = this;
+    sort = sort;
   }
 end
 
@@ -68,10 +69,16 @@ end
 function class:finish_node(u)
   local tag = u[1]
   if tag == "|" then
-    if u:is_root() then
-      u.regexp = u.regexp:concat("|")
+    local regexp
+    if self.sort then
+      regexp = u.regexp:sort():concat("|")
     else
-      u.regexp = "(" .. u.regexp:concat("|") .. ")"
+      regexp = u.regexp:concat("|")
+    end
+    if u:is_root() then
+      u.regexp = regexp
+    else
+      u.regexp = "(" .. regexp .. ")"
     end
   elseif tag == "concat" then
     u.regexp = u.regexp:concat()
@@ -86,13 +93,13 @@ function class:finish_node(u)
   end
 end
 
-function class:apply(this)
+function class:apply()
   self.this:dfs(self)
   return self.this:start().regexp
 end
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function (_, this, sort)
+    return setmetatable(class.new(this, sort), metatable)
   end;
 })
