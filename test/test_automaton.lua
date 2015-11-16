@@ -61,3 +61,27 @@ test_ast("(abcd)+", "abcd(abcd)*")
 test_ast("foo|bar|baz", "ba[rz]|foo")
 test_ast("if|then|else|elseif|end", "(elsei|i)f|else|end|then")
 test_ast("a*|(abc)*", "a?|aaa*|abc|abca(bca)*bc")
+
+local function to_dfa(this, token)
+  local ast = regexp.syntax_tree.ere(this, token)
+  ast:normalize()
+  ast:node_to_condition()
+  local nfa = ast:to_nfa()
+  local dfa = nfa:to_dfa()
+  return dfa:minimize()
+end
+
+local dfa = to_dfa("abc|def", 1)
+assert(dfa:can_minimize())
+dfa:branch(to_dfa("ghi", 2))
+dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+assert(not dfa:can_minimize())
+assert(dfa:to_ast():denormalize():to_ere() == "abc|def|ghi")
+
+local dfa = to_dfa("abc|def", 1)
+assert(dfa:can_minimize())
+dfa:concat(to_dfa("ghi", 2))
+dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+assert(dfa:can_minimize())
+assert(dfa:to_ast():denormalize():to_ere() == "(abc|def)ghi")
+

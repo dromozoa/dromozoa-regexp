@@ -117,7 +117,7 @@ function class:concat(that)
   local map = self:merge(that)
   local v = self:get_vertex(map[that:start().id])
   v.start = nil
-  graph:create_edge(u, v)
+  self:create_edge(u, v)
 end
 
 function class:to_dfa()
