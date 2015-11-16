@@ -23,10 +23,10 @@ local metatable = {
   __index = class;
 }
 
-function class.new(this, sort)
+function class.new(this, normalization)
   return {
     this = this;
-    sort = sort;
+    normalization = normalization;
   }
 end
 
@@ -70,7 +70,7 @@ function class:finish_node(u)
   local tag = u[1]
   if tag == "|" then
     local regexp
-    if self.sort then
+    if self.normalization then
       regexp = u.regexp:sort():concat("|")
     else
       regexp = u.regexp:concat("|")
@@ -99,7 +99,7 @@ function class:apply()
 end
 
 return setmetatable(class, {
-  __call = function (_, this, sort)
-    return setmetatable(class.new(this, sort), metatable)
+  __call = function (_, this, normalization)
+    return setmetatable(class.new(this, normalization), metatable)
   end;
 })

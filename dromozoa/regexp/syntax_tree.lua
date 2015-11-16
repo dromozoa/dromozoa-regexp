@@ -24,8 +24,8 @@ local denormalize = require "dromozoa.regexp.syntax_tree.denormalize"
 local ere_parser = require "dromozoa.regexp.syntax_tree.ere_parser"
 local ere_unparser = require "dromozoa.regexp.syntax_tree.ere_unparser"
 local graphviz_visitor = require "dromozoa.regexp.syntax_tree.graphviz_visitor"
-local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local node_to_condition = require "dromozoa.regexp.syntax_tree.node_to_condition"
+local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local to_nfa = require "dromozoa.regexp.syntax_tree.to_nfa"
 
 local class = clone(tree)
@@ -47,12 +47,13 @@ function class:create_node(...)
   return node
 end
 
-function class:to_ere(sort)
-  return ere_unparser(self, sort):apply()
+function class:node_to_condition()
+  node_to_condition(self):apply()
+  return self
 end
 
-function class:write_graphviz(out)
-  return tree.write_graphviz(self, out, graphviz_visitor())
+function class:condition_to_node(condition)
+  return condition_to_node(self):apply(condition)
 end
 
 function class:normalize()
@@ -65,17 +66,16 @@ function class:denormalize()
   return self
 end
 
-function class:node_to_condition()
-  node_to_condition(self):apply()
-  return self
+function class:to_nfa()
+  return to_nfa(self, self.super.automaton()):apply()
 end
 
-function class:condition_to_node(condition)
-  return condition_to_node(self):apply(condition)
+function class:to_ere(normalization)
+  return ere_unparser(self, normalization):apply()
 end
 
-function class:to_nfa(token)
-  return to_nfa(self, self.super.automaton()):apply(token)
+function class:write_graphviz(out)
+  return tree.write_graphviz(self, out, graphviz_visitor())
 end
 
 local metatable = {

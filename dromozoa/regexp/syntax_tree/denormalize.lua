@@ -52,8 +52,8 @@ end
 
 function class:finish_node(u)
   local this = self.this
-  local utag = u[1]
-  if utag == "|" then
+  local tag = u[1]
+  if tag == "|" then
     if u.maybe then
       u.maybe = nil
       local count = u:count_children()
@@ -70,7 +70,7 @@ function class:finish_node(u)
         end
       end
     end
-  elseif utag == "concat" then
+  elseif tag == "concat" then
     if u:count_children() == 0 then
       u[1] = "epsilon"
     end

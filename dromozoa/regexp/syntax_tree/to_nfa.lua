@@ -76,12 +76,11 @@ function class:finish_edge(u, v)
   end
 end
 
-function class:apply(token)
+function class:apply()
+  local this = self.this
   local that = self.that
-  local u = self.this:start()
-  if token == nil then
-    token = u.start
-  end
+  local u = this:start()
+  local token = u.start
   u:dfs(self)
   that:get_vertex(u.uid).start = token
   that:get_vertex(u.vid).accept = token
