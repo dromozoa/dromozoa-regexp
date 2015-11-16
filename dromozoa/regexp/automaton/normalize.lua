@@ -124,7 +124,7 @@ end
 function class:apply()
   local this = self.this
   remove_unreachable_assertions(this)
-  remove_unreachables(this)
+  this:remove_unreachables()
 
   local that = clone(this)
   collapse_start_assertions(that)
@@ -132,7 +132,7 @@ function class:apply()
 
   remove_start_assertions(this)
   collapse_end_assertions(this)
-  remove_unreachables(this)
+  this:remove_unreachables()
 
   local u = this:start()
   local map = this:merge(that)

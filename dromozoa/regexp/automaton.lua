@@ -106,12 +106,40 @@ function class:reverse()
   return that
 end
 
-function class:to_dfa()
-  return powerset_construction(self, class()):apply()
+function class:remove_unreachables()
+  local visitor = {
+    finish_edge = function (_, e)
+      if e.color == nil then
+        e.color = 1
+      else
+        e.color = 2
+      end
+    end;
+  }
+  self:start():dfs(visitor)
+  for v in self:each_vertex("accept") do
+    v:dfs(visitor, "v")
+  end
+  for e in self:each_edge() do
+    if e.color ~= 2 then
+      e:remove()
+    end
+  end
+  for u in self:each_vertex() do
+    if u:is_isolated() then
+      u:remove()
+    end
+  end
+  self:clear_edge_properties("color")
+  return self
 end
 
 function class:normalize()
   return normalize(self):apply()
+end
+
+function class:to_dfa()
+  return powerset_construction(self, class()):apply()
 end
 
 function class:minimize()
