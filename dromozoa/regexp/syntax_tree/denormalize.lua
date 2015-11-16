@@ -30,6 +30,9 @@ function class:finish_edge(u, v)
   if tag == "|" then
     if v[1] == "|" then
       v:collapse():delete()
+    elseif v[1] == "epsilon" then
+      u.maybe = true
+      v:remove():delete()
     end
   elseif tag == "concat" then
     if v[1] == "|" and v:count_children() == 1 then
@@ -42,8 +45,39 @@ function class:finish_edge(u, v)
   end
 end
 
+function class:finish_node(u)
+  local this = self.this
+  local tag = u[1]
+  if tag == "|" then
+    if u.maybe then
+      u.maybe = nil
+      u[1] = "?"
+
+      if u:count_children() == 1 then
+        local v = apply(u:each_child())
+        if v[1] ~= "concat" then
+          u:append_child(v:remove())
+          return
+        end
+      end
+
+      local v = this:create_node("|")
+      for w in u:each_child() do
+        v:append_child(w:remove())
+      end
+      u:append_child(v)
+    end
+  end
+end
+
 function class:apply()
-  self.this:dfs(self)
+  local this = self.this
+  local v = this:start()
+  local u = this:create_node("|")
+  u.start = v.start
+  v.start = nil
+  u:append_child(v)
+  this:dfs(self)
 end
 
 local metatable = {
