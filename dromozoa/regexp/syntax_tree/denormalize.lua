@@ -79,14 +79,13 @@ end
 
 function class:apply()
   local this = self.this
-
   local u = this:create_node("|")
   local v = this:start()
   u.start = v.start
   v.start = nil
   u:append_child(v)
-
   this:dfs(self)
+  return this
 end
 
 local metatable = {

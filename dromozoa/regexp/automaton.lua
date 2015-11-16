@@ -20,6 +20,7 @@ local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
+local normalize = require "dromozoa.regexp.automaton.normalize"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
@@ -109,6 +110,10 @@ function class:to_dfa()
   return powerset_construction(self, class()):apply()
 end
 
+function class:normalize()
+  return self:normalize()
+end
+
 function class:minimize()
   return self:reverse():to_dfa():reverse():to_dfa()
 end
@@ -126,6 +131,7 @@ function class:concat(that)
   local v = self:get_vertex(map[that:start().id])
   v.start = nil
   self:create_edge(u, v)
+  return self
 end
 
 function class:intersection(that)

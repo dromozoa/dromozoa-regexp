@@ -66,7 +66,9 @@ function class:finish_edge(u, v)
 end
 
 function class:apply()
-  self.this:dfs(self)
+  local this = self.this
+  this:dfs(self)
+  return this
 end
 
 local metatable = {

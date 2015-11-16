@@ -84,7 +84,9 @@ function class:finish_node(u)
 end
 
 function class:apply()
-  self.this:dfs(self)
+  local this = self.this
+  this:dfs(self)
+  return this
 end
 
 local metatable = {

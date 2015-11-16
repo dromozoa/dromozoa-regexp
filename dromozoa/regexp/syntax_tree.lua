@@ -57,13 +57,11 @@ function class:condition_to_node(condition)
 end
 
 function class:normalize()
-  normalize(self):apply()
-  return self
+  return normalize(self):apply()
 end
 
 function class:denormalize()
-  denormalize(self):apply()
-  return self
+  return denormalize(self):apply()
 end
 
 function class:to_nfa()
