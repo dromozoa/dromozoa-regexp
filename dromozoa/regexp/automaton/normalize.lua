@@ -134,11 +134,20 @@ function class:apply()
   collapse_end_assertions(this)
   this:remove_unreachables()
 
-  local u = this:start()
-  local map = this:merge(that)
-  local v = this:get_vertex(map[that:start().id])
-  v.start = nil
-  this:create_edge(u, v).condition = bitset():set(256)
+  if this:empty() then
+    local map = this:merge(that)
+    local u = this:create_vertex()
+    local v = this:get_vertex(map[that:start().id])
+    u.start = v.start
+    v.start = nil
+    this:create_edge(u, v).condition = bitset():set(256)
+  else
+    local u = this:start()
+    local map = this:merge(that)
+    local v = this:get_vertex(map[that:start().id])
+    v.start = nil
+    this:create_edge(u, v).condition = bitset():set(256)
+  end
 
   return this
 end
