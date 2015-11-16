@@ -43,10 +43,13 @@ local function test_ast(this, n)
   nfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
   local ere = ast:to_ere()
   print(ere)
-  if n < 4 then
-    test_ast(ere, n + 1)
-  end
 end
 
-test_ast("(abc)*", 0)
-test_ast("foo|bar|baz", 0)
+test_ast("a*")
+test_ast("a+")
+test_ast("abcd*")
+test_ast("abcd+")
+test_ast("(abcd)*")
+test_ast("(abcd)+")
+test_ast("foo|bar|baz")
+test_ast("if|then|else|elseif|end")
