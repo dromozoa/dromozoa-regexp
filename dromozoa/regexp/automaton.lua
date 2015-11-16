@@ -111,7 +111,7 @@ function class:to_dfa()
 end
 
 function class:normalize()
-  return self:normalize()
+  return normalize(self):apply()
 end
 
 function class:minimize()
