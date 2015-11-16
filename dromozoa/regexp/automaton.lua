@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local apply = require "dromozoa.commons.apply"
 local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
@@ -29,7 +30,7 @@ local function collect(self, key)
   if count == 0 then
     return nil
   elseif count == 1 then
-    return self:each_vertex(key)()
+    return apply(self:each_vertex(key))
   else
     local u = self:create_vertex()
     local token
@@ -57,7 +58,7 @@ function class:start()
   if self:count_vertex("start") ~= 1 then
     error("only one start state allowed")
   end
-  return self:each_vertex("start")()
+  return apply(self:each_vertex("start"))
 end
 
 function class:can_minimize()
