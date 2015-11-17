@@ -185,7 +185,7 @@ function class:difference(that)
 end
 
 function class:compile()
-  return compile(self):apply()
+  return compile(self)
 end
 
 function class:to_ast()

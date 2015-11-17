@@ -15,16 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local class = {}
-
-function class.new(this)
-  return {
-    this = this;
-  }
-end
-
-function class:apply()
-  local this = self.this
+return function (this)
   local state = 0
 
   for u in this:each_vertex("accept") do
@@ -102,13 +93,3 @@ function class:apply()
     accepts = accepts;
   }
 end
-
-local metatable = {
-  __index = class;
-}
-
-return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
-  end;
-})
