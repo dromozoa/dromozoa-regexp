@@ -76,6 +76,7 @@ function class:apply()
         assert(start_assertion == 0)
         start_assertion = ns
       elseif condition:test(257) then
+        count = count + 1
         end_assertions[cs] = ns
       else
         for k, v in condition:each() do

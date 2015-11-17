@@ -34,7 +34,7 @@ function class.find(data, s, i, j)
   end
   local token, j = match(data, start, s, min, max)
   if token ~= 0 then
-    return token, min, j
+    return min, j, token
   end
 
   local start = data.start
@@ -42,7 +42,7 @@ function class.find(data, s, i, j)
     for i = min + 1, max + 1 do
       local token, j = match(data, start, s, i, max)
       if token ~= 0 then
-        return token, i, j
+        return i, j, token
       end
     end
   end
