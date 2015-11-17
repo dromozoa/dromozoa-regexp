@@ -21,12 +21,9 @@ local regexp = require "dromozoa.regexp"
 local function test_compile(this)
   local nfa = regexp.syntax_tree.ere(this):normalize():node_to_condition():to_nfa()
   nfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-  if nfa:has_start_assertions() then
-    nfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
-    nfa:normalize()
-  end
+  nfa:normalize_assertions()
   local dfa = nfa:minimize()
-  dfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+  dfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
   local data = dfa:compile()
   -- print(json.encode(data))
 end

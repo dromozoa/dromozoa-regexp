@@ -23,7 +23,7 @@ local function test_normalize(this, that)
   ast:node_to_condition()
   local nfa = ast:to_nfa()
   nfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
-  nfa:normalize()
+  nfa:normalize_assertions()
   nfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
   if that == nil then
     assert(nfa:empty())

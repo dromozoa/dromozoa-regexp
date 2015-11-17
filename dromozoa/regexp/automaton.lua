@@ -21,7 +21,7 @@ local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
 local compile = require "dromozoa.regexp.automaton.compile"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
-local normalize = require "dromozoa.regexp.automaton.normalize"
+local normalize_assertions = require "dromozoa.regexp.automaton.normalize_assertions"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
@@ -144,8 +144,8 @@ function class:remove_unreachables()
   return self
 end
 
-function class:normalize()
-  return normalize(self):apply()
+function class:normalize_assertions()
+  return normalize_assertions(self):apply()
 end
 
 function class:to_dfa()
