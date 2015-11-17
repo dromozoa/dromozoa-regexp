@@ -38,3 +38,17 @@ local comment = regexp.ere("/\\*"):concat(regexp.ere(".*\\*"):set_difference(reg
 -- local comment = regexp.ere(".*\\*"):set_difference(regexp.ere(".*\\*/.*"))
 comment:write_graphviz(assert(io.open("test3.dot", "w"))):close()
 -- print(comment:to_ere())
+
+local a = regexp.literal("foo*bar(baz)qux")
+assert(a:to_ere() == [[foo\*bar\(baz\)qux]])
+
+local b = regexp.ere("^0$")
+for i = 1, 255 do
+  b = b:branch(regexp.ere("^" .. i .. "$"))
+end
+b:write_graphviz(assert(io.open("test4.dot", "w"))):close()
+local data = b:compile()
+local i, j = regexp.find(data, "255")
+assert(i == 1)
+assert(j == 3)
+assert(not regexp.find(data, "256"))
