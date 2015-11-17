@@ -46,10 +46,10 @@ function class:apply()
   end
 
   local start = u.state
-  local transitions = {}
-  local accepts = {}
   local start_assertion = 0
   local end_assertions = {}
+  local transitions = {}
+  local accepts = {}
 
   for i = 1, state do
     accepts[i] = 0
@@ -67,29 +67,38 @@ function class:apply()
   for u in this:each_vertex() do
     local cs = u.state
     local n = cs * 256 - 255
+    local count = 0
     for v, e in u:each_adjacent_vertex() do
       local ns = v.state
       local condition = e.condition
       if condition:test(256) then
-        assert(cs == start)
+        assert(start == cs)
         assert(start_assertion == 0)
         start_assertion = ns
       elseif condition:test(257) then
         end_assertions[cs] = ns
       else
         for k, v in condition:each() do
+          count = count + 1
           transitions[n + k] = ns
         end
       end
     end
+    if start == cs and count == 0 then
+      assert(start == cs)
+      assert(start_assertion ~= 0)
+      start = 0
+    end
   end
+
+  this:clear_vertex_properties("state")
 
   return {
     start = start;
-    accepts = accepts;
-    transitions = transitions;
     start_assertion = start_assertion;
     end_assertions = end_assertions;
+    transitions = transitions;
+    accepts = accepts;
   }
 end
 

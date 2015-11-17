@@ -18,15 +18,26 @@
 local json = require "dromozoa.commons.json"
 local regexp = require "dromozoa.regexp"
 
-local function test_compile(this)
+local function compile(this)
   local nfa = regexp.syntax_tree.ere(this):normalize():node_to_condition():to_nfa()
   nfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
   nfa:normalize_assertions()
   local dfa = nfa:minimize()
   dfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  dfa:compile()
   local data = dfa:compile()
   -- print(json.encode(data))
+  return data
 end
 
-test_compile("^foo$")
-test_compile("foo")
+local data = compile("foo")
+assert(data.start ~= 0)
+assert(data.start_assertion == 0)
+assert(regexp.find(data, "foo"))
+assert(regexp.find(data, "barfoo"))
+
+local data = compile("^foo")
+assert(data.start == 0)
+assert(data.start_assertion ~= 0)
+assert(regexp.find(data, "foo"))
+assert(not regexp.find(data, "barfoo"))

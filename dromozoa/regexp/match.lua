@@ -17,14 +17,12 @@
 
 local translate_range = require "dromozoa.commons.translate_range"
 
-return function(data, s, i, j)
-  local min, max = translate_range(#s, i, j)
-
+return function(data, start, s, min, max)
   local accepts = data.accepts
   local transitions = data.transitions
   local end_assertions = data.end_assertions
 
-  local sa = data.start
+  local sa = start
   for i = min + 3, max, 4 do
     local a, b, c, d = string.byte(s, i - 3, i)
     local sd = transitions[sa * 256 + a - 255]

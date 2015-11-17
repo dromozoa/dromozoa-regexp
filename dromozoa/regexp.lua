@@ -15,13 +15,38 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local translate_range = require "dromozoa.commons.translate_range"
 local automaton = require "dromozoa.regexp.automaton"
+local match = require "dromozoa.regexp.match"
 local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
 local class = {
   automaton = automaton;
   syntax_tree = syntax_tree;
 }
+
+function class.find(data, s, i, j)
+  local min, max = translate_range(#s, i, j)
+
+  local start = data.start_assertion
+  if start == 0 then
+    start = data.start
+  end
+  local token, j = match(data, start, s, min, max)
+  if token ~= 0 then
+    return token, min, j
+  end
+
+  local start = data.start
+  if start ~= 0 then
+    for i = min + 1, max + 1 do
+      local token, j = match(data, start, s, i, max)
+      if token ~= 0 then
+        return token, i, j
+      end
+    end
+  end
+end
 
 automaton.super = class
 syntax_tree.super = class
