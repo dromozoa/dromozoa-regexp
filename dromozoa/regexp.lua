@@ -25,9 +25,20 @@ local class = {
   syntax_tree = syntax_tree;
 }
 
+function class.match(data, s, i, j)
+  local min, max = translate_range(#s, i, j)
+  local start = data.start_assertion
+  if start == 0 then
+    start = data.start
+  end
+  local token, j = match(data, start, s, min, max)
+  if token ~= 0 then
+    return token, j
+  end
+end
+
 function class.find(data, s, i, j)
   local min, max = translate_range(#s, i, j)
-
   local start = data.start_assertion
   if start == 0 then
     start = data.start
@@ -36,7 +47,6 @@ function class.find(data, s, i, j)
   if token ~= 0 then
     return min, j, token
   end
-
   local start = data.start
   if start ~= 0 then
     for i = min + 1, max + 1 do
