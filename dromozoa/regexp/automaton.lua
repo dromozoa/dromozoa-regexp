@@ -139,10 +139,18 @@ function class:minimize()
   return self:reverse():to_dfa():reverse():to_dfa()
 end
 
+function class:optimize()
+  if self:can_minimize() then
+    return self:minimize()
+  else
+    return self:remove_unreachables():to_dfa()
+  end
+end
+
 function class:branch(that)
   self:merge(that)
   self:collect_starts()
-  return self
+  return self:optimize()
 end
 
 function class:concat(that)
@@ -152,19 +160,19 @@ function class:concat(that)
   local v = self:get_vertex(map[that:start().id])
   v.start = nil
   self:create_edge(u, v)
-  return self
+  return self:optimize()
 end
 
-function class:intersection(that)
-  return product_construction(class()):apply(self, that, tokens.intersection)
+function class:set_intersection(that)
+  return product_construction(class()):apply(self, that, tokens.intersection):optimize()
 end
 
-function class:union(that)
-  return product_construction(class()):apply(self, that, tokens.union)
+function class:set_union(that)
+  return product_construction(class()):apply(self, that, tokens.union):optimize()
 end
 
-function class:difference(that)
-  return product_construction(class()):apply(self, that, tokens.difference)
+function class:set_difference(that)
+  return product_construction(class()):apply(self, that, tokens.difference):optimize()
 end
 
 function class:compile()
@@ -173,6 +181,10 @@ end
 
 function class:to_ast()
   return to_ast(clone(self), class.super.syntax_tree()):apply()
+end
+
+function class:to_ere()
+  return self:to_ast():denormalize():to_ere(true)
 end
 
 function class:write_graphviz(out)

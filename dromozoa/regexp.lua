@@ -25,6 +25,10 @@ local class = {
   syntax_tree = syntax_tree;
 }
 
+function class.ere(this, token)
+  return syntax_tree.ere(this, token):normalize():node_to_condition():to_nfa():normalize_assertions():optimize()
+end
+
 function class.match(data, s, i, j)
   local min, max = translate_range(#s, i, j)
   local start = data.start_assertion

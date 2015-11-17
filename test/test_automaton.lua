@@ -89,11 +89,11 @@ dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 assert(dfa:can_minimize())
 assert(to_ere(dfa) == "(abc|def)ghi")
 
-local dfa = to_dfa("[a-z]+"):intersection(to_dfa(".{4}")):minimize()
+local dfa = to_dfa("[a-z]+"):set_intersection(to_dfa(".{4}")):minimize()
 assert(to_ere(dfa) == "[a-z][a-z][a-z][a-z]")
 
-local dfa = to_dfa("abc"):union(to_dfa("def")):union(to_dfa("ghi")):minimize()
+local dfa = to_dfa("abc"):set_union(to_dfa("def")):set_union(to_dfa("ghi")):minimize()
 assert(to_ere(dfa) == "abc|def|ghi")
 
-local dfa = to_dfa(".{3}"):difference(to_dfa("abc")):minimize()
+local dfa = to_dfa(".{3}"):set_difference(to_dfa("abc")):minimize()
 assert(to_ere(dfa) == "[^a]..|a[^b].|ab[^c]")
