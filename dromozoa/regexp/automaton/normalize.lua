@@ -52,38 +52,10 @@ local function remove_unreachable_assertions(this)
   return count > 0
 end
 
-local function remove_unreachables(this)
-  local visitor = {
-    examine_edge = function (_, e)
-      if e.color == nil then
-        e.color = 1
-      else
-        e.color = 2
-      end
-    end;
-  }
-  for u in this:each_vertex("start") do
-    u:dfs(visitor)
-  end
-  for v in this:each_vertex("accept") do
-    v:dfs(visitor, "v")
-  end
-  for e in this:each_edge() do
-    if e.color ~= 2 then
-      e:remove()
-    end
-  end
-  for u in this:each_vertex() do
-    if u:is_isolated() then
-      u:remove()
-    end
-  end
-  this:clear_edge_properties("color")
-end
-
 local function collapse_start_assertions(this)
   for e in this:each_edge("condition") do
-    if e.condition:test(256) then
+    local condition = e.condition
+    if condition:test(256) then
       e.u.accept = e.v.accept
       e:collapse()
     end
@@ -92,7 +64,8 @@ end
 
 local function remove_start_assertions(this)
   for e in this:each_edge("condition") do
-    if e.condition:test(256) then
+    local condition = e.condition
+    if condition:test(256) then
       e:remove()
     end
   end
