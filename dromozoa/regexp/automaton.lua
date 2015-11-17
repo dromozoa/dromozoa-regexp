@@ -57,7 +57,7 @@ local metatable = {
 }
 
 function class:start()
-  if self:count_vertex("start") ~= 1 then
+  if self:count_vertex("start") > 1 then
     error("only one start state allowed")
   end
   return apply(self:each_vertex("start"))

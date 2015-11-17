@@ -28,8 +28,8 @@ local function test_compile(this)
   local dfa = nfa:minimize()
   dfa:write_graphviz(assert(io.open("test3.dot", "w"))):close()
   local data = dfa:compile()
-  print(json.encode(data))
+  -- print(json.encode(data))
 end
 
 test_compile("^foo$")
--- test_compile("foo")
+test_compile("foo")

@@ -90,13 +90,28 @@ local function remove_start_assertions(this)
   end
 end
 
-local function collapse_end_assertions(this)
+local function normalize_end_assertions(this)
   local visitor = {
     examine_edge = function (_, e)
       local condition = e.condition
       if condition ~= nil then
         if condition:test(257) then
-          e.color = true
+          e.color = 1
+        else
+          return false
+        end
+      end
+    end;
+  }
+  for v in this:each_vertex("accept") do
+    v:dfs(visitor, "v")
+  end
+  local visitor = {
+    examine_edge = function (_, e)
+      local condition = e.condition
+      if condition ~= nil then
+        if condition:test(257) then
+          e.color = 2
         end
         return false
       end
@@ -106,8 +121,12 @@ local function collapse_end_assertions(this)
     v:dfs(visitor, "v")
   end
   for e in this:each_edge("condition") do
-    if e.condition:test(257) and e.color == nil then
-      e:collapse()
+    if e.condition:test(257) then
+      if e.color == nil then
+        e:remove()
+      elseif e.color == 1 then
+        e:collapse()
+      end
     end
   end
   this:clear_edge_properties("color")
@@ -123,31 +142,33 @@ end
 
 function class:apply()
   local this = self.this
+  local token = this:start().start
+
   remove_unreachable_assertions(this)
   this:remove_unreachables()
 
   local that = clone(this)
   collapse_start_assertions(that)
-  collapse_end_assertions(that)
+  normalize_end_assertions(that)
+  that:remove_unreachables()
 
   remove_start_assertions(this)
-  collapse_end_assertions(this)
+  normalize_end_assertions(this)
   this:remove_unreachables()
 
-  if this:empty() then
-    local map = this:merge(that)
-    local u = this:create_vertex()
-    local v = this:get_vertex(map[that:start().id])
-    u.start = v.start
-    v.start = nil
-    this:create_edge(u, v).condition = bitset():set(256)
-  else
-    local u = this:start()
-    local map = this:merge(that)
-    local v = this:get_vertex(map[that:start().id])
-    v.start = nil
-    this:create_edge(u, v).condition = bitset():set(256)
+  local u = this:start()
+  if u == nil then
+    if that:empty() then
+      return this
+    end
+    u = this:create_vertex()
   end
+
+  local map = this:merge(that)
+  local v = this:get_vertex(map[that:start().id])
+  u.start = v.start
+  v.start = nil
+  this:create_edge(u, v).condition = bitset():set(256)
 
   return this
 end
