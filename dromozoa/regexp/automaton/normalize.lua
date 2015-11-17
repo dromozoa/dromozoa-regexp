@@ -19,13 +19,16 @@ local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 
 local function remove_unreachable_assertions(this)
+  local found = false
   local visitor = {
     examine_edge = function (_, e)
       local condition = e.condition
-      if condition == nil or condition:test(256) or condition:test(257) then
-        e.color = true
-      else
-        return false
+      if condition ~= nil then
+        if condition:test(256) or condition:test(257) then
+          e.color = true
+        else
+          return false
+        end
       end
     end;
   }
@@ -35,13 +38,18 @@ local function remove_unreachable_assertions(this)
   for v in this:each_vertex("accept") do
     v:dfs(visitor, "v")
   end
+  local count = 0
   for e in this:each_edge("condition") do
     local condition = e.condition
-    if (condition:test(256) or condition:test(257)) and e.color == nil  then
-      e:remove()
+    if condition:test(256) or condition:test(257) then
+      count = count + 1
+      if e.color == nil then
+        e:remove()
+      end
     end
   end
   this:clear_edge_properties("color")
+  return count > 0
 end
 
 local function remove_unreachables(this)
@@ -142,33 +150,33 @@ end
 
 function class:apply()
   local this = self.this
-  local token = this:start().start
 
-  remove_unreachable_assertions(this)
-  this:remove_unreachables()
+  if remove_unreachable_assertions(this) then
+    this:remove_unreachables()
 
-  local that = clone(this)
-  collapse_start_assertions(that)
-  normalize_end_assertions(that)
-  that:remove_unreachables()
+    local that = clone(this)
+    collapse_start_assertions(that)
+    normalize_end_assertions(that)
+    that:remove_unreachables()
 
-  remove_start_assertions(this)
-  normalize_end_assertions(this)
-  this:remove_unreachables()
+    remove_start_assertions(this)
+    normalize_end_assertions(this)
+    this:remove_unreachables()
 
-  local u = this:start()
-  if u == nil then
-    if that:empty() then
-      return this
+    local u = this:start()
+    if u == nil then
+      if that:empty() then
+        return this
+      end
+      u = this:create_vertex()
     end
-    u = this:create_vertex()
-  end
 
-  local map = this:merge(that)
-  local v = this:get_vertex(map[that:start().id])
-  u.start = v.start
-  v.start = nil
-  this:create_edge(u, v).condition = bitset():set(256)
+    local map = this:merge(that)
+    local v = this:get_vertex(map[that:start().id])
+    u.start = v.start
+    v.start = nil
+    this:create_edge(u, v).condition = bitset():set(256)
+  end
 
   return this
 end

@@ -43,6 +43,6 @@ test_normalize("(^j|j)kl$|^($|mno$)|^abc|^pqr$|^stu$|mno$", "^($|jkl$|mno$)|^abc
 test_normalize("^($|jkl$|mno$)|^abc|^pqr$|^stu$|jkl$|mno$", "(^j|j)kl$|^($|mno$)|^abc|^pqr$|^stu$|mno$")
 test_normalize("^foo", "^foo")
 test_normalize("^foo$", "^foo$")
-test_normalize("foo", "(^f|f)oo")
+test_normalize("foo", "foo")
 test_normalize("foo$", "^foo$|foo$")
 test_normalize("$foo^")
