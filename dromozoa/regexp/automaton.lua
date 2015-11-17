@@ -75,15 +75,6 @@ function class:can_minimize()
   return true
 end
 
-function class:has_start_assertions()
-  for u in self:each_edge("condition") do
-    if u.condition:test(256) then
-      return true
-    end
-  end
-  return false
-end
-
 function class:collect_starts()
   return collect(self, "start")
 end
@@ -102,15 +93,7 @@ function class:reverse()
     b.accept = a.start
   end
   for a in self:each_edge() do
-    local condition = a.condition
-    if condition ~= nil then
-      if condition:test(256) then
-        condition = bitset():set(257)
-      elseif condition:test(257) then
-        condition = bitset():set(256)
-      end
-    end
-    that:create_edge(map[a.vid], map[a.uid]).condition = condition
+    that:create_edge(map[a.vid], map[a.uid]).condition = a.condition
   end
   that:collect_starts()
   return that
