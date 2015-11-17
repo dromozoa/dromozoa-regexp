@@ -15,30 +15,41 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local sequence_writer = require "dromozoa.commons.sequence_writer"
+local json = require "dromozoa.commons.json"
 local regexp = require "dromozoa.regexp"
-local decompile = require "dromozoa.regexp.decompile"
-local dump = require "dromozoa.regexp.dump"
 
-local loadstring = loadstring or load
-
-local a = regexp("/\\*"):concat(regexp(".*"):difference(".*\\*/.*")):concat("\\*/")
-  :branch("-?(0|[1-9][0-9]*)", 2)
-  :branch("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+[.-.]]?[0-9]+)?", 3)
-  :branch("[[:alpha:]]*", 4)
-a:write_graphviz(assert(io.open("test-dfa1.dot", "w"))):close()
-
-local function check_code(code)
-  assert(code.start)
-  assert(#code.accepts == 14)
-  assert(#code.transitions == 255 + 14 * 256)
-  assert(#code.end_assertions == 14)
+local function compile(this)
+  local nfa = regexp.syntax_tree.ere(this):normalize():node_to_condition():to_nfa()
+  nfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+  nfa:normalize_assertions()
+  local dfa = nfa:minimize()
+  dfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+  dfa:compile()
+  local data = dfa:compile()
+  -- print(json.encode(data))
+  return data
 end
 
-local code = a:compile()
-check_code(code)
-local code = assert(loadstring(dump(code, sequence_writer()):concat()))()
-check_code(code)
+local data = compile("foo")
+assert(data.start ~= 0)
+assert(data.start_assertion == 0)
+assert(regexp.find(data, "foo"))
+assert(regexp.find(data, "barfoo"))
 
-local b = decompile(code)
-regexp(b):write_graphviz(assert(io.open("test-dfa2.dot", "w"))):close()
+local data = compile("^foo")
+assert(data.start == 0)
+assert(data.start_assertion ~= 0)
+assert(regexp.find(data, "foo"))
+assert(not regexp.find(data, "barfoo"))
+
+local data = compile("$")
+assert(data.start ~= 0)
+assert(data.start_assertion ~= 0)
+local i, j, token = regexp.find(data, "")
+assert(i == 1)
+assert(j == 0)
+assert(token)
+local i, j, token = regexp.find(data, "foo")
+assert(i == 4)
+assert(j == 3)
+assert(token)

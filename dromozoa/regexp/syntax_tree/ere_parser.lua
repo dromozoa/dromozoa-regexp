@@ -16,27 +16,19 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local matcher = require "dromozoa.commons.matcher"
-local push = require "dromozoa.commons.push"
 local sequence = require "dromozoa.commons.sequence"
-local tree = require "dromozoa.tree"
 
 local class = {}
 
-function class.new(this)
+function class.new(this, that)
   if type(this) == "string" then
     this = matcher(this)
   end
   return {
     this = this;
-    that = tree();
+    that = that;
     stack = sequence();
   }
-end
-
-function class:create_node(...)
-  local node = self.that:create_node()
-  push(node, 0, ...)
-  return node
 end
 
 function class:raise(message)
@@ -50,9 +42,10 @@ end
 
 function class:extended_reg_exp()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if self:ERE_branch() then
-    local node = self:create_node("|")
+    local node = that:create_node("|")
     node:append_child(stack:pop())
     while this:match("%|") do
       if self:ERE_branch() then
@@ -66,9 +59,10 @@ function class:extended_reg_exp()
 end
 
 function class:ERE_branch()
+  local that = self.that
   local stack = self.stack
   if self:ERE_expression() then
-    local node = self:create_node("concat")
+    local node = that:create_node("concat")
     node:append_child(stack:pop())
     while self:ERE_expression() do
       node:append_child(stack:pop())
@@ -79,6 +73,7 @@ end
 
 function class:ERE_expression()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if self:one_char_or_coll_elem_ERE_or_grouping() then
     if self:ERE_dupl_symbol() then
@@ -89,19 +84,20 @@ function class:ERE_expression()
       return true
     end
   elseif this:match("([%^%$])") then
-    return stack:push(self:create_node(this[1]))
+    return stack:push(that:create_node(this[1]))
   end
 end
 
 function class:one_char_or_coll_elem_ERE_or_grouping()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if this:match("([^%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return stack:push(self:create_node("char", this[1]))
+    return stack:push(that:create_node("char", this[1]))
   elseif this:match("\\([%^%.%[%$%(%)%|%*%+%?%{%\\])") then
-    return stack:push(self:create_node("\\", this[1]))
+    return stack:push(that:create_node("\\", this[1]))
   elseif this:match("%.") then
-    return stack:push(self:create_node("."))
+    return stack:push(that:create_node("."))
   elseif self:bracket_expression() then
     return true
   elseif this:match("%(") then
@@ -119,16 +115,17 @@ end
 
 function class:ERE_dupl_symbol()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if this:match("([%*%+%?])") then
-    return stack:push(self:create_node(this[1]))
+    return stack:push(that:create_node(this[1]))
   elseif this:match("%{") then
     if this:match("(%d+)%}") then
-      return stack:push(self:create_node("{m", tonumber(this[1], 10)))
+      return stack:push(that:create_node("{m", tonumber(this[1], 10)))
     elseif this:match("(%d+),%}") then
-      return stack:push(self:create_node("{m,", tonumber(this[1], 10)))
+      return stack:push(that:create_node("{m,", tonumber(this[1], 10)))
     elseif this:match("(%d+),(%d+)%}") then
-      return stack:push(self:create_node("{m,n", tonumber(this[1], 10), tonumber(this[2], 10)))
+      return stack:push(that:create_node("{m,n", tonumber(this[1], 10), tonumber(this[2], 10)))
     else
       self:raise()
     end
@@ -137,16 +134,17 @@ end
 
 function class:bracket_expression()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if this:match("(%[%^?)") then
-    local node = self:create_node("[", this[1] == "[^")
+    local node = that:create_node("[", this[1] == "[^")
     if self:expression_term() then
       node:append_child(stack:pop())
       while self:expression_term() do
         node:append_child(stack:pop())
       end
       if this:match("%-") then
-        node:append_child(self:create_node("[char", "-"))
+        node:append_child(that:create_node("[char", "-"))
       end
       if this:match("%]") then
         return stack:push(node)
@@ -161,16 +159,17 @@ end
 
 function class:expression_term()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if this:match("%[%=") then
     if this:match("(..-)%=%]") then
-      return stack:push(self:create_node("[=", this[1]))
+      return stack:push(that:create_node("[=", this[1]))
     else
       self:raise("unclosed equivalence class")
     end
   elseif this:match("%[%:") then
     if this:match("(..-)%:%]") then
-      return stack:push(self:create_node("[:", this[1]))
+      return stack:push(that:create_node("[:", this[1]))
     else
       self:raise("unclosed character class")
     end
@@ -178,10 +177,10 @@ function class:expression_term()
     if this:lookahead("%-%]") then
       return true
     elseif this:match("%-") then
-      local node = self:create_node("[-")
+      local node = that:create_node("[-")
       node:append_child(stack:pop())
       if this:match("%-") then
-        node:append_child(self:create_node("[char", "-"))
+        node:append_child(that:create_node("[char", "-"))
       elseif self:end_range() then
         node:append_child(stack:pop())
       else
@@ -196,24 +195,30 @@ end
 
 function class:end_range()
   local this = self.this
+  local that = self.that
   local stack = self.stack
   if this:match("%[%.") then
     if this:match("(..-)%.%]") then
-      return stack:push(self:create_node("[.", this[1]))
+      return stack:push(that:create_node("[.", this[1]))
     else
       self:raise("unclosed collating symbol")
     end
   elseif this:match("([^%^%-%]])") then
-    return stack:push(self:create_node("[char", this[1]))
+    return stack:push(that:create_node("[char", this[1]))
   end
 end
 
-function class:apply()
+function class:apply(token)
+  if token == nil then
+    token = 1
+  end
   local this = self.this
   local stack = self.stack
   if self:extended_reg_exp() then
     if #stack == 1 then
-      return stack:pop(), this
+      local node = stack:pop()
+      node.start = token
+      return self.that, this
     else
       self:raise()
     end
@@ -227,7 +232,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
-  __call = function (_, this)
-    return setmetatable(class.new(this), metatable)
+  __call = function (_, this, that)
+    return setmetatable(class.new(this, that), metatable)
   end;
 })

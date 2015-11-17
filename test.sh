@@ -22,39 +22,7 @@ case x$1 in
   *) lua=$1;;
 esac
 
-"$lua" test/test_assertions.lua
-"$lua" test/test_compile.lua
-"$lua" test/test_empty.lua
-"$lua" test/test_locale.lua
-"$lua" test/test_match.lua
-"$lua" test/test_parse.lua
-"$lua" test/test_regexp.lua
-
-"$lua" test/test.lua '[a-c]{2,}(abc|abd|acc)'
-"$lua" test/test.lua '[^[:alpha:]]{2,}(abc|abd|acc)'
-"$lua" test/test.lua '^[a-z]+A*$'
-
-"$lua" test/test_branch.lua 'abb' 'abc'
-"$lua" test/test_branch.lua 'else' 'elseif'
-"$lua" test/test_branch.lua 'abc' '.{3}'
-
-"$lua" test/test_concat.lua 'ab|bc|cd|e*' '(bc)+'
-
-"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' intersection
-"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' union
-"$lua" test/test_product_construction.lua '[a-z]{4,4}' 'if|else|elseif|end' difference
-"$lua" test/test_product_construction.lua '.*$' '.*a$' difference
-"$lua" test/test_product_construction.lua '.*\$' '.*a\$' difference
-"$lua" test/test_product_construction.lua 'a+$' 'b+$' union
-"$lua" test/test_product_construction.lua '[ab]+$' '[bc]+$' intersection
-
-"$lua" test/test_remove_assertions.lua '^abc|d^e$f|ghi$'
-"$lua" test/test_remove_assertions.lua '^$'
-"$lua" test/test_remove_assertions.lua '^$^$^$^$'
-"$lua" test/test_remove_assertions.lua '$^$^$^$^'
-"$lua" test/test_remove_assertions.lua '^^^^aaaa$$$$|bbbb$$$$'
-
-"$lua" test/test_set_token.lua '.+'
-
-"$lua" test/test_parser.lua
-"$lua" test/test2.lua
+for i in test/test*.lua
+do
+  "$lua" "$i"
+done

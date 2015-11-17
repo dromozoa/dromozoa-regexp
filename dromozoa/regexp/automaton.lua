@@ -15,20 +15,24 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local apply = require "dromozoa.commons.apply"
 local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
+local compile = require "dromozoa.regexp.automaton.compile"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
+local normalize_assertions = require "dromozoa.regexp.automaton.normalize_assertions"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
 local product_construction = require "dromozoa.regexp.automaton.product_construction"
 local tokens = require "dromozoa.regexp.automaton.tokens"
+local to_ast = require "dromozoa.regexp.automaton.to_ast"
 
 local function collect(self, key)
   local count = self:count_vertex(key)
   if count == 0 then
     return nil
   elseif count == 1 then
-    return self:each_vertex(key)()
+    return apply(self:each_vertex(key))
   else
     local u = self:create_vertex()
     local token
@@ -53,10 +57,10 @@ local metatable = {
 }
 
 function class:start()
-  if self:count_vertex("start") ~= 1 then
+  if self:count_vertex("start") > 1 then
     error("only one start state allowed")
   end
-  return self:each_vertex("start")()
+  return apply(self:each_vertex("start"))
 end
 
 function class:can_minimize()
@@ -69,6 +73,15 @@ function class:can_minimize()
     end
   end
   return true
+end
+
+function class:has_start_assertions()
+  for u in self:each_edge("condition") do
+    if u.condition:test(256) then
+      return true
+    end
+  end
+  return false
 end
 
 function class:collect_starts()
@@ -103,6 +116,46 @@ function class:reverse()
   return that
 end
 
+function class:remove_unreachables()
+  local visitor = {
+    finish_edge = function (_, e)
+      if e.color == nil then
+        e.color = 1
+      else
+        e.color = 2
+      end
+    end;
+  }
+  self:start():dfs(visitor)
+  for v in self:each_vertex("accept") do
+    v:dfs(visitor, "v")
+  end
+  for e in self:each_edge() do
+    if e.color ~= 2 then
+      e:remove()
+    end
+  end
+  for u in self:each_vertex() do
+    if u:is_isolated() then
+      u:remove()
+    end
+  end
+  self:clear_edge_properties("color")
+  return self
+end
+
+function class:normalize_assertions()
+  return normalize_assertions(self):apply()
+end
+
+function class:to_dfa()
+  return powerset_construction(self, class()):apply()
+end
+
+function class:minimize()
+  return self:reverse():to_dfa():reverse():to_dfa()
+end
+
 function class:branch(that)
   self:merge(that)
   self:collect_starts()
@@ -115,15 +168,8 @@ function class:concat(that)
   local map = self:merge(that)
   local v = self:get_vertex(map[that:start().id])
   v.start = nil
-  graph:create_edge(u, v)
-end
-
-function class:to_dfa()
-  return powerset_construction(self, class()):apply()
-end
-
-function class:minimize()
-  return self:reverse():to_dfa():reverse():to_dfa()
+  self:create_edge(u, v)
+  return self
 end
 
 function class:intersection(that)
@@ -136,6 +182,14 @@ end
 
 function class:difference(that)
   return product_construction(class()):apply(self, that, tokens.difference)
+end
+
+function class:compile()
+  return compile(self):apply()
+end
+
+function class:to_ast()
+  return to_ast(clone(self), class.super.syntax_tree()):apply()
 end
 
 function class:write_graphviz(out)
