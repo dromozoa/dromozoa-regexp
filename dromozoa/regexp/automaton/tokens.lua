@@ -15,12 +15,36 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-return function (g, token)
-  for u in g:each_vertex("start") do
-    u.start = token
+local class = {}
+
+function class.intersection(a, b)
+  if a ~= nil and b ~= nil then
+    if a < b then
+      return a
+    else
+      return b
+    end
   end
-  for u in g:each_vertex("accept") do
-    u.accept = token
-  end
-  return g
 end
+
+function class.union(a, b)
+  if a ~= nil then
+    if b ~= nil then
+      if a < b then
+        return a
+      else
+        return b
+      end
+    end
+    return a
+  end
+  return b
+end
+
+function class.difference(a, b)
+  if a ~= nil and b == nil then
+    return a
+  end
+end
+
+return class

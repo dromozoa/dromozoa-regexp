@@ -15,17 +15,40 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local minimize = require "dromozoa.regexp.minimize"
-local node_to_nfa = require "dromozoa.regexp.node_to_nfa"
-local parse = require "dromozoa.regexp.parse"
-local powerset_construction = require "dromozoa.regexp.powerset_construction"
-local write_graphviz = require "dromozoa.regexp.write_graphviz"
+local regexp = require "dromozoa.regexp"
 
-local ast = parse(arg[1])
-local nfa = node_to_nfa(parse(arg[1]))
-local dfa1 = powerset_construction(nfa)
-local dfa2 = minimize(dfa1)
+local a = regexp.ere("foo", 1)
+local b = regexp.ere("bar", 2)
+local c = regexp.ere("baz", 3)
+local d = a:branch(b):branch(c)
+d:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+assert(d:to_ere() == "bar|baz|foo")
 
-write_graphviz(nfa, assert(io.open("test-nfa.dot", "w"))):close()
-write_graphviz(dfa1, assert(io.open("test-dfa1.dot", "w"))):close()
-write_graphviz(dfa2, assert(io.open("test-dfa2.dot", "w"))):close()
+local data = d:compile()
+assert(regexp.match(data, "foo") == 1)
+assert(regexp.match(data, "bar") == 2)
+assert(regexp.match(data, "baz") == 3)
+assert(not regexp.match(data, "qux"))
+
+local e = d:minimize()
+e:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+assert(e:to_ere() == "ba[rz]|foo")
+
+local comment = regexp.ere("/\\*"):concat(regexp.ere(".*\\*"):set_difference(regexp.ere(".*\\*/.*"))):concat(regexp.ere("/"))
+-- local comment = regexp.ere(".*\\*"):set_difference(regexp.ere(".*\\*/.*"))
+comment:write_graphviz(assert(io.open("test3.dot", "w"))):close()
+-- print(comment:to_ere())
+
+local a = regexp.literal("foo*bar(baz)qux")
+assert(a:to_ere() == [[foo\*bar\(baz\)qux]])
+
+local b = regexp.ere("^0$")
+for i = 1, 255 do
+  b = b:branch(regexp.ere("^" .. i .. "$"))
+end
+b:write_graphviz(assert(io.open("test4.dot", "w"))):close()
+local data = b:compile()
+local i, j = regexp.find(data, "255")
+assert(i == 1)
+assert(j == 3)
+assert(not regexp.find(data, "256"))
