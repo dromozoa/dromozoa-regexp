@@ -20,6 +20,7 @@ local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
 local compile = require "dromozoa.regexp.automaton.compile"
+local decompile = require "dromozoa.regexp.automaton.decompile"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
 local normalize_assertions = require "dromozoa.regexp.automaton.normalize_assertions"
 local powerset_construction = require "dromozoa.regexp.automaton.powerset_construction"
@@ -55,6 +56,10 @@ local class = clone(graph)
 local metatable = {
   __index = class;
 }
+
+function class.decompile(data)
+  return decompile(data, class())
+end
 
 function class:start()
   if self:count_vertex("start") > 1 then

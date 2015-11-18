@@ -53,3 +53,13 @@ local i, j, token = regexp.find(data, "foo")
 assert(i == 4)
 assert(j == 3)
 assert(token)
+
+local data = compile("^foo|bar|baz$")
+local dfa = regexp.decompile(data)
+dfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+assert(dfa:to_ere() == "(^b|b)ar|(^b|b)az$|^foo")
+
+local data = compile("^foo|^bar$")
+local dfa = regexp.decompile(data)
+dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+assert(dfa:to_ere() == "^bar$|^foo")
