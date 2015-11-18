@@ -20,10 +20,22 @@ local automaton = require "dromozoa.regexp.automaton"
 local match = require "dromozoa.regexp.match"
 local syntax_tree = require "dromozoa.regexp.syntax_tree"
 
+local function to_dfa(ast)
+  return ast:normalize():node_to_condition():to_nfa():normalize_assertions():optimize()
+end
+
 local class = {
   automaton = automaton;
   syntax_tree = syntax_tree;
 }
+
+function class.ere(this, token)
+  return to_dfa(syntax_tree.ere(this, token))
+end
+
+function class.literal(this, token)
+  return to_dfa(syntax_tree.literal(this, token))
+end
 
 function class.match(data, s, i, j)
   local min, max = translate_range(#s, i, j)

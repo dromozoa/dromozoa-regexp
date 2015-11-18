@@ -34,6 +34,25 @@ function class.ere(this, token)
   return ere_parser(this, class()):apply(token)
 end
 
+function class.literal(this, token)
+  if token == nil then
+    token = 1
+  end
+  local that = class()
+  local branch = that:create_node("|")
+  branch.start = token
+  local concat = branch:append_child(that:create_node("concat"))
+  for i = 1, #this do
+    local char = this:sub(i, i)
+    if char:match("^[%^%.%[%$%(%)%|%*%+%?%{%\\]$") then
+      concat:append_child(that:create_node("\\", char))
+    else
+      concat:append_child(that:create_node("char", char))
+    end
+  end
+  return that
+end
+
 function class:start()
   if self:count_node("start") > 1 then
     error("only one start node allowed")
