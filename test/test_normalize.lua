@@ -34,7 +34,7 @@ local function test_normalize(this, that)
     dfa = dfa:minimize()
     dfa:write_graphviz(assert(io.open("test4.dot", "w"))):close()
     local result = dfa:to_ast():denormalize():to_ere(true)
-    print(result)
+    -- print(result)
     local check = false
     for _, v in ipairs(that) do
       if result == v then
