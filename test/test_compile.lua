@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local dumper = require "dromozoa.commons.dumper"
+local equal = require "dromozoa.commons.equal"
 local json = require "dromozoa.commons.json"
 local regexp = require "dromozoa.regexp"
 
@@ -56,10 +58,27 @@ assert(token)
 
 local data = compile("^foo|bar|baz$")
 local dfa = regexp.decompile(data)
-dfa:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 assert(dfa:to_ere() == "(^b|b)ar|(^b|b)az$|^foo")
 
 local data = compile("^foo|^bar$")
 local dfa = regexp.decompile(data)
 dfa:write_graphviz(assert(io.open("test1.dot", "w"))):close()
 assert(dfa:to_ere() == "^bar$|^foo")
+
+local a = regexp.ere("foo", 17)
+local b = regexp.ere("bar", 23)
+local c = regexp.ere("baz", 37)
+local d = a:branch(b):branch(c)
+d:write_graphviz(assert(io.open("test1.dot", "w"))):close()
+local data = d:compile()
+assert(regexp.match(data, "foo") == 17)
+assert(regexp.match(data, "bar") == 23)
+assert(regexp.match(data, "baz") == 37)
+assert(not regexp.match(data, "qux"))
+-- print(dumper.encode(data))
+local data2 = dumper.decode(dumper.encode(data))
+assert(equal(data, data2))
+local e = regexp.decompile(data)
+e:write_graphviz(assert(io.open("test2.dot", "w"))):close()
+local data3 = e:compile()
