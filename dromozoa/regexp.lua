@@ -37,6 +37,10 @@ function class.literal(this, token)
   return to_dfa(syntax_tree.literal(this, token))
 end
 
+function class.decompile(data)
+  return automaton.decompile(data):optimize()
+end
+
 function class.match(data, s, i, j)
   local min, max = translate_range(#s, i, j)
   local start = data.start_assertion
