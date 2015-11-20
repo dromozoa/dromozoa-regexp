@@ -19,6 +19,7 @@ local apply = require "dromozoa.commons.apply"
 local bitset = require "dromozoa.commons.bitset"
 local clone = require "dromozoa.commons.clone"
 local graph = require "dromozoa.graph"
+local locale = require "dromozoa.regexp.locale"
 local compile = require "dromozoa.regexp.automaton.compile"
 local decompile = require "dromozoa.regexp.automaton.decompile"
 local graphviz_visitor = require "dromozoa.regexp.automaton.graphviz_visitor"
@@ -130,6 +131,18 @@ function class:remove_unreachables()
   end
   self:clear_edge_properties("color")
   return self
+end
+
+function class:ignore_case()
+  local that = clone(self)
+  for e in that:each_edge("condition") do
+    local condition = bitset()
+    for k in e.condition:each() do
+      condition:set(locale.toupper(k)):set(locale.tolower(k))
+    end
+    e.condition = condition
+  end
+  return that:optimize()
 end
 
 function class:normalize_assertions()

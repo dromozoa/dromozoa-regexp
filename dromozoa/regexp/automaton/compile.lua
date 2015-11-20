@@ -70,7 +70,7 @@ return function (this)
         count = count + 1
         end_assertions[cs] = ns
       else
-        for k, v in condition:each() do
+        for k in condition:each() do
           count = count + 1
           transitions[n + k] = ns
         end
