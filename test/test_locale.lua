@@ -15,6 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
+local regexp = require "dromozoa.regexp"
 local locale = require "dromozoa.regexp.locale"
 
 local X = string.byte("X")
@@ -28,3 +29,14 @@ assert(locale.toupper(x) == X)
 assert(locale.tolower(0) == 0)
 assert(locale.tolower(X) == x)
 assert(locale.tolower(x) == x)
+
+assert(regexp.ere("^.abc$"):ignore_case():to_ere() == "^.[Aa][Bb][Cc]$")
+assert(regexp.ere("0x[0-9A-F]"):ignore_case():to_ere() == "0[Xx][0-9A-Fa-f]")
+assert(regexp.ere("[[:upper:]]"):ignore_case():to_ere() == "[A-Za-z]")
+assert(regexp.ere("[[:lower:]]"):ignore_case():to_ere() == "[A-Za-z]")
+assert(regexp.ere("[[:alpha:]]"):ignore_case():to_ere() == "[A-Za-z]")
+assert(regexp.ere("[[:alnum:]]"):ignore_case():to_ere() == "[0-9A-Za-z]")
+
+local a = regexp.ere("abc|ABD"):ignore_case()
+assert((a:to_ere() == "[Aa][Bb][CDcd]"))
+assert(regexp.match(a:compile(), "abd"))
