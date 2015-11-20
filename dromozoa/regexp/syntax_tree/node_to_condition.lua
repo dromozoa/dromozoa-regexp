@@ -17,7 +17,7 @@
 
 local apply = require "dromozoa.commons.apply"
 local bitset = require "dromozoa.commons.bitset"
-local locale = require "dromozoa.regexp.syntax_tree.locale"
+local locale = require "dromozoa.regexp.locale"
 
 local class = {}
 

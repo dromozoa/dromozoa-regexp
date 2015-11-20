@@ -15,7 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local locale = require "dromozoa.regexp.syntax_tree.locale"
+local locale = require "dromozoa.regexp.locale"
 
 local X = string.byte("X")
 local x = string.byte("x")
