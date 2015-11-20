@@ -17,7 +17,7 @@
 
 local bitset = require "dromozoa.commons.bitset"
 
-function get_posix_character_classes()
+local function get_posix_character_classes()
   local character_classes = {}
 
   character_classes.upper = bitset()
@@ -75,7 +75,7 @@ function get_posix_character_classes()
   return character_classes
 end
 
-function get_posix_collating_elements()
+local function get_posix_collating_elements()
   local collating_elements = {}
   for i = 0, 127 do
     collating_elements[string.char(i)] = i
@@ -83,7 +83,40 @@ function get_posix_collating_elements()
   return collating_elements
 end
 
+local A, Z = string.byte("AZ", 1, 2)
+local a, z = string.byte("az", 1, 2)
+local tolower = a - A
+local toupper = A - a
+
+local function posix_islower(byte)
+  return a <= byte and byte <= z
+end
+
+local function posix_isupper(byte)
+  return A <= byte and byte <= Z
+end
+
+local function posix_tolower(byte)
+  if posix_isupper(byte) then
+    return byte + tolower
+  else
+    return byte
+  end
+end
+
+local function posix_toupper(byte)
+  if posix_islower(byte) then
+    return byte + toupper
+  else
+    return byte
+  end
+end
+
 return {
   character_classes = get_posix_character_classes();
   collating_elements = get_posix_collating_elements();
+  islower = posix_islower;
+  isupper = posix_isupper;
+  tolower = posix_tolower;
+  toupper = posix_toupper;
 }
