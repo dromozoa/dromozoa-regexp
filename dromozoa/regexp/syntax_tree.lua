@@ -17,7 +17,6 @@
 
 local apply = require "dromozoa.commons.apply"
 local clone = require "dromozoa.commons.clone"
-local push = require "dromozoa.commons.push"
 local tree = require "dromozoa.tree"
 local condition_to_node = require "dromozoa.regexp.syntax_tree.condition_to_node"
 local denormalize = require "dromozoa.regexp.syntax_tree.denormalize"
@@ -58,12 +57,6 @@ function class:start()
     error("only one start node allowed")
   end
   return apply(self:each_node("start"))
-end
-
-function class:create_node(...)
-  local node = tree.create_node(self)
-  push(node, 0, ...)
-  return node
 end
 
 function class:node_to_condition()
