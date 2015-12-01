@@ -52,11 +52,7 @@ local function collect(self, key)
   end
 end
 
-local class = clone(graph)
-
-local metatable = {
-  __index = class;
-}
+local class = {}
 
 function class.decompile(data)
   return decompile(data, class())
@@ -214,6 +210,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
+  __index = graph;
   __call = function ()
     return setmetatable(class.new(), metatable)
   end;
