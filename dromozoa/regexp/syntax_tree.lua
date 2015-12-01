@@ -16,7 +16,6 @@
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
 local apply = require "dromozoa.commons.apply"
-local clone = require "dromozoa.commons.clone"
 local tree = require "dromozoa.tree"
 local condition_to_node = require "dromozoa.regexp.syntax_tree.condition_to_node"
 local denormalize = require "dromozoa.regexp.syntax_tree.denormalize"
@@ -27,7 +26,7 @@ local node_to_condition = require "dromozoa.regexp.syntax_tree.node_to_condition
 local normalize = require "dromozoa.regexp.syntax_tree.normalize"
 local to_nfa = require "dromozoa.regexp.syntax_tree.to_nfa"
 
-local class = clone(tree)
+local class = {}
 
 function class.ere(this, token)
   return ere_parser(this, class()):apply(token)
@@ -93,6 +92,7 @@ local metatable = {
 }
 
 return setmetatable(class, {
+  __index = tree;
   __call = function ()
     return setmetatable(class.new(), metatable)
   end;
