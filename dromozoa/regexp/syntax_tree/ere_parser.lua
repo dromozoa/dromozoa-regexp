@@ -15,14 +15,14 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-regexp.  If not, see <http://www.gnu.org/licenses/>.
 
-local matcher = require "dromozoa.commons.matcher"
+local string_matcher = require "dromozoa.commons.string_matcher"
 local sequence = require "dromozoa.commons.sequence"
 
 local class = {}
 
 function class.new(this, that)
   if type(this) == "string" then
-    this = matcher(this)
+    this = string_matcher(this)
   end
   return {
     this = this;
